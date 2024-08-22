@@ -1,0 +1,217 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; 
+}
+.bg-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
+}
+.bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+}
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(233, 114, 118, 0.5); 
+    z-index: 2;
+}
+.card {
+    z-index: 3; 
+    width: 100%;
+    max-width: 700px; 
+    height: 500px;
+    padding: 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #ffff; 
+    text-align: center; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: auto;
+}
+.card-role {
+    z-index: 3; 
+    width: 100%;
+    max-width: 700px; 
+    height: 450px;
+    padding: 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #ffff; 
+    text-align: center; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: auto;
+}
+.card-login{
+    z-index: 3; 
+    width: 100%;
+    max-width: 700px; 
+    height: 520px;
+    padding: 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #ffff; 
+    text-align: center; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: auto;
+}
+
+
+.btn-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.btn {
+    margin: 10px 0;
+    width: 40%;
+    
+}
+.logo-role {
+    width: 16%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.text-role{
+    display: block;
+    margin-left: 30px;
+    margin-right: 30px;
+}
+.button-width{
+    width: 386px; 
+    margin: 0 auto; 
+    display: block;
+}
+
+.logo-login {
+    width: 14%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-container {
+    width: 100%;
+    text-align: center;
+}
+
+.logo-sign-up {
+    width: 10%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.form-label {
+    text-align: left;
+}
+
+.logo-sign-in {
+    width: 10%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.step {
+    display: none;
+}
+.step.active {
+    display: block;
+}
+
+.btn-custom-width {
+    width: 200px; 
+}
+
+/*****LOG IN VALIDATION**********/
+
+.form-label {
+    margin-bottom: 0;
+}
+
+.input-group {
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    margin-left: 0.5rem;
+    color: red;
+    text-align: left;
+}
+
+
+/*******RECORDS**************/
+.form-check {
+    display: flex;
+    align-items: center;
+}
+
+.form-check-input {
+    margin-right: 10px; 
+}
+
+.form-check-label {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px; 
+    white-space: normal; 
+    text-align: left; 
+}
+
+.otp-field {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.otp-field input {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 24px;
+}
+
+.otp-field input {
+    width: 3rem;
+    text-align: center;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    margin-right: 0.5rem;
+}
+
+.otp-field input:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.otp-field input[type="number"] {
+    -moz-appearance: textfield;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.otp-field input::-webkit-inner-spin-button,
+.otp-field input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
