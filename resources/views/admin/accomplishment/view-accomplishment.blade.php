@@ -205,7 +205,8 @@
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="#"
+                                        <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link" style="cursor: default; color: #3d405c;">Accomplishment</a></li>
+                                        <li class="breadcrumb-item"><a href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
                                                 class="breadcrumb-link">{{ $folderName }}</a></li>
                                         <li class="breadcrumb-item"><a href="#" class="breadcrumb-link">View
                                                 Accomplishment</a></li>

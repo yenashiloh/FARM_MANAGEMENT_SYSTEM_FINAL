@@ -7,10 +7,14 @@
      <!-- ============================================================== -->
      <div class="dashboard-header">
          <nav class="navbar navbar-expand-lg bg-white fixed-top">
-             <a class="navbar-brand" href="index.html">
-                <img src="{{ asset('assets/images/pup-logo.png') }}" width="50" height="50" alt="Logo">
-                PUP-T FARM</a>
-             
+             <a class="navbar-brand" href="{{ route('admin.admin-dashboard') }}">
+                 <img src="{{ asset('assets/images/pup-logo.png') }}" width="50" height="50" alt="Logo">
+                 <div class="brand-info">
+                     <div class="main-title">PUP-T FARM</div>
+                     <div class="sub-title">Faculty Academic Requirements Management</div>
+                 </div>
+             </a>
+
              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                  aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                  <span class="navbar-toggler-icon"></span>
@@ -89,9 +93,9 @@
                      </li>
                      <li class="nav-item dropdown nav-user">
                          <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
-                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img
-                                 src="asset/images/avatar-1.jpg" alt=""
-                                 class="user-avatar-md rounded-circle"></a>
+                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user-circle user-avatar-md rounded-circle" style="font-size:25px;"></i>
+                            
+                              
                          <div class="dropdown-menu dropdown-menu-right nav-user-dropdown"
                              aria-labelledby="navbarDropdownMenuLink2">
                              <div class="nav-user-info">
@@ -100,7 +104,8 @@
                              </div>
                              <a class="dropdown-item" href="#"><i class="fas fa-user mr-2"></i>Account</a>
                              <a class="dropdown-item" href="#"><i class="fas fa-cog mr-2"></i>Setting</a>
-                             <a class="dropdown-item" href="#"><i class="fas fa-power-off mr-2"></i>Logout</a>
+                             <a class="dropdown-item" href="#" id="logout-link"><i
+                                     class="fas fa-power-off mr-2"></i>Logout</a>
                          </div>
                      </li>
                  </ul>
@@ -127,31 +132,33 @@
                              MENU
                          </li>
                          <li class="nav-item ">
-                             <a class="nav-link active" href="#" aria-expanded="false"
+                             <a class="nav-link {{ Request::routeIs('admin.admin-dashboard') ? 'active' : '' }}"
+                                 href="{{ route('admin.admin-dashboard') }}" aria-expanded="false"
                                  data-target="#submenu-1" aria-controls="submenu-1"><i
-                                     class="fa fa-fw fa-user-circle"></i>Dashboard <span
-                                     class="badge badge-success">6</span></a>
+                                     class="fas fa-tachometer-alt"></i>
+                                 Dashboard <span class="badge badge-success">6</span></a>
 
                          <li class="nav-divider">
                              Maintenance
                          </li>
                          <li class="nav-item">
-                             <a class="nav-link" href="{{ route('admin.maintenance.create-folder') }}"
-                                 aria-expanded="false" data-target="#submenu-3" aria-controls="submenu-3"><i
-                                     class="fas fa-folder"></i>Manage Main Folder</a>
-
+                             <a class="nav-link {{ Request::routeIs('admin.maintenance.create-folder') ? 'active' : '' }}"
+                                 href="{{ route('admin.maintenance.create-folder') }}" aria-expanded="false"
+                                 data-target="#submenu-3" aria-controls="submenu-3">
+                                 <i class="fas fa-folder"></i> Manage Main Folder
+                             </a>
                          </li>
                          <li class="nav-item ">
-                             <a class="nav-link" href="#" aria-expanded="false" data-target="#submenu-4"
-                                 aria-controls="submenu-4"><i class="fas fa-bullhorn"></i>Announcement</a>
-
+                             <a class="nav-link" href="{{ route('admin.announcement.admin-announcement') }}"
+                                 aria-expanded="false" data-target="#submenu-4" aria-controls="submenu-4"><i
+                                     class="fas fa-bullhorn"></i>Announcement</a>
                          </li>
-
                          <li class="nav-divider">
                              Accomplishment
                          </li>
                          <li class="nav-item">
-                             <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false"
+                             <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Classroom Management')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
+                                 href="#" data-toggle="collapse" aria-expanded="false"
                                  data-target="#submenu-6" aria-controls="submenu-6">
                                  <i class="fas fa-book"></i> Classroom Management
                              </a>
@@ -160,7 +167,7 @@
                                      @foreach ($folders as $folder)
                                          @if ($folder->main_folder_name == 'Classroom Management')
                                              <li class="nav-item">
-                                                 <a class="nav-link"
+                                                 <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
                                                      href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
                                                      {{ $folder->folder_name }}
                                                  </a>
@@ -170,17 +177,19 @@
                                  </ul>
                              </div>
                          </li>
+
                          <li class="nav-item">
-                             <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false"
+                             <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Test Administration')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
+                                 href="#" data-toggle="collapse" aria-expanded="false"
                                  data-target="#submenu-2" aria-controls="submenu-2">
                                  <i class="fas fa-clipboard-list"></i> Test Administration
                              </a>
-                             <div id="submenu-2" class="collapse submenu" style="">
+                             <div id="submenu-2" class="collapse submenu">
                                  <ul class="nav flex-column">
                                      @foreach ($folders as $folder)
                                          @if ($folder->main_folder_name == 'Test Administration')
                                              <li class="nav-item">
-                                                 <a class="nav-link"
+                                                 <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
                                                      href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
                                                      {{ $folder->folder_name }}
                                                  </a>
@@ -193,29 +202,32 @@
 
                      </ul>
                  </div>
-             </nav>
-         </div>
-     </div>
-     {{-- <!-- ============================================================== -->
-     <!-- end left sidebar -->
-     <!-- ============================================================== -->
+                 </li>
 
-     <script src="../asset/vendor/jquery/jquery-3.3.1.min.js"></script>
-     <!-- bootstap bundle js -->
-     <script src="../asset/vendor/bootstrap/js/bootstrap.bundle.js"></script>
-     <!-- slimscroll js -->
-     <script src="../asset/vendor/slimscroll/jquery.slimscroll.js"></script>
-     <!-- main js -->
-     <script src="../asset/libs/js/main-js.js"></script>
-     <!-- chart chartist js -->
-     <script src="../asset/vendor/charts/chartist-bundle/chartist.min.js"></script>
-     <!-- sparkline js -->
-     <script src="../asset/vendor/charts/sparkline/jquery.sparkline.js"></script>
-     <!-- morris js -->
-     <script src="../asset/vendor/charts/morris-bundle/raphael.min.js"></script>
-     <script src="../asset/vendor/charts/morris-bundle/morris.js"></script>
-     <!-- chart c3 js -->
-     <script src="../asset/vendor/charts/c3charts/c3.min.js"></script>
-     <script src="../asset/vendor/charts/c3charts/d3-5.4.0.min.js"></script>
-     <script src="../asset/vendor/charts/c3charts/C3chartjs.js"></script>
-     <script src="../asset/libs/js/dashboard-ecommerce.js"></script> --}}
+                 </ul>
+         </div>
+         </nav>
+     </div>
+ </div>
+ <script>
+     document.getElementById('logout-link').addEventListener('click', function(e) {
+         e.preventDefault();
+
+         fetch('{{ route('logout') }}', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                 },
+                 credentials: 'same-origin'
+             })
+             .then(response => {
+                 if (response.ok) {
+                     window.location.href = '{{ route('login.form') }}';
+                 } else {
+                     console.error('Logout failed');
+                 }
+             })
+             .catch(error => console.error('Error:', error));
+     });
+ </script>

@@ -4,7 +4,14 @@
 <head>
     <!-- Required meta tags -->
     @include('partials.admin-header')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Dashboard</title>
+    <style>
+    .icon{
+        font-size: 30px;
+        color: #800000;
+    }
+    </style>
 </head>
 
 <body>
@@ -23,8 +30,8 @@
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="#"
-                                                class="breadcrumb-link">Dashboard</a></li>
+                                        <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link" style="cursor: default; color: #3d405c;">Menu</a></li>
+                                        <li class="breadcrumb-item"><a href="{{route ('admin.admin-dashboard')}}" class="breadcrumb-link">Dashboard</a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -37,79 +44,84 @@
                 <div class="ecommerce-widget">
 
                     <div class="row">
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                 
+                        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="text-muted">Total Faculty Users</h5>
-                                    <div class="metric-value d-inline-block">
-                                        <h1 class="mb-1">$12099</h1>
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Total of Faculty</h5>
+                                        <h2 class="mb-0"> {{$facultyCount}}</h2>
                                     </div>
-                                    <div class="metric-label d-inline-block float-right text-success font-weight-bold">
-                                        <span><i class="fa fa-fw fa-arrow-up"></i></span><span>5.86%</span>
+                                    <div class="float-right icon-circle-medium  icon-box-lg  bg-info-light mt-1">
+                                        <i class="fa fa-users fa-fw fa-sm text-info"></i>
                                     </div>
                                 </div>
-                                {{-- <div id="sparkline-revenue"></div> --}}
                             </div>
                         </div>
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                        <!-- ============================================================== -->
+                        <!-- end total views   -->
+                        <!-- ============================================================== -->
+                        <!-- ============================================================== -->
+                        <!-- total followers   -->
+                        <!-- ============================================================== -->
+                        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="text-muted">Total Files Submitted</h5>
-                                    <div class="metric-value d-inline-block">
-                                        <h1 class="mb-1">$12099</h1>
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Total of Files Submitted</h5>
+                                        <h2 class="mb-0">{{ $filesCount }}</h2>
                                     </div>
-                                    <div class="metric-label d-inline-block float-right text-success font-weight-bold">
-                                        <span><i class="fa fa-fw fa-arrow-up"></i></span><span>5.86%</span>
+                                    <div class="float-right icon-circle-medium  icon-box-lg  bg-secondary-light mt-1">
+                                        <i class="fa fa-file fa-fw fa-sm text-secondary"></i>
                                     </div>
                                 </div>
-                                {{-- <div id="sparkline-revenue2"></div> --}}
                             </div>
                         </div>
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="text-muted">Total of Pending Review</h5>
-                                    <div class="metric-value d-inline-block">
-                                        <h1 class="mb-1">0.00</h1>
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Total of Pending Review</h5>
+                                        <h2 class="mb-0">{{ $toReviewCount }}</h2>
                                     </div>
-                                    <div class="metric-label d-inline-block float-right text-primary font-weight-bold">
-                                        <span>N/A</span>
+                                    <div class="float-right icon-circle-medium  icon-box-lg  bg-primary-light mt-1">
+                                        <i class="fa fa-tasks fa-fw fa-sm text-secondary"></i>
                                     </div>
                                 </div>
-                                {{-- <div id="sparkline-revenue3"></div> --}}
                             </div>
                         </div>
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="text-muted">Completed Reviews</h5>
-                                    <div class="metric-value d-inline-block">
-                                        <h1 class="mb-1">$28000</h1>
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Completed Reviews</h5>
+                                        <h2 class="mb-0">{{ $completedReviewsCount }}</h2>
                                     </div>
-                                    <div
-                                        class="metric-label d-inline-block float-right text-secondary font-weight-bold">
-                                        <span>-2.00%</span>
+                                    <div class="float-right icon-circle-medium  icon-box-lg  bg-success-light mt-1">
+                                        <i class="fa fa-handshake fa-fw fa-sm text-secondary"></i>
                                     </div>
                                 </div>
-                                {{-- <div id="sparkline-revenue4"></div> --}}
                             </div>
                         </div>
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                        <!-- ============================================================== -->
+                        <!-- end partnerships   -->
+                        <!-- ============================================================== -->
+                        <!-- ============================================================== -->
+                        <!-- total earned   -->
+                        <!-- ============================================================== -->
+                        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="text-muted">Storage Usage</h5>
-                                    <div class="metric-value d-inline-block">
-                                        <h1 class="mb-1">$28000</h1>
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Storage</h5>
+                                        <h2 class="mb-0"> </h2>
                                     </div>
-                                    <div
-                                        class="metric-label d-inline-block float-right text-secondary font-weight-bold">
-                                        <span>-2.00%</span>
+                                    <div class="float-right icon-circle-medium  icon-box-lg  bg-brand-light mt-1">
+                                        <i class="fa fa-database fa-fw fa-sm text-brand"></i>
                                     </div>
                                 </div>
-                                {{-- <div id="sparkline-revenue4"></div> --}}
                             </div>
                         </div>
-                    </div>
                     <div class="row">
                         <!-- ============================================================== -->
 
@@ -117,7 +129,7 @@
 
                         <!-- recent orders  -->
                         <!-- ============================================================== -->
-                        <div class=" col-12">
+                        {{-- <div class=" col-12">
                             <div class="card">
                                 <h5 class="card-header">Recent Orders</h5>
                                 <div class="card-body p-0">
@@ -210,64 +222,32 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                         <!-- ============================================================== -->
                         <!-- end recent orders  -->
                     </div>
                     <div class="row">
-                        <!-- ============================================================== -->
-                        <!-- product category  -->
-                        <!-- ============================================================== -->
-                        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 col-12">
+                        <div class="col-sm-6 col-12">
                             <div class="card">
-                                <h5 class="card-header">Approval Rates </h5>
+                                <h5 class="card-header">Approval Rates</h5>
                                 <div class="card-body">
-                                    <div class="ct-chart-category ct-golden-section" style="height: 315px;"></div>
-                                    <div class="text-center m-t-40">
-                                        <span class="legend-item mr-3">
-                                            <span class="fa-xs text-primary mr-1 legend-tile"><i
-                                                    class="fa fa-fw fa-square-full "></i></span><span
-                                                class="legend-text">Man</span>
-                                        </span>
-                                        <span class="legend-item mr-3">
-                                            <span class="fa-xs text-secondary mr-1 legend-tile"><i
-                                                    class="fa fa-fw fa-square-full"></i></span>
-                                            <span class="legend-text">Woman</span>
-                                        </span>
-                                        <span class="legend-item mr-3">
-                                            <span class="fa-xs text-info mr-1 legend-tile"><i
-                                                    class="fa fa-fw fa-square-full"></i></span>
-                                            <span class="legend-text">Accessories</span>
-                                        </span>
+                                    <div class="d-flex justify-content-center">
+                                        <canvas id="statusPieChart" style="width: 100%; max-width: 500px;"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- ============================================================== -->
-                        <!-- end product category  -->
-                        <!-- product sales  -->
-                        <!-- ============================================================== -->
-                        <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <div class="col-sm-6 col-12">
                             <div class="card">
-                                <div class="card-header">
-                                    <!-- <div class="float-right">
-                                                <select class="custom-select">
-                                                    <option selected>Today</option>
-                                                    <option value="1">Weekly</option>
-                                                    <option value="2">Monthly</option>
-                                                    <option value="3">Yearly</option>
-                                                </select>
-                                            </div> -->
-                                    <h5 class="mb-0"> Product Sales</h5>
-                                </div>
+                                <h5 class="card-header">Files per Folder</h5>
                                 <div class="card-body">
-                                    <div class="ct-chart-product ct-golden-section"></div>
+                                    <div class="d-flex justify-content-center">
+                                        <canvas id="filesBarChart" style="width: 100%; max-width: 500px; height:428px;"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- ============================================================== -->
-                        <!-- end product sales  -->
-                        <!-- ============================================================== -->
+                    </div>
                     </div>
                     <!-- ============================================================== -->
                     <!-- end wrapper  -->
@@ -278,6 +258,95 @@
                 <!-- ============================================================== -->
 
                 @include('partials.admin-footer')
+                <script>
+                    var ctx = document.getElementById('statusPieChart').getContext('2d');
+                    var statusPieChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['To Review', 'Approved', 'Declined'],
+                            datasets: [{
+                                label: 'File Status Distribution',
+                                data: [
+                                    {{ $toReviewCount }},
+                                    {{ $approvedCount }},
+                                    {{ $declinedCount }}
+                                ],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(tooltipItem) {
+                                            return tooltipItem.label + ': ' + tooltipItem.raw;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    var ctxBar = document.getElementById('filesBarChart').getContext('2d');
+        var filesBarChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: [
+                    @foreach ($folderCounts as $folder)
+                        "{{ $folder->folder_name }}",
+                    @endforeach
+                ],
+                datasets: [{
+                    label: 'Number of Files',
+                    data: [
+                        @foreach ($folderCounts as $folder)
+                            {{ $folder->courses_files_count }},
+                        @endforeach
+                    ],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+                </script>
 </body>
 
 </html>

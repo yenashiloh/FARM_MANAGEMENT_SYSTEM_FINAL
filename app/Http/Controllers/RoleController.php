@@ -33,7 +33,7 @@ class RoleController extends Controller
 
         switch ($user->role) {
             case 'admin':
-                return redirect()->route('admin.admin-accomplishment');
+                return redirect()->route('admin.admin-dashboard');
             case 'faculty':
                 return redirect()->route('faculty.faculty-accomplishment');
             case 'director':

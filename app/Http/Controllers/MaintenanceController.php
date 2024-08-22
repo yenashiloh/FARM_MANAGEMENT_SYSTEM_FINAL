@@ -10,18 +10,21 @@ use App\Models\FolderName;
 class MaintenanceController extends Controller
 {
      //show folder maintenance page
-    public function folderMaintenancePage()
-    {
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
-
-        $folders = FolderName::all();
-
-        return view('admin.maintenance.create-folder', [
-            'folders' => $folders
-        ]);
-    }
+     public function folderMaintenancePage()
+     {
+         if (!auth()->check()) {
+             return redirect()->route('login');
+         }
+     
+         $folders = FolderName::all();
+         $folder = FolderName::first(); 
+     
+         return view('admin.maintenance.create-folder', [
+             'folders' => $folders,
+             'folder' => $folder 
+         ]);
+     }
+     
 
     //store main folder
     public function storeFolder(Request $request)

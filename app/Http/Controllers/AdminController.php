@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\UserLogin;
 use App\Models\FolderName;
 use App\Models\CoursesFile;
+use App\Models\Announcement;
 
 
 class AdminController extends Controller
@@ -119,6 +120,7 @@ class AdminController extends Controller
         ]);
     }
 
+    //show all uploaded files
     public function showAdminUploadedFiles($folder_name_id)
     {
         if (!auth()->check()) {
@@ -163,7 +165,6 @@ class AdminController extends Controller
         $subjects = $facultyInfo['faculty']['subjects'] ?? [];
         $user_login_id = $files->first()->user_login_id ?? null;
 
-        // Retrieve folders
         $folders = FolderName::all();
 
         return view('admin.accomplishment.admin-uploaded-files', [
@@ -176,11 +177,11 @@ class AdminController extends Controller
             'files' => $files,
             'user_login_id' => $user_login_id, 
             'folder_name_id' => $folder_name_id, 
-            'folders' => $folders, // Pass folders to the view
+            'folders' => $folders, 
         ]);
     }
 
-    
+    //view accomplishment    
     public function viewAccomplishmentFaculty($user_login_id, $folder_name_id)
     {
         if (!auth()->check()) {
@@ -225,7 +226,6 @@ class AdminController extends Controller
     
         $subjects = $facultyInfo['faculty']['subjects'] ?? [];
     
-        // Retrieve all folders
         $folders = FolderName::all();
     
         return view('admin.accomplishment.view-accomplishment', [
@@ -236,11 +236,12 @@ class AdminController extends Controller
             'subjects' => $subjects,
             'filesWithSubjects' => $filesWithSubjects,
             'files' => $files,
-            'folders' => $folders, // Pass folders to the view
+            'folders' => $folders, 
         ]);
     }
     
-    
+
+
     
     
 

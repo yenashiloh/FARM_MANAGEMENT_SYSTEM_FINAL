@@ -235,8 +235,8 @@
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link">Maintenance</a></li>
-                                        <li class="breadcrumb-item"><a href="#" class="breadcrumb-link">Create Folder</a></li>
+                                        <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link" style="cursor: default; color: #3d405c;">Maintenance</a></li>
+                                        <li class="breadcrumb-item"><a href="{{route ('admin.maintenance.create-folder')}}" class="breadcrumb-link">Create Folder</a></li>
                                     </ol>
                                 </nav>
                             </div>
