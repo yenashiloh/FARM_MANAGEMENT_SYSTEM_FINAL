@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\UserLogin;
 use App\Models\FolderName;
 use App\Models\CoursesFile;
+use App\Models\Notification;
 
 class CoursesFileController extends Controller
 {
@@ -120,12 +121,12 @@ class CoursesFileController extends Controller
             $facultyInfo = json_decode($facultyInfoJson, true);
             $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester']; 
             $folder_name_id = $request->input('folder_name_id');
-    
+
             foreach ($request->file('files') as $index => $file) {
                 $path = $file->store('courses_files', 'public'); 
-                
                 $subject_name = $facultyInfo['faculty']['subjects'][$index]['name'] ?? null; 
-    
+                $fileSize = $file->getSize(); 
+
                 CoursesFile::create([
                     'files' => $path,
                     'original_file_name' => $file->getClientOriginalName(), 
@@ -133,26 +134,26 @@ class CoursesFileController extends Controller
                     'folder_name_id' => $folder_name_id,
                     'semester' => $semester,
                     'subject' => $subject_name, 
+                    'file_size' => $fileSize, 
                 ]);
             }
-    
+
             return redirect()->back()->with('success', 'Files uploaded successfully!');
         } catch (\Exception $e) {
             logger()->error('File upload failed: ' . $e->getMessage());
-    
+
             return redirect()->back()->with('error', 'File upload failed. Please try again.');
         }
     }
-    
     
     //update file
     public function update(Request $request)
     {
         $request->validate([
             'files.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480',
-            'existingFiles.*' => 'required|string', 
-            'semester' => 'required|string', 
-            'folder_name_id' => 'required|exists:folder_name,folder_name_id' 
+            'existingFiles.*' => 'required|string',
+            'semester' => 'required|string',
+            'folder_name_id' => 'required|exists:folder_name,folder_name_id'
         ]);
     
         try {
@@ -163,28 +164,49 @@ class CoursesFileController extends Controller
             foreach ($request->file('files') as $index => $file) {
                 if ($file) {
                     $path = $file->store('courses_files', 'public');
-                    
+    
                     $existingFileData = explode('|', $request->input("existingFiles.$index"));
-                    $existingFilePath = $existingFileData[0]; 
-                    $existingFileName = $existingFileData[1]; 
-                    $originalStatus = $request->input("originalStatus.$index"); // Get the original status
-                    
-                    // Determine the new status
+                    $existingFilePath = $existingFileData[0];
+                    $existingFileName = $existingFileData[1];
+                    $originalStatus = $request->input("originalStatus.$index");
+    
                     $newStatus = ($originalStatus === 'Declined') ? 'To Review' : $originalStatus;
     
                     if ($existingFilePath && Storage::disk('public')->exists($existingFilePath)) {
                         Storage::disk('public')->delete($existingFilePath);
                     }
-                    
-                    CoursesFile::where('files', $existingFilePath)->update([
-                        'files' => $path,
-                        'original_file_name' => $file->getClientOriginalName(),
-                        'user_login_id' => $userLoginId,
-                        'folder_name_id' => $folder_name_id,
-                        'semester' => $semester,
-                        'subject' => $request->input("subject.$index"), 
-                        'status' => $newStatus // Update the status to "To Review" if originally "Declined"
-                    ]);
+    
+                    $fileRecord = CoursesFile::where('files', $existingFilePath)->first();
+    
+                    if ($fileRecord) {
+                        $fileRecord->update([
+                            'files' => $path,
+                            'original_file_name' => $file->getClientOriginalName(),
+                            'user_login_id' => $userLoginId,
+                            'folder_name_id' => $folder_name_id,
+                            'semester' => $semester,
+                            'subject' => $request->input("subject.$index"),
+                            'status' => $newStatus
+                        ]);
+    
+                        $folderName = FolderName::find($folder_name_id)->folder_name;
+    
+                        $subject = $fileRecord->subject;
+    
+                        if ($originalStatus === 'Declined') {
+                            $adminUsers = UserLogin::where('role', 'admin')->get();
+                            foreach ($adminUsers as $admin) {
+                                Notification::create([
+                                    'courses_files_id' => $fileRecord->courses_files_id,
+                                    'user_login_id' => $admin->user_login_id,
+                                    'folder_name_id' => $folder_name_id,
+                                    'sender' => $this->getFacultyFullName(), 
+                                    'notification_message' => "re-uploaded the course {$subject} in {$folderName}.",
+                                    'is_read' => false
+                                ]);
+                            }
+                        }
+                    }
                 }
             }
     
@@ -204,6 +226,7 @@ class CoursesFileController extends Controller
             'files' => $files,
         ]);
     }
+    
     public function getFileDetails($id)
     {
         $file = CoursesFile::find($id);
@@ -215,5 +238,13 @@ class CoursesFileController extends Controller
         return response()->json($file);
     }
     
-   
+    public function getFacultyFullName()
+    {
+        $data = $this->getFacultyInfo();
+        $data = json_decode($data, true);
+        $faculty = $data['faculty'];
+    
+        return "{$faculty['first_name']} {$faculty['last_name']}";
+    }
+    
     }

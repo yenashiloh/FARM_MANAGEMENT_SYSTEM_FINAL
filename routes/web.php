@@ -7,37 +7,52 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\CoursesFileController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
 
 
-Route::get('/', [RoleController::class, 'showLoginForm'])->name('login');
+Route::get('/', [RoleController::class, 'showLandingPage'])->name('welcome');
+Route::get('login', [RoleController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [RoleController::class, 'login'])->name('login.post');
-Route::get('/', [RoleController::class, 'showLoginForm'])->name('login.form')->middleware(\App\Http\Middleware\PreventBackHistory::class);
+// Route::get('/', [RoleController::class, 'showLoginForm'])->name('login.form')->middleware(\App\Http\Middleware\PreventBackHistory::class);
 Route::post('/login', [RoleController::class, 'login'])->name('login.post')->middleware(\App\Http\Middleware\PreventBackHistory::class);
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role:faculty'])->group(function () {
     
     /****************************************FACULTY**************************************/
-    Route::get('/faculty-accomplishment', [FacultyController::class, 'accomplishmentPage'])->name('faculty.faculty-accomplishment'); //login page form
-    Route::post('/logout', [FacultyController::class, 'facultyLogout'])->name('logout'); //logout
+    Route::get('/faculty-accomplishment', [FacultyController::class, 'accomplishmentPage'])->name('faculty.faculty-accomplishment'); 
+    Route::post('/logout', [FacultyController::class, 'facultyLogout'])->name('logout'); 
     Route::get('/accomplishment/uploaded-files/{folder_name_id}', [FacultyController::class, 'showUploadedFiles'])->name('faculty.accomplishment.uploaded-files');
     Route::get('/faculty-info', [FacultyController::class, 'getFacultyInfo']);
     Route::post('/accomplishment/uploaded-files', [CoursesFileController::class, 'store'])->name('files.store');
     Route::get('/files/semester/{semester}', [CoursesFileController::class, 'getFilesBySemester']);
     Route::put('/files/update', [CoursesFileController::class, 'update'])->name('files.update');
-    
+    Route::get('/faculty-dashboard', [DashboardController::class, 'facultyDashboardPage'])->name('faculty.faculty-dashboard');
+    Route::get('/notifications/count', [NotificationController::class, 'getNotificationCount'])->name('notifications.count');
+    Route::post('/notifications/mark-read', [NotificationController::class, 'markNotificationsAsRead'])->name('notifications.mark-read');
+    Route::get('/notifications/list', [NotificationController::class, 'getNotificationList'])->name('notifications.list');
+    Route::get('/notifications', [NotificationController::class, 'getNotifications'])->name('notifications.get');
+    Route::get('/announcement', [FacultyController::class, 'announcementPage'])->name('faculty.announcement'); 
+});
 
-
-    /*****************************************ADMIN***************************************/
-   
+    /**************admin**********************ADMIN***************************************/
+    Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin-accomplishment', [AdminController::class, 'accomplishmentPage'])->name('admin.admin-accomplishment');
     Route::get('/accomplishment/admin-uploaded-files/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.admin-uploaded-files');
     Route::get('/accomplishment/view-accomplishment/{user_login_id}/{folder_name_id}', [AdminController::class, 'viewAccomplishmentFaculty'])->name('admin.accomplishment.view-accomplishment');
     Route::get('/file/approve/{courses_files_id}', [FileController::class, 'approve'])->name('approveFile');
     Route::post('/file/decline/{courses_files_id}', [FileController::class, 'decline'])->name('declineFile');
+    Route::get('/export/{folder_name_id}', [FileController::class, 'export'])->name('report.export');
+    Route::get('/report/export/not-passed/{folder_name_id}', [FileController::class, 'exportNotPassed'])->name('report.export.not_passed');
+    Route::delete('/files/{courses_files_id}', [FileController::class, 'destroy'])->name('deleteFile');
+    Route::get('/generate-all-reports/{semester}', [FileController::class, 'generateAllReports'])->name('generate.all.reports');
+
+    Route::get('generate-all-report-not-passed', [FileController::class, 'exportNotPassedReports'])->name('generate.all.report.not.passed');
+
+
 
     //Maintenance
     Route::get('/maintenance/create-folder', [MaintenanceController::class, 'folderMaintenancePage'])->name('admin.maintenance.create-folder');
@@ -47,18 +62,23 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin-dashboard', [DashboardController::class, 'adminDashboardPage'])->name('admin.admin-dashboard');
 
-    //Announcement
      //Announcement
      Route::get('/announcement/admin-announcement', [AnnouncementController::class, 'showAnnouncementPage'])->name('admin.announcement.admin-announcement');
      Route::get('/announcement/add-announcement', [AnnouncementController::class, 'showAddAnnouncementPage'])->name('admin.announcement.add-announcement');
      Route::post('/announcement/add-announcement', [AnnouncementController::class, 'saveAnnouncement'])->name('admin.announcement.save-announcement');
-     // Display the edit form
+    
+    //Announcement
      Route::get('admin/announcement/edit/{id_announcement}', [AnnouncementController::class, 'editAnnouncement'])->name('admin.announcement.edit-announcement');
-     // Update the announcement
      Route::post('admin/announcement/update/{id_announcement}', [AnnouncementController::class, 'updateAnnouncement'])->name('admin.announcement.update-announcement');
-     // Delete the announcement
      Route::delete('admin/announcement/delete/{id_announcement}', [AnnouncementController::class, 'deleteAnnouncement'])->name('admin.announcement.delete-announcement');
- 
      Route::get('admin/announcement/publish/{id_announcement}', [AnnouncementController::class, 'publishAnnouncement'])->name('admin.announcement.publish-announcement');
      Route::get('admin/announcement/unpublish/{id_announcement}', [AnnouncementController::class, 'unpublishAnnouncement'])->name('admin.announcement.unpublish-announcement');
+     
+     Route::get('/admin/notifications', [NotificationController::class, 'getAdminNotifications'])->name('admin.notifications.get');
+     Route::get('/admin/notifications/count', [NotificationController::class, 'getAdminNotificationCount'])->name('admin.notifications.count');
+     Route::post('/admin/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
+
+     Route::post('/admin/notifications/log-click', [NotificationController::class, 'logClick'])->name('admin.notifications.logClick');
+     
+
 });

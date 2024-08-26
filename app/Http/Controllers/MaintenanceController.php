@@ -5,23 +5,35 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserLogin;
 use App\Models\FolderName;
-
+use App\Models\Notification;
 
 class MaintenanceController extends Controller
 {
-     //show folder maintenance page
+    //show maintenance page
      public function folderMaintenancePage()
      {
          if (!auth()->check()) {
              return redirect()->route('login');
          }
      
+         $user = auth()->user();
+         $userDetails = $user->userDetails;
+     
+         $notifications = Notification::where('user_login_id', $user->user_login_id)
+             ->orderBy('created_at', 'desc')
+             ->get();
+     
+         $notificationCount = $notifications->where('is_read', 0)->count();
+     
          $folders = FolderName::all();
-         $folder = FolderName::first(); 
+         $folder = FolderName::first();
      
          return view('admin.maintenance.create-folder', [
              'folders' => $folders,
-             'folder' => $folder 
+             'folder' => $folder,
+             'userDetails' => $userDetails,
+             'notifications' => $notifications,
+             'notificationCount' => $notificationCount,
          ]);
      }
      
@@ -43,7 +55,7 @@ class MaintenanceController extends Controller
         return redirect()->route('admin.maintenance.create-folder')->with('success', 'Folder added successfully!');
     }
     
-    //update main folder
+    //update folder
     public function updateFolder(Request $request, $folder_name_id)
     {
         $request->validate([
@@ -61,7 +73,7 @@ class MaintenanceController extends Controller
                         ->with('updated_folder_id', $folder_name_id);
     }
 
-    //delete main folder
+    //delete folder
     public function deleteFolder($folder_name_id)
     {
         $deleted = FolderName::destroy($folder_name_id);

@@ -28,4 +28,10 @@ class UserLogin extends Authenticatable
     {
         return $this->hasMany(CoursesFile::class, 'user_login_id');
     }
+
+    public function userDetails()
+    {
+        return $this->hasOne(UserDetails::class, 'user_login_id');
+    }
+
 }

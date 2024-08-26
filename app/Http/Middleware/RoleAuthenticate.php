@@ -12,13 +12,19 @@ class RoleAuthenticate
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  $role
+     * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\Response
      */
-    public function handle(Request $request, Closure $next, $guard = null)
+    public function handle(Request $request, Closure $next, $role)
     {
-        if (!Auth::guard($guard)->check()) {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
 
-            return redirect()->route('login.form');
+        if (Auth::user()->role !== $role) {
+            return redirect()->route('login')->with('error', 'Access denied');
         }
 
         return $next($request);

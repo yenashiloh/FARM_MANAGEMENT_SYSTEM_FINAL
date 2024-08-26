@@ -8,10 +8,12 @@ use App\Models\UserLogin;
 use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Notification;
+use App\Http\Middleware\RoleAuthenticate;
+
 
 class FacultyController extends Controller
 {
-     public function getFacultyInfo()
+    public function getFacultyInfo()
     {
         $semester = [
             "id" => 1,
@@ -125,7 +127,6 @@ class FacultyController extends Controller
         ]);
     }
     
-
     //faculty logout
     public function facultyLogout(Request $request)
     {
@@ -153,7 +154,7 @@ class FacultyController extends Controller
         $files = CoursesFile::where('folder_name_id', $folder_name_id)
             ->where('user_login_id', auth()->id())
             ->get();
-
+    
         $filesWithSubjects = $files->map(function ($file) use ($facultyInfo) {
             $file->subject_name = $file->subject;
     
@@ -179,15 +180,76 @@ class FacultyController extends Controller
         $notifications = \App\Models\Notification::where('user_login_id', auth()->id())->get();
         $notificationCount = $notifications->count();
     
+        $folders = FolderName::all();
+
+        $facultyInfo = json_decode($this->getFacultyInfo(), true);
+        $firstName = $facultyInfo['faculty']['first_name'];
+        $lastName = $facultyInfo['faculty']['last_name'];
+    
+    
         return view('faculty.accomplishment.uploaded-files', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
-            'groupedFiles' => $files->groupBy('semester'),
+            'groupedFiles' => $groupedFiles,
             'semester' => $semester,
-            'subjects' => $facultyInfo['faculty']['subjects'] ?? [],
-            'filesWithSubjects' => $files,
+            'subjects' => $subjects,
+            'filesWithSubjects' => $filesWithSubjects,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
+            'folders' => $folders, 
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+        ]);
+    }
+    
+    //show announcement page
+    public function announcementPage()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+    
+        $userId = auth()->id();
+        $userEmail = auth()->user()->email; 
+    
+        $folders = FolderName::all();
+    
+        $notifications = \App\Models\Notification::where('user_login_id', $userId)->get();
+        $notificationCount = $notifications->count();
+    
+        $announcements = \App\Models\Announcement::where(function ($query) use ($userEmail) {
+            $query->where('type_of_recepient', 'All Faculty')
+                  ->orWhere('type_of_recepient', $userEmail);
+        })->where('published', 1) 
+          ->orderBy('created_at', 'desc') 
+          ->get();
+    
+        foreach ($announcements as $announcement) {
+            $emails = explode(',', $announcement->type_of_recepient);
+            if (count($emails) > 3) {
+                $announcement->displayEmails = array_slice($emails, 0, 3);
+                $announcement->moreEmailsCount = count($emails) - 3;
+            } else {
+                $announcement->displayEmails = $emails;
+                $announcement->moreEmailsCount = 0;
+            }
+        }
+
+        $folder = $folders->first(); 
+    
+        $facultyInfo = json_decode($this->getFacultyInfo(), true);
+        $firstName = $facultyInfo['faculty']['first_name'];
+        $lastName = $facultyInfo['faculty']['last_name'];
+    
+
+        return view('faculty.announcement', [
+            'folders' => $folders,
+            'folder' => $folder, 
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'announcements' => $announcements,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
         ]);
     }
     

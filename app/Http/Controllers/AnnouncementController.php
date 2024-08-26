@@ -8,73 +8,102 @@ use App\Models\UserLogin;
 use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Announcement;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Validator;
 
 
 class AnnouncementController extends Controller
 {
-      // Show Announcement Page
+      // show Announcement Page
       public function showAnnouncementPage()
       {
           if (!auth()->check()) {
               return redirect()->route('login');
           }
       
-          $userLoginId = auth()->user()->user_login_id;
-          $userRole = auth()->user()->role; // Assuming role is stored in the user model
+          $user = auth()->user();
+          $userDetails = $user->userDetails; 
+          $userLoginId = $user->user_login_id;
+          $userRole = $user->role;
       
-          // Fetch faculty emails
+          $notifications = Notification::where('user_login_id', $user->user_login_id)
+          ->orderBy('created_at', 'desc')
+          ->get();
+  
+          $notificationCount = $notifications->where('is_read', 0)->count();
+
           $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
       
-          // Fetch all folders and the first folder
           $folders = FolderName::all();
           $folder = FolderName::first();
       
-          // Fetch announcements
           $announcements = Announcement::orderBy('created_at', 'desc')->get()->filter(function ($announcement) use ($userLoginId, $userRole, $facultyEmails) {
-              // If the user is an admin, they see all announcements
               if ($userRole === 'admin') {
                   return true;
               }
       
-              // If the announcement is for all faculty
               if ($announcement->type_of_recepient === 'All Faculty') {
-                  return $userRole === 'faculty'; // Ensure the current user is a faculty member
+                  return $userRole === 'faculty'; 
               }
       
-              // If the announcement is for specific emails
               $recipientEmails = explode(', ', $announcement->type_of_recepient);
               $currentUserEmail = UserLogin::where('user_login_id', $userLoginId)->pluck('email')->first();
       
               return in_array($currentUserEmail, $recipientEmails);
           });
       
+          foreach ($announcements as $announcement) {
+              $emails = explode(', ', $announcement->type_of_recepient);
+              if (count($emails) > 3) {
+                  $announcement->displayEmails = array_slice($emails, 0, 3);
+                  $announcement->moreEmailsCount = count($emails) - 3;
+              } else {
+                  $announcement->displayEmails = $emails;
+                  $announcement->moreEmailsCount = 0;
+              }
+          }
+      
           return view('admin.announcement.admin-announcement', [
               'announcements' => $announcements,
               'folders' => $folders,
               'folder' => $folder,
               'facultyEmails' => $facultyEmails,
+              'userDetails' => $userDetails,
+              'notifications' => $notifications,
+              'notificationCount' => $notificationCount,
           ]);
       }
       
-      
-      
-      //Show Add Announcement Page
+      //show Add Announcement Page
       public function showAddAnnouncementPage()
       {
         $folders = FolderName::all();
-        $folder = FolderName::first(); 
+        $folder = FolderName::first();
+
+        $user = auth()->user();
+        $userDetails = $user->userDetails; 
+
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        $notificationCount = $notifications->where('is_read', 0)->count();
+
+
         $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
 
           return view('admin.announcement.add-announcement', [
             'folders' => $folders,
             'folder' => $folder,
             'facultyEmails' => $facultyEmails,
+            'userDetails' => $userDetails,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
         ]);
       }
       
       
-      // Save the Announcement
+      //save the Announcement
       public function saveAnnouncement(Request $request)
       {
           $validator = Validator::make($request->all(), [
@@ -87,19 +116,15 @@ class AnnouncementController extends Controller
               return redirect()->back()->withErrors($validator)->withInput();
           }
       
-          // Retrieve selected recipient emails from the request
           $recipientEmails = $request->input('recipient_emails', []);
           
-          // Check if 'all-faculty' is the only selected option
           if ($recipientEmails === ['all-faculty']) {
               $recipientEmailsString = 'All Faculty';
           } else {
-              // Remove 'all-faculty' if it's in the array along with other emails
               $recipientEmails = array_diff($recipientEmails, ['all-faculty']);
               $recipientEmailsString = !empty($recipientEmails) ? implode(', ', $recipientEmails) : 'No Recipients Selected';
           }
       
-          // Create a new announcement
           $announcement = new Announcement();
           $announcement->subject = $request->input('announcement_subject');
           $announcement->message = $request->input('announcement_message');
@@ -112,63 +137,63 @@ class AnnouncementController extends Controller
           return redirect()->route('admin.announcement.admin-announcement');
       }
       
-      
-  
-      // Edit Page
+
+      //edit Page
       public function showEditPage()
       {
           if (!auth()->check()) {
               return redirect()->route('login');
           }
       
-          // Fetch all folders
+          $notifications = Notification::where('user_login_id', $user->user_login_id)
+          ->orderBy('created_at', 'desc')
+          ->get();
+  
+          
           $folders = FolderName::all();
           
-          // Fetch the first folder or adjust as needed
           $folder = FolderName::first(); 
-      
-          // Optionally fetch other data if needed in the edit view
-          // If you need to provide `$announcements` and `$facultyEmails`, fetch them here
-          // Uncomment if needed:
-          // $announcements = Announcement::all();
-          // $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
       
           return view('admin.announcement.edit-announcement', [
               'folders' => $folders,
               'folder' => $folder,
-              // Uncomment if needed:
-              // 'announcements' => $announcements,
-              // 'facultyEmails' => $facultyEmails,
+              'notifications' => $notifications,
           ]);
       }
-      
   
-      // Display the edit form
+      //display the edit form
       public function editAnnouncement($id_announcement)
       {
           if (!auth()->check()) {
               return redirect()->route('login');
           }
+
+          $user = auth()->user();
+          $userDetails = $user->userDetails; 
       
-          // Fetch all folders
           $folders = FolderName::all();
+
+          $notifications = Notification::where('user_login_id', $user->user_login_id)
+          ->orderBy('created_at', 'desc')
+          ->get();
+  
+          $notificationCount = $notifications->where('is_read', 0)->count();
+
       
-          // Fetch faculty emails
           $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
-      
-          // Fetch the announcement by ID
           $announcement = Announcement::findOrFail($id_announcement);
       
-          // Return the view with the announcement, folders, and faculty emails data
           return view('admin.announcement.edit-announcement', [
               'announcement' => $announcement,
               'folders' => $folders,
               'facultyEmails' => $facultyEmails,
+              'userDetails' => $userDetails,
+              'notifications' => $notifications,
+              'notificationCount' => $notificationCount,
           ]);
       }
       
-  
-      // Update the announcement
+      //update the announcement
       public function updateAnnouncement(Request $request, $id_announcement)
       {
           $validator = Validator::make($request->all(), [
@@ -189,7 +214,7 @@ class AnnouncementController extends Controller
           return redirect()->route('admin.announcement.admin-announcement'); 
       }
   
-      //Delete the Announcement
+      //delete the Announcement
       public function deleteAnnouncement($id_announcement)
       {
           $announcement = Announcement::findOrFail($id_announcement);
@@ -198,7 +223,7 @@ class AnnouncementController extends Controller
           return response()->json(['success' => 'Announcement deleted successfully.']);
       }
   
-      // Publish and Unpublish the announcement
+      //publish and unpublish the announcement
       public function publishAnnouncement($id_announcement)
       {
           $announcement = Announcement::findOrFail($id_announcement);
@@ -208,6 +233,7 @@ class AnnouncementController extends Controller
           return redirect()->back()->with('success', 'Announcement published successfully!');
       }
       
+      //unpublish
       public function unpublishAnnouncement($id_announcement)
       {
           $announcement = Announcement::findOrFail($id_announcement);

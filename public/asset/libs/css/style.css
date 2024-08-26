@@ -1124,6 +1124,7 @@ Top Header
 
 .notification-dropdown {
     min-width: 320px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .notification-dropdown,
@@ -1166,6 +1167,9 @@ Top Header
     text-decoration: none;
     background-color: #f7f7fb;
 }
+.new-notification {
+    background-color: #f8f8f8;
+}
 
 .notification-list .list-group-item:last-child {}
 
@@ -1175,7 +1179,6 @@ Top Header
     display: block;
     font-size: 11px;
     margin-top: 4px;
-    text-transform: uppercase;
     color: #71748d;
 }
 
@@ -1230,19 +1233,29 @@ Top Header
     color: #fff;
 }
 
-.indicator {
-    content: '';
-    position: absolute;
-    top: 16px;
-    right: 23px;
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 100%;
-    background-color: #ef172c;
-    animation: .9s infinite beatHeart;
-    transform-origin: center;
+.nav-icons {
+    position: relative;
 }
+
+.indicator {
+    position: absolute;
+    top: 8px; 
+    right: 13px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 18px; 
+    height: 18px; 
+    border-radius: 50%;
+    background-color: #ef172c;
+    color: white;
+    font-size: 12px; 
+    font-weight: bold;
+    text-align: center;
+}
+
+
+
 
 @keyframes beatHeart {
     0% {
@@ -1315,7 +1328,7 @@ Top Header
 .nav-user-name {}
 
 .nav-user-info {
-    background-color: #5969ff;
+    background-color: #800000;
     line-height: 1.4;
     padding: 12px;
     color: #fff;
@@ -4010,8 +4023,8 @@ Pills vertical
 .page-item.active .page-link {
     z-index: 1;
     color: #fff;
-    background-color: #5969ff;
-    border-color: #5969ff;
+    background-color: #800000; 
+    border-color: #800000; 
 }
 
 
@@ -6843,4 +6856,38 @@ Media Query
 .sub-title {
     font-size: 11px;
     color: #6c757d;
+}
+.loading-spinner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #800000;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.dashboard-wrapper {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.dashboard-wrapper.visible {
+    opacity: 1;
 }

@@ -8,7 +8,7 @@ use App\Models\UserLogin;
 use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Announcement;
-
+use App\Models\Notification;
 
 class AdminController extends Controller
 {
@@ -107,6 +107,7 @@ class AdminController extends Controller
         return json_encode($data);
     }
     
+    //show accomplishment page
     public function accomplishmentPage()
     {
         if (!auth()->check()) {
@@ -126,25 +127,34 @@ class AdminController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
+    
+        $user = auth()->user();
+        $userDetails = $user->userDetails; 
+    
         $folder = FolderName::find($folder_name_id);
-
+    
         if (!$folder) {
             return redirect()->route('faculty.faculty-accomplishment')->with('error', 'Folder not found.');
         }
-
+    
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        $notificationCount = $notifications->where('is_read', 0)->count();
+    
         $facultyInfo = json_decode($this->getFacultyInfo(), true);
         $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester'];
         $files = CoursesFile::where('folder_name_id', $folder_name_id)->get();
-
+    
         $faculty = $facultyInfo['faculty'];
         $userIdToName = [$faculty['faculty_id'] => $faculty['first_name'] . ' ' . $faculty['last_name']];
-
+    
         $filesWithSubjects = $files->map(function ($file) use ($facultyInfo, $userIdToName) {
             $file->subject_name = $file->subject;
-
+    
             $subjectInfo = collect($facultyInfo['faculty']['subjects'])->firstWhere('name', $file->subject);
-
+    
             if ($subjectInfo) {
                 $file->year = $subjectInfo['year_programs'][0]['year'] ?? 'N/A';
                 $file->program = $subjectInfo['year_programs'][0]['program'] ?? 'N/A';
@@ -154,19 +164,19 @@ class AdminController extends Controller
                 $file->program = 'N/A';
                 $file->code = 'N/A';
             }
-
+    
             $file->user_name = $userIdToName[$file->user_login_id] ?? 'N/A';
-
+    
             return $file;
         });
-
+    
         $groupedFiles = $filesWithSubjects->groupBy('semester');
-
+    
         $subjects = $facultyInfo['faculty']['subjects'] ?? [];
         $user_login_id = $files->first()->user_login_id ?? null;
-
+    
         $folders = FolderName::all();
-
+    
         return view('admin.accomplishment.admin-uploaded-files', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
@@ -178,6 +188,9 @@ class AdminController extends Controller
             'user_login_id' => $user_login_id, 
             'folder_name_id' => $folder_name_id, 
             'folders' => $folders, 
+            'userDetails' => $userDetails,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
         ]);
     }
 
@@ -188,12 +201,21 @@ class AdminController extends Controller
             return redirect()->route('login');
         }
     
+        $user = auth()->user();
+        $userDetails = $user->userDetails; 
+
         $folder = FolderName::find($folder_name_id);
     
         if (!$folder) {
             return redirect()->route('faculty.faculty-accomplishment')->with('error', 'Folder not found.');
         }
     
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        $notificationCount = $notifications->where('is_read', 0)->count();
+
         $facultyInfo = json_decode($this->getFacultyInfo(), true);
         $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester'];
         
@@ -237,12 +259,9 @@ class AdminController extends Controller
             'filesWithSubjects' => $filesWithSubjects,
             'files' => $files,
             'folders' => $folders, 
+            'userDetails' => $userDetails,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
         ]);
     }
-    
-
-
-    
-    
-
 }

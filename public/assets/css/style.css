@@ -424,3 +424,7 @@ select.form-select {
   .notification-text {
     font-size: 20px;
   }
+
+  .new-notification {
+    background-color: #e0e7eb;
+}

@@ -6,15 +6,15 @@
     @include('partials.admin-header')
     <link rel="stylesheet" href="../../../../asset/vendor/select2/css/select2.css">
     <link rel="stylesheet" href="../../../../asset/vendor/summernote/css/summernote-bs4.css">
-
-
     <title>Announcement</title>
 
 </head>
 
 <body>
     @include('partials.admin-sidebar')
-
+    <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
     <div class="dashboard-wrapper">
         <div class="dashboard-ecommerce">
             <div class="container-fluid dashboard-content">
@@ -38,7 +38,7 @@
                                         </li>
                                         <li class="breadcrumb-item">
                                             <a href="{{ route('admin.announcement.add-announcement') }}"
-                                                class="breadcrumb-link">Add Announcement</a>
+                                                class="breadcrumb-link">Edit</a>
                                         </li>
                                     </ol>
                                 </nav>
@@ -141,6 +141,7 @@
     <script src="../../../../asset/vendor/summernote/js/summernote-bs4.js"></script>
     <script src="../../../../asset/libs/js/main-js.js"></script>
     <script src="../../../../asset/vendor/timeline/js/announcement-js."></script>
+    <script src="../../../../asset/vendor/datatables/js/loading.js"></script>
     <script>
         $(document).ready(function() {
             $('.js-example-basic-multiple').select2({

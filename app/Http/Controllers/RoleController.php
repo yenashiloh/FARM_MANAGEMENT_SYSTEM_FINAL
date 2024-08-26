@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\UserLogin;
+use App\Models\Announcement;
 
 class RoleController extends Controller
 {
@@ -35,11 +36,22 @@ class RoleController extends Controller
             case 'admin':
                 return redirect()->route('admin.admin-dashboard');
             case 'faculty':
-                return redirect()->route('faculty.faculty-accomplishment');
+                return redirect()->route('faculty.faculty-dashboard');
             case 'director':
                 return redirect()->route('director-accomplishment');
             default:
                 return redirect()->back()->with('error', 'Invalid role.');
         }
+    }
+
+    //landing page
+    public function showLandingPage()
+    {
+        $announcement = Announcement::where('type_of_recepient', 'All Faculty')
+                                    ->where('published', 1) 
+                                    ->orderBy('created_at', 'desc')
+                                    ->first();
+        
+        return view('welcome', ['announcement' => $announcement]);
     }
 }

@@ -19,7 +19,8 @@ class CoursesFile extends Model
         'original_file_name',
         'subject',
         'status',
-        'declined_reason'
+        'declined_reason',
+        'file_size' 
     ];
 
     public function userLogin()
@@ -30,6 +31,22 @@ class CoursesFile extends Model
     public function folderName()
     {
         return $this->belongsTo(FolderName::class, 'folder_name_id', 'folder_name_id');
+    }
+
+    public function getFormattedFileSizeAttribute()
+    {
+        $bytes = $this->file_size;
+        if ($bytes >= 1073741824) {
+            $size = number_format($bytes / 1073741824, 2) . ' GB';
+        } elseif ($bytes >= 1048576) {
+            $size = number_format($bytes / 1048576, 2) . ' MB';
+        } elseif ($bytes >= 1024) {
+            $size = number_format($bytes / 1024, 2) . ' KB';
+        } else {
+            $size = $bytes . ' bytes';
+        }
+
+        return $size;
     }
     
 }

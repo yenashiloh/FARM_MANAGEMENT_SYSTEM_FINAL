@@ -9,12 +9,16 @@ class Notification extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'id';
+    protected $table = 'notifications';
+
     protected $fillable = [
         'courses_files_id',
         'user_login_id',
         'folder_name_id',
         'sender',
         'notification_message',
+        'is_read',
     ];
 
     public function coursesFile()
@@ -31,4 +35,6 @@ class Notification extends Model
     {
         return $this->belongsTo(FolderName::class, 'folder_name_id');
     }
+
+    
 }
