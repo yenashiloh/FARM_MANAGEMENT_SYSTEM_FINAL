@@ -19,14 +19,13 @@ class NotificationController extends Controller
         $count = Notification::where('user_login_id', Auth::id())
                               ->where('is_read', false)
                               ->count();
-        \Log::info('Notification count for user ' . Auth::id() . ': ' . $count);
         return response()->json(['count' => $count]);
     }
 
     public function markNotificationsAsRead(Request $request)
     {
         $notificationId = $request->input('notification_id');
-
+    
         if ($notificationId) {
             Notification::where('id', $notificationId)
                         ->where('user_login_id', Auth::id())
@@ -36,9 +35,10 @@ class NotificationController extends Controller
                         ->where('is_read', false)
                         ->update(['is_read' => true]);
         }
-
+    
         return response()->json(['status' => 'success']);
     }
+    
 
     //get faculty notification
     public function getNotifications()
@@ -88,6 +88,7 @@ class NotificationController extends Controller
         return response()->json(['notifications' => $notifications]);
     }
 
+    //get the admin notification count
     public function getAdminNotificationCount()
     {
         if (!auth()->check() || auth()->user()->role !== 'admin') {
@@ -102,29 +103,32 @@ class NotificationController extends Controller
     }
     
     //mark as read
+
+
     public function markAsRead(Request $request)
     {
-        Log::info('Mark as read request received', ['request' => $request->all()]);
+        try {
+            $notificationId = $request->input('notification_id');
+            
+            if (!$notificationId) {
+                return response()->json(['status' => 'error', 'message' => 'Notification ID is required'], 400);
+            }
     
-        $validatedData = $request->validate([
-            'notification_ids' => 'required|array',
-            'notification_ids.*' => 'integer|exists:notifications,id',
-        ]);
+            $updated = Notification::where('id', $notificationId)
+                        ->where('user_login_id', Auth::id())
+                        ->update(['is_read' => true]);
     
-        $updated = Notification::whereIn('id', $validatedData['notification_ids'])
-            ->where('user_login_id', auth()->id())
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
-    
-        if ($updated) {
-            Log::info('Notifications marked as read', ['notification_ids' => $validatedData['notification_ids']]);
-            return response()->json(['message' => 'Notifications marked as read successfully.']);
-        } else {
-            Log::warning('No notifications were updated', ['notification_ids' => $validatedData['notification_ids']]);
-            return response()->json(['message' => 'No notifications were updated.'], 400);
+            if ($updated) {
+                return response()->json(['status' => 'success']);
+            } else {
+                return response()->json(['status' => 'error', 'message' => 'Notification not found or already read'], 404);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error marking notification as read: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'An error occurred'], 500);
         }
     }
-
+    
     //log click
     public function logClick(Request $request)
     {

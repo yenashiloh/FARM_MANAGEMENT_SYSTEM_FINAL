@@ -21,6 +21,10 @@ class Notification extends Model
         'is_read',
     ];
 
+    protected $casts = [
+        'is_read' => 'boolean',
+    ];
+    
     public function coursesFile()
     {
         return $this->belongsTo(CoursesFile::class, 'courses_files_id');

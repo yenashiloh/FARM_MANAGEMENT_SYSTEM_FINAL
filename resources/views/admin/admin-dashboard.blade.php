@@ -5,7 +5,6 @@
     <!-- Required meta tags -->
     @include('partials.admin-header')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Dashboard</title>
     <style>

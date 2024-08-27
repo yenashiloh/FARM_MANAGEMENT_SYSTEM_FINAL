@@ -12,6 +12,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\AdminEditDetailsController;
 use App\Http\Controllers\DirectorController;
+use App\Http\Controllers\MarkAsReadController;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
 use App\Http\Middleware\DirectorAuthenticate;
@@ -82,7 +83,7 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
      //Notification
      Route::get('/admin/notifications', [NotificationController::class, 'getAdminNotifications'])->name('admin.notifications.get');
      Route::get('/admin/notifications/count', [NotificationController::class, 'getAdminNotificationCount'])->name('admin.notifications.count');
-     Route::post('/admin/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
+     Route::post('/notifications/mark-as-read', [MarkAsReadController::class, 'markAsRead'])->name('notifications.markAsRead');
      Route::post('/admin/notifications/log-click', [NotificationController::class, 'logClick'])->name('admin.notifications.logClick');
      
      //View Admin Account
