@@ -44,7 +44,14 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
     {
         $data = collect();
         
-        $count = 1; 
+        $rowData = [
+            'no' => 1,
+            'date_submitted' => $this->getLatestSubmissionDate(),
+            'faculty_name' => $this->facultyInfo['faculty']['first_name'] . ' ' . 
+                              $this->facultyInfo['faculty']['middle_name'] . ' ' . 
+                              $this->facultyInfo['faculty']['last_name'],
+            'semester' => $this->semester,
+        ];
         
         foreach ($this->mainFolders as $mainFolder) {
             foreach ($this->subFolders[$mainFolder] as $subFolder) {
@@ -53,21 +60,12 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
                     ->where('semester', $this->semester)
                     ->count();
                 
-                if ($fileCount > 0) {
-                    $rowData = [
-                        'no' => $count++, 
-                        'date_submitted' => Carbon::now()->setTimezone('Asia/Manila')->format('F d, Y, h:i A'),
-                        'faculty_name' => $this->facultyInfo['faculty']['first_name'] . ' ' . 
-                                          $this->facultyInfo['faculty']['middle_name'] . ' ' . 
-                                          $this->facultyInfo['faculty']['last_name'],
-                        'semester' => $this->semester,
-                        $subFolder['folder_name'] => $fileCount
-                    ];
-                    
-                    $data->push($rowData);
-                }
+                $key = $mainFolder . '|' . $subFolder['folder_name'];
+                $rowData[$key] = $fileCount > 0 ? $fileCount : 'X';
             }
         }
+        
+        $data->push($rowData);
         
         return $data;
     }
@@ -97,7 +95,8 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
 
         foreach ($this->mainFolders as $mainFolder) {
             foreach ($this->subFolders[$mainFolder] as $subFolder) {
-                $mappedRow[] = $row[$subFolder['folder_name']] ?? 'X';
+                $key = $mainFolder . '|' . $subFolder['folder_name'];
+                $mappedRow[] = $row[$key];
             }
         }
 
@@ -108,37 +107,37 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
 
     public function styles(Worksheet $sheet)
     {
-    $lastColumn = $sheet->getHighestColumn();
-    
-    $startCol = 'D';
-    $endCol = $startCol;
-    
-    $folderColors = [
-        'Test Administration' => 'C6EFCE',
-        'Classroom Management' => 'F9C3C3',
-        'Syllabus Preparation' => 'FFEFB6',
-    ];
-    
-    foreach ($this->mainFolders as $mainFolder) {
-        $subFolderCount = count($this->subFolders[$mainFolder]);
-        $endCol = chr(ord($startCol) + $subFolderCount - 1);
+        $lastColumn = $sheet->getHighestColumn();
         
-        $sheet->setCellValue("{$startCol}1", strtoupper($mainFolder));
-        $sheet->mergeCells("{$startCol}1:{$endCol}1");
-        $sheet->getStyle("{$startCol}1:{$endCol}1")->applyFromArray([
-            'font' => ['bold' => true],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => $folderColors[$mainFolder]]],
-            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
-        ]);
+        $startCol = 'D';
+        $endCol = $startCol;
         
-        $sheet->getStyle("{$startCol}2:{$endCol}2")->applyFromArray([
-            'font' => ['bold' => true],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => $folderColors[$mainFolder]]],
-            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
-        ]);
+        $folderColors = [
+            'Test Administration' => 'C6EFCE',
+            'Classroom Management' => 'F9C3C3',
+            'Syllabus Preparation' => 'FFEFB6',
+        ];
         
-        $startCol = chr(ord($endCol) + 1);
-    }
+        foreach ($this->mainFolders as $mainFolder) {
+            $subFolderCount = count($this->subFolders[$mainFolder]);
+            $endCol = chr(ord($startCol) + $subFolderCount - 1);
+            
+            $sheet->setCellValue("{$startCol}1", strtoupper($mainFolder));
+            $sheet->mergeCells("{$startCol}1:{$endCol}1");
+            $sheet->getStyle("{$startCol}1:{$endCol}1")->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => $folderColors[$mainFolder]]],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+            ]);
+            
+            $sheet->getStyle("{$startCol}2:{$endCol}2")->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => $folderColors[$mainFolder]]],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+            ]);
+            
+            $startCol = chr(ord($endCol) + 1);
+        }
         
         $sheet->getRowDimension(1)->setRowHeight(20);
         $sheet->getStyle("A1:{$lastColumn}1")->applyFromArray([
@@ -175,7 +174,6 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
         
         return [];
     }
-    
     
     private function getFacultyInfo()
     {
@@ -270,5 +268,15 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
         ];
     
         return $data;
+    }
+
+    private function getLatestSubmissionDate()
+    {
+        $latestFile = CoursesFile::where('user_login_id', $this->facultyInfo['faculty']['faculty_id'])
+            ->where('semester', $this->semester)
+            ->latest('created_at')
+            ->first();
+
+        return $latestFile ? $latestFile->created_at->setTimezone('Asia/Manila')->format('F d, Y, h:i A') : 'N/A';
     }
 }
