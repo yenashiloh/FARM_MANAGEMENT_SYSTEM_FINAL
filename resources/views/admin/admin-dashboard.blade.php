@@ -13,6 +13,14 @@
             font-size: 30px;
             color: #800000;
         }
+        .small-chart {
+            width: 50vw; 
+            height: 50vw;
+            max-width: 400px;
+            max-height: 400px; 
+            display: block; 
+        }
+
     </style>
 </head>
 
@@ -144,6 +152,16 @@
                         <div class="row">
                             <div class="col-sm-12 col-12">
                                 <div class="card">
+                                    <h5 class="card-header">Status Rates</h5>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-center">
+                                            <canvas id="statusPieChart" class="small-chart" style="width: 50%; height: 200px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-12">
+                                <div class="card">
                                     <h5 class="card-header">Submitted Files per Requirement</h5>
                                     <div class="card-body">
                                         <div class="d-flex justify-content-center">
@@ -163,18 +181,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-12">
-                                <div class="card">
-                                    <h5 class="card-header">Status Rates</h5>
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-center">
-                                            <canvas id="statusPieChart" style="height: 100px; width: auto;"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                           
+
                         </div>
                     </div>
                 </div>
