@@ -264,4 +264,69 @@ class AdminController extends Controller
             'notificationCount' => $notificationCount,
         ]);
     }
+
+    //show admin account
+    public function adminAccountPage()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+    
+        $user = auth()->user();
+        $userDetails = $user->userDetails;
+    
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        $notificationCount = $notifications->where('is_read', 0)->count();
+    
+        $folders = FolderName::all();
+    
+        return view('admin.admin-account', [
+            'folders' => $folders,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'userDetails' => $userDetails,
+            'user' => $user, 
+        ]);
+    }
+
+    //update account
+    public function updateAccount(Request $request)
+    {
+        $user = auth()->user();
+        $userDetails = $user->userDetails;
+
+        $request->validate([
+            'first-name' => 'required|string|max:255',
+            'last-name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'contact-number' => 'required|numeric',
+            'recent-password' => 'required_with:new-password|current_password', 
+            'new-password' => 'nullable|confirmed|min:6', 
+            'confirm-password' => 'nullable|same:new-password', 
+        ]);
+
+        $user->update([
+            'email' => $request->input('email'),
+            'password' => $request->input('new-password') ? bcrypt($request->input('new-password')) : $user->password,
+        ]);
+
+        $userDetails->update([
+            'first_name' => $request->input('first-name'),
+            'last_name' => $request->input('last-name'),
+            'phone_number' => $request->input('contact-number'),
+        ]);
+
+        return redirect()->route('admin.admin-account')->with('success', 'Account details updated successfully!');
+    }
+
+    public function adminLogout(Request $request)
+    {
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return response()->json(['success' => true]);
+    }
 }

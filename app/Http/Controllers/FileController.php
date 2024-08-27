@@ -213,5 +213,30 @@ class FileController extends Controller
         return Excel::download(new GenerateAllReports($semester), 'faculty_report.xlsx');
     }
 
+    public function deleteSelectedFiles(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        // Delete related notifications
+        Notification::whereIn('courses_files_id', $ids)->delete();
+
+        // Delete selected files
+        CoursesFile::whereIn('courses_files_id', $ids)->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    // Method to delete all files
+    public function deleteAllFiles(Request $request)
+    {
+        // Delete related notifications
+        Notification::whereIn('courses_files_id', CoursesFile::pluck('courses_files_id'))->delete();
+
+        // Delete all files
+        CoursesFile::truncate();
+
+        return response()->json(['success' => true]);
+    }
+
 
 }

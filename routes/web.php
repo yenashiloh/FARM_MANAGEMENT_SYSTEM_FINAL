@@ -10,6 +10,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\AdminEditDetailsController;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
 
@@ -39,7 +40,8 @@ Route::middleware(['auth', 'role:faculty'])->group(function () {
 });
 
     /**************admin**********************ADMIN***************************************/
-    Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], function () {
+
     Route::get('/admin-accomplishment', [AdminController::class, 'accomplishmentPage'])->name('admin.admin-accomplishment');
     Route::get('/accomplishment/admin-uploaded-files/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.admin-uploaded-files');
     Route::get('/accomplishment/view-accomplishment/{user_login_id}/{folder_name_id}', [AdminController::class, 'viewAccomplishmentFaculty'])->name('admin.accomplishment.view-accomplishment');
@@ -50,9 +52,8 @@ Route::middleware(['auth', 'role:faculty'])->group(function () {
     Route::delete('/files/{courses_files_id}', [FileController::class, 'destroy'])->name('deleteFile');
     Route::get('/generate-all-reports/{semester}', [FileController::class, 'generateAllReports'])->name('generate.all.reports');
 
-    Route::get('generate-all-report-not-passed', [FileController::class, 'exportNotPassedReports'])->name('generate.all.report.not.passed');
-
-
+    Route::post('/delete-selected-files', [FileController::class, 'deleteSelectedFiles']);
+    Route::post('/delete-all-files', [FileController::class, 'deleteAllFiles']);
 
     //Maintenance
     Route::get('/maintenance/create-folder', [MaintenanceController::class, 'folderMaintenancePage'])->name('admin.maintenance.create-folder');
@@ -80,5 +81,9 @@ Route::middleware(['auth', 'role:faculty'])->group(function () {
 
      Route::post('/admin/notifications/log-click', [NotificationController::class, 'logClick'])->name('admin.notifications.logClick');
      
+     //View Admin Account
+     Route::get('/admin-account', [AdminController::class, 'adminAccountPage'])->name('admin.admin-account');
+     Route::post('/update-account', [AdminController::class, 'updateAccount'])->name('updateAccount');
+     Route::post('/logout', [AdminController::class, 'adminLogout'])->name('logout');
 
 });

@@ -113,9 +113,11 @@ class DashboardController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
+
+        $userId = auth()->id();
+
     
         $user = auth()->user();
-    
         if ($user->role !== 'admin') {
             return redirect()->route('login');
         }
@@ -125,7 +127,6 @@ class DashboardController extends Controller
             ->get();
     
         $notificationCount = $notifications->where('is_read', 0)->count();
-
     
         $userDetails = $user->userDetails; 
     

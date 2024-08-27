@@ -65,8 +65,6 @@
                          </ul>
                      </li>
 
-
-
                      <li class="nav-item dropdown nav-user">
                          <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
                              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -80,8 +78,8 @@
                                  </h5>
                                  <span style="font-size:12px;">Admin</span>
                              </div>
-                             {{-- <a class="dropdown-item" href="#"><i class="fas fa-user mr-2"></i>Account</a>
-                             <a class="dropdown-item" href="#"><i class="fas fa-cog mr-2"></i>Setting</a> --}}
+                             <a class="dropdown-item" href="{{route ('admin.admin-account')}}"><i class="fas fa-user mr-2"></i>Account</a>
+
                              <a class="dropdown-item" href="#" id="logout-link">
                                  <i class="fas fa-power-off mr-2"></i>Logout
                              </a>
@@ -213,48 +211,52 @@
  <script>
      //logout
      document.getElementById('logout-link').addEventListener('click', function(e) {
-         e.preventDefault();
+        e.preventDefault();
 
-         Swal.fire({
-             title: 'Logout',
-             text: "Are you sure you want to logout?",
-             icon: 'question',
-             showCancelButton: true,
-             confirmButtonColor: '#3085d6',
-             cancelButtonColor: '#d33',
-             confirmButtonText: 'Yes, log me out!'
-         }).then((result) => {
-             if (result.isConfirmed) {
-                 fetch('{{ route('logout') }}', {
-                         method: 'POST',
-                         headers: {
-                             'Content-Type': 'application/json',
-                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                         },
-                         credentials: 'same-origin'
-                     })
-                     .then(response => {
-                         if (response.ok) {
-                             window.location.href = '{{ route('login') }}';
-                         } else {
-                             Swal.fire(
-                                 'Error!',
-                                 'Logout failed.',
-                                 'error'
-                             );
-                         }
-                     })
-                     .catch(error => {
-                         Swal.fire(
-                             'Error!',
-                             'An unexpected error occurred.',
-                             'error'
-                         );
-                         console.error('Error:', error);
-                     });
-             }
-         });
-     });
+        Swal.fire({
+            title: 'Logout',
+            text: "Are you sure you want to logout?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, log me out!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('{{ route('logout') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        '_token': '{{ csrf_token() }}'
+                    })
+                })
+                .then(response => response.json()) // Parse JSON response
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '{{ route('login') }}';
+                    } else {
+                        Swal.fire(
+                            'Error!',
+                            'Logout failed.',
+                            'error'
+                        );
+                    }
+                })
+                .catch(error => {
+                    Swal.fire(
+                        'Error!',
+                        'An unexpected error occurred.',
+                        'error'
+                    );
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
 
      //notification
      $(document).ready(function() {

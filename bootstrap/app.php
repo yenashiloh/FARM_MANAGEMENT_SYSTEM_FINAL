@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
             'role' => \App\Http\Middleware\RoleAuthenticate::class,
+            'prevent-back-history' => PreventBackHistory::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
