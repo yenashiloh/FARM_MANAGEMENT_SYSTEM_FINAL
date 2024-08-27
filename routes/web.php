@@ -93,7 +93,7 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     /************************************DIRECTOR***************************************/
 Route::group(['middleware' => ['auth', 'role:director', 'prevent-back-history']], function () {
 
-    Route::get('/accomplishment/uploaded-files/{folder_name_id}', [DirectorController::class, 'showDirectorUploadedFiles'])->name('director.accomplishment.uploaded-files');
+    Route::get('/accomplishment/director-uploaded-files/{folder_name_id}', [DirectorController::class, 'showDirectorUploadedFiles'])->name('director.accomplishment.director-uploaded-files');
     Route::get('/accomplishment/view-faculty-accomplishment/{user_login_id}/{folder_name_id}', [DirectorController::class, 'viewFacultyAccomplishment'])->name('director.accomplishment.view-accomplishment');
 
     Route::get('/director-dashboard', [DirectorController::class, 'directorDashboardPage'])->name('director.director-dashboard');

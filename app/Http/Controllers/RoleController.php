@@ -40,7 +40,7 @@ class RoleController extends Controller
             ['user_login_id' => $user->user_login_id],
             [
                 'folder_name' => 'Director ' . $user->last_name . ' Folder',
-                'main_folder_name' => 'Director Folder' // Add this line
+                'main_folder_name' => 'Director Folder' 
             ]
         );
         $folder_name_id = $folder->folder_name_id;

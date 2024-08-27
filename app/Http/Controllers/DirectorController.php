@@ -157,7 +157,7 @@ class DirectorController extends Controller
     
         $folders = FolderName::all();
     
-        return view('director.accomplishment.uploaded-files', [
+        return view('director.accomplishment.director-uploaded-files', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
             'groupedFiles' => $groupedFiles,

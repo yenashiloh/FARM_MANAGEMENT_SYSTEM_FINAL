@@ -142,6 +142,13 @@ class FacultyController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
+
+        $userId = auth()->id();
+
+        $user = auth()->user();
+        if ($user->role !== 'faculty') {
+            return redirect()->route('login');
+        }
     
         $folder = FolderName::find($folder_name_id);
     

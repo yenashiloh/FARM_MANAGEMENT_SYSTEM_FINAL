@@ -87,18 +87,18 @@ class NotificationController extends Controller
         return response()->json(['notifications' => $notifications]);
     }
 
-    public function getAdminNotificationCount()
-    {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return response()->json(['count' => 0]);
-        }
+    // public function getAdminNotificationCount()
+    // {
+    //     if (!auth()->check() || auth()->user()->role !== 'admin') {
+    //         return response()->json(['count' => 0]);
+    //     }
     
-        $count = Notification::where('user_login_id', auth()->id())
-                             ->where('is_read', 0)
-                             ->count();
+    //     $count = Notification::where('user_login_id', auth()->id())
+    //                          ->where('is_read', 0)
+    //                          ->count();
     
-        return response()->json(['count' => $count]);
-    }
+    //     return response()->json(['count' => $count]);
+    // }
     
     //mark as read
     public function markAsRead(Request $request)
