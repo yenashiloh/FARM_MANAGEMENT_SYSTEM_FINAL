@@ -23,14 +23,17 @@
                  <ul class="navbar-nav ml-auto navbar-right-top">
                      <li class="nav-item dropdown notification">
                          <a class="nav-link nav-icons"
-                             href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
-                             id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
-                             aria-expanded="false">
-                             <i class="fas fa-fw fa-bell"></i>
-                             <span class="indicator" id="notification-count" style="display: none;">
-                                 0
-                             </span>
-
+                         @if ($folder)
+                         href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
+                     @else
+                         href="#"
+                     @endif
+                     id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
+                     aria-expanded="false">
+                     <i class="fas fa-fw fa-bell"></i>
+                     <span class="indicator" id="notification-count" style="display: none;">
+                         0
+                     </span>
                          </a>
                          <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
                              <li>
@@ -247,97 +250,103 @@
      });
 
      $(document).ready(function() {
-         $.ajaxSetup({
-             headers: {
-                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-             }
-         });
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
 
-         function updateNotificationCount() {
-             $.get('{{ route('admin.notifications.count') }}', function(data) {
-                 if (data.count > 0) {
-                     $('#notification-count-admin').text(data.count).show();
-                 } else {
-                     $('#notification-count-admin').hide();
-                 }
-             }).fail(function() {
-                 console.error('Failed to fetch notification count.');
-             });
-         }
-         setInterval(updateNotificationCount, 30000);
+    function updateNotificationCount() {
+        $.get('{{ route('notifications.count') }}', function(data) {
+            if (data.count > 0) {
+                $('#notification-count-faculty').text(data.count).show();
+            } else {
+                $('#notification-count-faculty').hide();
+            }
+        }).fail(function() {
+            console.error('Failed to fetch notification count.');
+        });
+    }
 
-         updateNotificationCount();
-         $('#navbarDropdownMenuLink2').click(function(e) {
-             e.preventDefault();
-             e.stopPropagation();
-             $('.nav-user-dropdown').toggleClass('show');
-         });
+    setInterval(updateNotificationCount, 30000);
+    updateNotificationCount();
 
-         $(document).click(function(e) {
-             if (!$(e.target).closest('.nav-user').length) {
-                 $('.nav-user-dropdown').removeClass('show');
-             }
-         });
+    $('#navbarDropdownMenuLink2').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('.nav-user-dropdown').toggleClass('show');
+    });
 
-         $('.nav-user-dropdown').click(function(e) {
-             e.stopPropagation();
-         });
+    $(document).click(function(e) {
+        if (!$(e.target).closest('.nav-user').length) {
+            $('.nav-user-dropdown').removeClass('show');
+        }
+    });
 
-         $(document).on('click', '.list-group-item', function(e) {
-             e.preventDefault();
-             var $this = $(this);
-             var notificationId = $this.data('notification-id');
+    $('.nav-user-dropdown').click(function(e) {
+        e.stopPropagation();
+    });
 
-             $.post('{{ route('notifications.mark-read') }}', {
-                 notification_id: notificationId
-             }, function() {
-                 $this.removeClass('new-notification');
-                 updateNotificationCount();
-             }).fail(function() {
-                 console.error('Failed to mark notification as read.');
-             });
+    $(document).on('click', '.list-group-item', function(e) {
+        e.preventDefault();
+        var $this = $(this);
+        var notificationId = $this.data('notification-id');
 
-             window.location.href = $this.attr('href');
-         });
+        $.post('{{ route('notifications.mark-read') }}', {
+            notification_id: notificationId
+        }, function() {
+            $this.removeClass('new-notification');
+            updateNotificationCount();
+        }).fail(function() {
+            console.error('Failed to mark notification as read.');
+        });
 
-         function updateNotifications() {
-             $.get('{{ route('notifications.get') }}', function(data) {
-                 var $notificationList = $('.notification-list .list-group');
-                 $notificationList.empty();
+        window.location.href = $this.attr('href');
+    });
 
-                 data.notifications.forEach(function(notification) {
-                     var $notification = $('<a>')
-                         .attr('href', notification.url)
-                         .attr('data-notification-id', notification.id)
-                         .addClass('list-group-item list-group-item-action')
-                         .html(`
-                        <div class="notification-info">
-                            <div class="notification-list-user-img">
-                                <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
-                            </div>
-                            <div class="notification-list-user-block">
-                                <span class="notification-list-user-name mb-0">${notification.sender}</span>
-                                <span>${notification.message}</span>
-                                <div class="notification-date">
-                                    ${notification.created_at}
+    function updateNotifications() {
+        $.get('{{ route('notifications.get') }}', function(data) {
+            var $notificationList = $('.notification-list .list-group');
+            $notificationList.empty();
+
+            if (data.notifications.length > 0) {
+                data.notifications.forEach(function(notification) {
+                    var $notification = $('<a>')
+                        .attr('href', notification.url)
+                        .attr('data-notification-id', notification.id)
+                        .addClass('list-group-item list-group-item-action')
+                        .html(`
+                            <div class="notification-info">
+                                <div class="notification-list-user-img">
+                                    <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
+                                </div>
+                                <div class="notification-list-user-block">
+                                    <span class="notification-list-user-name mb-0">${notification.sender}</span>
+                                    <span>${notification.message}</span>
+                                    <div class="notification-date">
+                                        ${notification.created_at}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `);
+                        `);
 
-                     if (!notification.is_read) {
-                         $notification.addClass('new-notification');
-                     }
+                    if (!notification.is_read) {
+                        $notification.addClass('new-notification');
+                    }
 
-                     $notificationList.append($notification);
-                 });
-             }).fail(function() {
-                 console.error('Failed to fetch notifications.');
-             });
-         }
+                    $notificationList.append($notification);
+                });
+            } else {
+                $notificationList.html(
+                         '<div class="text-center p-3">No notifications available</div>');
+            }
+        }).fail(function() {
+            console.error('Failed to fetch notifications.');
+        });
+    }
 
-         setInterval(updateNotifications, 30000);
+    setInterval(updateNotifications, 30000);
+    updateNotifications();
+});
 
-         updateNotifications();
-     });
  </script>

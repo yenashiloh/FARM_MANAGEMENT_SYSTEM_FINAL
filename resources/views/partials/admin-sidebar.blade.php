@@ -33,31 +33,38 @@
                                  <div class="notification-title">Notification</div>
                                  <div class="notification-list">
                                      <div class="list-group">
-                                         @foreach ($notifications as $notification)
-                                             <a href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $notification->folder_name_id]) }}"
-                                                 class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
-                                                 data-notification-id="{{ $notification->id }}">
-                                                 <div class="notification-info">
-                                                     <div class="notification-list-user-img">
-                                                         <i class="fas fa-user-circle user-avatar-md"
-                                                             style="font-size:30px;"></i>
-                                                     </div>
-                                                     <div class="notification-list-user-block">
-                                                         <span
-                                                             class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
-                                                         <span>{{ $notification->notification_message }}</span>
-                                                         <div class="notification-date">
-                                                             {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
+                                         @if ($notifications->isEmpty())
+                                             <div class="text-center p-3">
+                                                 <span>No notifications available</span>
+                                             </div>
+                                         @else
+                                             @foreach ($notifications as $notification)
+                                                 <a href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $notification->folder_name_id]) }}"
+                                                     class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
+                                                     data-notification-id="{{ $notification->id }}">
+                                                     <div class="notification-info">
+                                                         <div class="notification-list-user-img">
+                                                             <i class="fas fa-user-circle user-avatar-md"
+                                                                 style="font-size:30px;"></i>
+                                                         </div>
+                                                         <div class="notification-list-user-block">
+                                                             <span
+                                                                 class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
+                                                             <span>{{ $notification->notification_message }}</span>
+                                                             <div class="notification-date">
+                                                                 {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
+                                                             </div>
                                                          </div>
                                                      </div>
-                                                 </div>
-                                             </a>
-                                         @endforeach
+                                                 </a>
+                                             @endforeach
+                                         @endif
                                      </div>
                                  </div>
                              </li>
                          </ul>
                      </li>
+
 
 
                      <li class="nav-item dropdown nav-user">
@@ -204,6 +211,7 @@
  </div>
  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
  <script>
+     //logout
      document.getElementById('logout-link').addEventListener('click', function(e) {
          e.preventDefault();
 
@@ -248,6 +256,7 @@
          });
      });
 
+     //notification
      $(document).ready(function() {
          $.ajaxSetup({
              headers: {
@@ -285,7 +294,6 @@
              $('.notification-dropdown').toggleClass('show');
          });
 
-       
          $(document).click(function(e) {
              if (!$(e.target).closest('.notification').length) {
                  $('.notification-dropdown').removeClass('show');
@@ -296,32 +304,32 @@
              e.stopPropagation();
          });
 
-    
          function updateNotifications() {
              $.get('{{ route('admin.notifications.get') }}', function(data) {
                  var $notificationList = $('.notification-list .list-group');
                  $notificationList.empty();
 
-                 if (data.notifications && Array.isArray(data.notifications)) {
+                 if (data.notifications && Array.isArray(data.notifications) && data.notifications
+                     .length > 0) {
                      data.notifications.forEach(function(notification) {
                          var $notification = $('<a>')
                              .attr('href', notification.url)
                              .attr('data-notification-id', notification.id)
                              .addClass('list-group-item list-group-item-action')
                              .html(`
-                            <div class="notification-info">
-                                <div class="notification-list-user-img">
-                                    <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
-                                </div>
-                                <div class="notification-list-user-block">
-                                    <span class="notification-list-user-name mr-0">${notification.sender}</span>
-                                    <span>${notification.message}</span>
-                                    <div class="notification-date">
-                                        ${notification.created_at}
+                                <div class="notification-info">
+                                    <div class="notification-list-user-img">
+                                        <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
+                                    </div>
+                                    <div class="notification-list-user-block">
+                                        <span class="notification-list-user-name mr-0">${notification.sender}</span>
+                                        <span>${notification.message}</span>
+                                        <div class="notification-date">
+                                            ${notification.created_at}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        `);
+                            `);
 
                          if (!notification.is_read) {
                              $notification.addClass('new-notification');
@@ -330,7 +338,8 @@
                          $notificationList.append($notification);
                      });
                  } else {
-                     console.error('Notifications data is not in the expected format:', data);
+                     $notificationList.html(
+                         '<div class="text-center p-3">No notifications available</div>');
                  }
              }).fail(function() {
                  console.error('Failed to fetch notifications.');
@@ -346,7 +355,7 @@
              $('.list-group-item').each(function() {
                  if (!$(this).hasClass('read')) {
                      unreadNotifications.push($(this).data('notification-id'));
-                     $(this).addClass('read'); 
+                     $(this).addClass('read');
                  }
              });
 
@@ -356,17 +365,16 @@
                      type: 'POST',
                      data: {
                          notification_ids: unreadNotifications,
-                         _token: '{{ csrf_token() }}' 
+                         _token: '{{ csrf_token() }}'
                      },
                      success: function(response) {
-                         alert(response.message); 
+                         alert(response.message);
                      },
                      error: function(xhr) {
                          let errorMessage =
                              'An error occurred while marking notifications as read.';
                          if (xhr.responseJSON && xhr.responseJSON.message) {
-                             errorMessage = xhr.responseJSON
-                                 .message; 
+                             errorMessage = xhr.responseJSON.message;
                          }
                          alert(errorMessage);
                      }
@@ -376,7 +384,7 @@
 
          $('.list-group-item').on('click', function() {
              const notificationId = $(this).data('notification-id');
-             console.log('Notification clicked:', notificationId); 
+             console.log('Notification clicked:', notificationId);
 
              $.ajax({
                  url: '{{ route('admin.notifications.markAsRead') }}',
@@ -386,31 +394,30 @@
                      _token: '{{ csrf_token() }}'
                  },
                  success: function(response) {
-                     alert(response.message); 
-                 }.bind(this), 
+                     alert(response.message);
+                 }.bind(this),
                  error: function(xhr) {
                      let errorMessage =
                          'An error occurred while marking this notification as read.';
                      if (xhr.responseJSON && xhr.responseJSON.message) {
-                         errorMessage = xhr.responseJSON
-                             .message; 
+                         errorMessage = xhr.responseJSON.message;
                      }
-                     alert(errorMessage); 
+                     alert(errorMessage);
                  }
              });
 
              $.ajax({
-                 url: '{{ route('admin.notifications.logClick') }}', 
+                 url: '{{ route('admin.notifications.logClick') }}',
                  type: 'POST',
                  data: {
                      notification_id: notificationId,
                      _token: '{{ csrf_token() }}'
                  },
                  success: function() {
-                     console.log('Click logged successfully'); 
+                     console.log('Click logged successfully');
                  },
                  error: function() {
-                     console.error('Failed to log click'); 
+                     console.error('Failed to log click');
                  }
              });
          });
