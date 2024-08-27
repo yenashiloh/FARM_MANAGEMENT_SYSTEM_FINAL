@@ -23,17 +23,13 @@
                  <ul class="navbar-nav ml-auto navbar-right-top">
                      <li class="nav-item dropdown notification">
                          <a class="nav-link nav-icons"
-                         @if ($folder)
-                         href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
+                             @if ($folder) href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
                      @else
-                         href="#"
-                     @endif
-                     id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
-                     aria-expanded="false">
-                     <i class="fas fa-fw fa-bell"></i>
-                     <span class="indicator" id="notification-count" style="display: none;">
-                         0
-                     </span>
+                         href="#" @endif
+                             id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
+                             aria-expanded="false">
+                             <i class="fas fa-fw fa-bell"></i>
+                             <span class="indicator" id="notification-count" style="display: none;">0</span>
                          </a>
                          <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
                              <li>
@@ -74,7 +70,7 @@
                                  aria-labelledby="navbarDropdownMenuLink2">
                                  <div class="nav-user-info text-center">
                                      <h5 class="mb-0 text-white nav-user-name">
-                                        {{ $firstName }} {{ $lastName }}
+                                         {{ $firstName }} {{ $lastName }}
                                      </h5>
                                      <span style="font-size:12px;">
                                          Faculty Member
@@ -129,8 +125,8 @@
                          </li>
                          <li class="nav-item">
                              <a class="nav-link {{ request()->routeIs('faculty.accomplishment.uploaded-files') && request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Classroom Management')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
-                                 href="#" data-toggle="collapse" aria-expanded="false"
-                                 data-target="#submenu-6" aria-controls="submenu-6">
+                                 href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-6"
+                                 aria-controls="submenu-6">
                                  <i class="fas fa-book"></i> Classroom Management
                              </a>
                              <div id="submenu-6" class="collapse submenu">
@@ -250,72 +246,73 @@
      });
 
      $(document).ready(function() {
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+         $.ajaxSetup({
+             headers: {
+                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+             }
+         });
 
-    function updateNotificationCount() {
-        $.get('{{ route('notifications.count') }}', function(data) {
-            if (data.count > 0) {
-                $('#notification-count-faculty').text(data.count).show();
-            } else {
-                $('#notification-count-faculty').hide();
-            }
-        }).fail(function() {
-            console.error('Failed to fetch notification count.');
-        });
-    }
+         function updateNotificationCount() {
+             $.get('{{ route('notifications.count') }}', function(data) {
+                 console.log('Notification count:', data.count);
+                 if (data.count > 0) {
+                     $('#notification-count').text(data.count).show();
+                 } else {
+                     $('#notification-count').hide();
+                 }
+             }).fail(function(xhr, status, error) {
+                 console.error('Failed to fetch notification count:', status, error);
+             });
+         }
 
-    setInterval(updateNotificationCount, 30000);
-    updateNotificationCount();
+         setInterval(updateNotificationCount, 30000);
+         updateNotificationCount();
 
-    $('#navbarDropdownMenuLink2').click(function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $('.nav-user-dropdown').toggleClass('show');
-    });
+         $('#navbarDropdownMenuLink2').click(function(e) {
+             e.preventDefault();
+             e.stopPropagation();
+             $('.nav-user-dropdown').toggleClass('show');
+         });
 
-    $(document).click(function(e) {
-        if (!$(e.target).closest('.nav-user').length) {
-            $('.nav-user-dropdown').removeClass('show');
-        }
-    });
+         $(document).click(function(e) {
+             if (!$(e.target).closest('.nav-user').length) {
+                 $('.nav-user-dropdown').removeClass('show');
+             }
+         });
 
-    $('.nav-user-dropdown').click(function(e) {
-        e.stopPropagation();
-    });
+         $('.nav-user-dropdown').click(function(e) {
+             e.stopPropagation();
+         });
 
-    $(document).on('click', '.list-group-item', function(e) {
-        e.preventDefault();
-        var $this = $(this);
-        var notificationId = $this.data('notification-id');
+         $(document).on('click', '.list-group-item', function(e) {
+             e.preventDefault();
+             var $this = $(this);
+             var notificationId = $this.data('notification-id');
 
-        $.post('{{ route('notifications.mark-read') }}', {
-            notification_id: notificationId
-        }, function() {
-            $this.removeClass('new-notification');
-            updateNotificationCount();
-        }).fail(function() {
-            console.error('Failed to mark notification as read.');
-        });
+             $.post('{{ route('notifications.mark-read') }}', {
+                 notification_id: notificationId
+             }, function() {
+                 $this.removeClass('new-notification');
+                 updateNotificationCount();
+             }).fail(function() {
+                 console.error('Failed to mark notification as read.');
+             });
 
-        window.location.href = $this.attr('href');
-    });
+             window.location.href = $this.attr('href');
+         });
 
-    function updateNotifications() {
-        $.get('{{ route('notifications.get') }}', function(data) {
-            var $notificationList = $('.notification-list .list-group');
-            $notificationList.empty();
+         function updateNotifications() {
+             $.get('{{ route('notifications.get') }}', function(data) {
+                 var $notificationList = $('.notification-list .list-group');
+                 $notificationList.empty();
 
-            if (data.notifications.length > 0) {
-                data.notifications.forEach(function(notification) {
-                    var $notification = $('<a>')
-                        .attr('href', notification.url)
-                        .attr('data-notification-id', notification.id)
-                        .addClass('list-group-item list-group-item-action')
-                        .html(`
+                 if (data.notifications.length > 0) {
+                     data.notifications.forEach(function(notification) {
+                         var $notification = $('<a>')
+                             .attr('href', notification.url)
+                             .attr('data-notification-id', notification.id)
+                             .addClass('list-group-item list-group-item-action')
+                             .html(`
                             <div class="notification-info">
                                 <div class="notification-list-user-img">
                                     <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
@@ -330,23 +327,22 @@
                             </div>
                         `);
 
-                    if (!notification.is_read) {
-                        $notification.addClass('new-notification');
-                    }
+                         if (!notification.is_read) {
+                             $notification.addClass('new-notification');
+                         }
 
-                    $notificationList.append($notification);
-                });
-            } else {
-                $notificationList.html(
+                         $notificationList.append($notification);
+                     });
+                 } else {
+                     $notificationList.html(
                          '<div class="text-center p-3">No notifications available</div>');
-            }
-        }).fail(function() {
-            console.error('Failed to fetch notifications.');
-        });
-    }
+                 }
+             }).fail(function() {
+                 console.error('Failed to fetch notifications.');
+             });
+         }
 
-    setInterval(updateNotifications, 30000);
-    updateNotifications();
-});
-
+         setInterval(updateNotifications, 30000);
+         updateNotifications();
+     });
  </script>

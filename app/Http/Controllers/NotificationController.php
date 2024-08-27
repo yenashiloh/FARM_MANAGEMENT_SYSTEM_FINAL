@@ -19,6 +19,7 @@ class NotificationController extends Controller
         $count = Notification::where('user_login_id', Auth::id())
                               ->where('is_read', false)
                               ->count();
+        \Log::info('Notification count for user ' . Auth::id() . ': ' . $count);
         return response()->json(['count' => $count]);
     }
 
