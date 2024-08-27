@@ -88,31 +88,32 @@ class NotificationController extends Controller
         return response()->json(['notifications' => $notifications]);
     }
 
-    // public function getAdminNotificationCount()
-    // {
-    //     if (!auth()->check() || auth()->user()->role !== 'admin') {
-    //         return response()->json(['count' => 0]);
-    //     }
+    public function getAdminNotificationCount()
+    {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['count' => 0]);
+        }
     
-    //     $count = Notification::where('user_login_id', auth()->id())
-    //                          ->where('is_read', 0)
-    //                          ->count();
+        $count = Notification::where('user_login_id', auth()->id())
+                             ->where('is_read', 0)
+                             ->count();
     
-    //     return response()->json(['count' => $count]);
-    // }
+        return response()->json(['count' => $count]);
+    }
     
     //mark as read
     public function markAsRead(Request $request)
     {
         Log::info('Mark as read request received', ['request' => $request->all()]);
-
+    
         $validatedData = $request->validate([
             'notification_ids' => 'required|array',
             'notification_ids.*' => 'integer|exists:notifications,id',
         ]);
     
         $updated = Notification::whereIn('id', $validatedData['notification_ids'])
-            ->where('user_login_id', auth()->user()->user_login_id)
+            ->where('user_login_id', auth()->id())
+            ->where('is_read', false)
             ->update(['is_read' => true]);
     
         if ($updated) {

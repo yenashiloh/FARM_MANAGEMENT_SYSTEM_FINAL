@@ -199,7 +199,7 @@
                                         @method('PUT')
                                         <input type="hidden" name="folder_name_id"
                                             value="{{ $folder->folder_name_id }}">
-                                        <input type="hidden" name="semester" id="editSemester">
+                                        <input type="hidden" name="semester" id="editSemester" required>
                                         <div id="editFileInputs"></div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
