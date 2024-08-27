@@ -102,33 +102,7 @@ class NotificationController extends Controller
         return response()->json(['count' => $count]);
     }
     
-    //mark as read
 
-
-    public function markAsRead(Request $request)
-    {
-        try {
-            $notificationId = $request->input('notification_id');
-            
-            if (!$notificationId) {
-                return response()->json(['status' => 'error', 'message' => 'Notification ID is required'], 400);
-            }
-    
-            $updated = Notification::where('id', $notificationId)
-                        ->where('user_login_id', Auth::id())
-                        ->update(['is_read' => true]);
-    
-            if ($updated) {
-                return response()->json(['status' => 'success']);
-            } else {
-                return response()->json(['status' => 'error', 'message' => 'Notification not found or already read'], 404);
-            }
-        } catch (\Exception $e) {
-            \Log::error('Error marking notification as read: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => 'An error occurred'], 500);
-        }
-    }
-    
     //log click
     public function logClick(Request $request)
     {

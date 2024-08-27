@@ -318,7 +318,7 @@
                                     <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
                                 </div>
                                 <div class="notification-list-user-block">
-                                    <span class="notification-list-user-name mb-0">${notification.sender}</span>
+                                    <span class="notification-list-user-name mr-0">${notification.sender}</span>
                                     <span>${notification.message}</span>
                                     <div class="notification-date">
                                         ${notification.created_at}
