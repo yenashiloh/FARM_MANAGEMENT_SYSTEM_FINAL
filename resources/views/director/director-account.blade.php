@@ -3,7 +3,7 @@
 
 <head>
     <!-- Required meta tags -->
-    @include('partials.admin-header')
+    @include('partials.director-header')
     <title>View Account</title>
     <style>
         .toggle-dropdown {
@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    @include('partials.admin-sidebar')
+    @include('partials.director-sidebar')
     <div id="loading-spinner" class="loading-spinner">
         <div class="spinner"></div>
     </div>
@@ -59,7 +59,7 @@
                             <div class="card">
                                 <h5 class="card-header">Account Details</h5>
                                 <div class="card-body">
-                                    <form action="{{ route('updateAccount') }}" method="POST" id="basicform" data-parsley-validate="">
+                                    <form action="{{ route('updateDirectorAccount') }}" method="POST" id="basicform" data-parsley-validate="">
                                         @csrf
                                         <!-- Success Message -->
                                         @if (session('success'))
@@ -138,7 +138,7 @@
                         <!-- end main wrapper  -->
                         <!-- ============================================================== -->
 
-                        @include('partials.admin-footer')
+                        @include('partials.director-footer')
                         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
                         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 

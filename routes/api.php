@@ -6,7 +6,6 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\CoursesFileController;
 
-// Ensure the route names and middleware are properly set for API usage
 
 Route::middleware(['auth:sanctum'])->group(function () {
 

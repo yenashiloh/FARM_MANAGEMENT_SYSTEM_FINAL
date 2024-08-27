@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\DirectorAuthenticate;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
             'role' => \App\Http\Middleware\RoleAuthenticate::class,
+            'director' => \App\Http\Middleware\DirectorAuthenticate::class,
             'prevent-back-history' => PreventBackHistory::class,
         ]);
     })

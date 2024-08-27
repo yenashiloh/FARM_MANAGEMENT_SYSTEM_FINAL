@@ -234,7 +234,7 @@
                         '_token': '{{ csrf_token() }}'
                     })
                 })
-                .then(response => response.json()) // Parse JSON response
+                .then(response => response.json()) 
                 .then(data => {
                     if (data.success) {
                         window.location.href = '{{ route('login') }}';

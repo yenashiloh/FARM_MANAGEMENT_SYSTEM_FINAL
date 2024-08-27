@@ -99,33 +99,28 @@
                 
                 <script>
                     $(document).ready(function() {
-                        // When the Decline button is clicked
                         $('button[data-target="#declineModal"]').on('click', function() {
-                            var fileId = $(this).data('id'); // Get the file ID from the button's data-id attribute
+                            var fileId = $(this).data('id'); 
                             var actionUrl = "{{ route('declineFile', ['courses_files_id' => ':courses_files_id']) }}"
-                                .replace(':courses_files_id', fileId); // Set the form action URL
+                                .replace(':courses_files_id', fileId); 
 
-                            $('#declineModalId').val(fileId); // Set the file ID in the hidden input field of the modal
-                            $('#declineModal form').attr('action', actionUrl); // Set the form action URL
+                            $('#declineModalId').val(fileId); 
+                            $('#declineModal form').attr('action', actionUrl); 
                         });
 
-                        // Handle the form submission
                         $('#declineModal form').on('submit', function() {
-                            // Close the modal
                             $('#declineModal').modal('hide');
                         });
                     });
 
                     $(document).ready(function() {
-                        // Automatically hide success alert after 3 seconds
                         setTimeout(function() {
                             $('#successAlert').fadeOut('slow');
-                        }, 3000); // 3000 milliseconds = 3 seconds
+                        }, 3000); 
 
-                        // Automatically hide error alert after 3 seconds
                         setTimeout(function() {
                             $('#errorAlert').fadeOut('slow');
-                        }, 3000); // 3000 milliseconds = 3 seconds
+                        }, 3000); 
                     });
 
                     document.addEventListener('DOMContentLoaded', function() {
@@ -188,9 +183,6 @@
                         });
                     });
                 </script>
-
-
-
                 @include('partials.tables-footer')
 </body>
 

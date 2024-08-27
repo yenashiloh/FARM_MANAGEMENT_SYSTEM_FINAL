@@ -10,7 +10,8 @@ use App\Models\CoursesFile;
 use App\Models\Announcement;
 use App\Models\Notification;
 
-class AdminController extends Controller
+
+class DirectorController extends Controller
 {
     public function getFacultyInfo()
     {
@@ -106,23 +107,8 @@ class AdminController extends Controller
     
         return json_encode($data);
     }
-    
-    //show accomplishment page
-    public function accomplishmentPage()
-    {
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
-        
-        $folders = FolderName::all();
 
-        return view('admin.admin-accomplishment', [
-            'folders' => $folders
-        ]);
-    }
-
-    //show all uploaded files
-    public function showAdminUploadedFiles($folder_name_id)
+    public function showDirectorUploadedFiles($folder_name_id)
     {
         if (!auth()->check()) {
             return redirect()->route('login');
@@ -136,12 +122,6 @@ class AdminController extends Controller
         if (!$folder) {
             return redirect()->route('login')->with('error', 'Folder not found.');
         }
-    
-        $notifications = Notification::where('user_login_id', $user->user_login_id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-    
-        $notificationCount = $notifications->where('is_read', 0)->count();
     
         $facultyInfo = json_decode($this->getFacultyInfo(), true);
         $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester'];
@@ -177,7 +157,7 @@ class AdminController extends Controller
     
         $folders = FolderName::all();
     
-        return view('admin.accomplishment.admin-uploaded-files', [
+        return view('director.accomplishment.uploaded-files', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
             'groupedFiles' => $groupedFiles,
@@ -189,33 +169,98 @@ class AdminController extends Controller
             'folder_name_id' => $folder_name_id, 
             'folders' => $folders, 
             'userDetails' => $userDetails,
-            'notifications' => $notifications,
-            'notificationCount' => $notificationCount,
         ]);
     }
 
-    //view accomplishment    
-    public function viewAccomplishmentFaculty($user_login_id, $folder_name_id)
+    //director dashboard
+    public function directorDashboardPage()
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
+
+        $userId = auth()->id();
+
     
         $user = auth()->user();
+        if ($user->role !== 'director') {
+            return redirect()->route('login');
+        }
+    
         $userDetails = $user->userDetails; 
+    
+        $folders = FolderName::all();
+        $folder = FolderName::first(); 
+    
+        $facultyCount = UserLogin::where('role', 'faculty')->count();
+    
+        $filesCount = CoursesFile::count();
+        $toReviewCount = CoursesFile::where('status', 'To Review')->count();
+        $approvedCount = CoursesFile::where('status', 'Approved')->count();
+        $declinedCount = CoursesFile::where('status', 'Declined')->count();
+        $completedReviewsCount = CoursesFile::whereIn('status', ['Approved', 'Declined'])->count();
+        $folderCounts = FolderName::withCount('coursesFiles')->get();
+    
+        $folderStatusCounts = FolderName::withCount([
+            'coursesFiles as to_review_count' => function ($query) {
+                $query->where('status', 'To Review');
+            },
+            'coursesFiles as approved_count' => function ($query) {
+                $query->where('status', 'Approved');
+            },
+            'coursesFiles as declined_count' => function ($query) {
+                $query->where('status', 'Declined');
+            },
+        ])->get();
+    
+        $chartData = $folderStatusCounts->map(function ($folder) {
+            return [
+                'folder_name' => $folder->folder_name,
+                'to_review_count' => $folder->to_review_count,
+                'approved_count' => $folder->approved_count,
+                'declined_count' => $folder->declined_count,
+            ];
+        });
+    
+        $semesters = CoursesFile::select('semester')->distinct()->get();
+        return view('director.director-dashboard', [
+            'folders' => $folders,
+            'folder' => $folder,
+            'facultyCount' => $facultyCount,
+            'filesCount' => $filesCount,
+            'toReviewCount' => $toReviewCount,
+            'completedReviewsCount' => $completedReviewsCount,
+            'approvedCount' => $approvedCount,
+            'declinedCount' => $declinedCount,
+            'folderCounts' => $folderCounts,
+            'userDetails' => $userDetails,
+            'chartData' => $chartData,
+            'semesters' => $semesters,
+        ]);
+    }
+
+    public function viewFacultyAccomplishment($user_login_id, $folder_name_id)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $userId = auth()->id();
+
+    
+        $user = auth()->user();
+        if ($user->role !== 'director') {
+            return redirect()->route('login');
+        }
 
         $folder = FolderName::find($folder_name_id);
     
         if (!$folder) {
-            return redirect()->route('faculty.faculty-accomplishment')->with('error', 'Folder not found.');
+            return redirect()->route('login')->with('error', 'Folder not found.');
         }
-    
-        $notifications = Notification::where('user_login_id', $user->user_login_id)
-        ->orderBy('created_at', 'desc')
-        ->get();
 
-        $notificationCount = $notifications->where('is_read', 0)->count();
-
+        $userDetails = $user->userDetails; 
+        
         $facultyInfo = json_decode($this->getFacultyInfo(), true);
         $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester'];
         
@@ -250,7 +295,7 @@ class AdminController extends Controller
     
         $folders = FolderName::all();
     
-        return view('admin.accomplishment.view-accomplishment', [
+        return view('director.accomplishment.view-faculty-accomplishment', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
             'groupedFiles' => $groupedFiles,
@@ -260,73 +305,71 @@ class AdminController extends Controller
             'files' => $files,
             'folders' => $folders, 
             'userDetails' => $userDetails,
-            'notifications' => $notifications,
-            'notificationCount' => $notificationCount,
         ]);
     }
 
-    //show admin account
-    public function adminAccountPage()
-    {
+     //show director account
+     public function directorAccountPage()
+     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
+
+        $userId = auth()->id();
+
     
         $user = auth()->user();
-        $userDetails = $user->userDetails;
-    
-        $notifications = Notification::where('user_login_id', $user->user_login_id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-    
-        $notificationCount = $notifications->where('is_read', 0)->count();
-    
-        $folders = FolderName::all();
-    
-        return view('admin.admin-account', [
-            'folders' => $folders,
-            'notifications' => $notifications,
-            'notificationCount' => $notificationCount,
-            'userDetails' => $userDetails,
-            'user' => $user, 
-        ]);
-    }
+        if ($user->role !== 'director') {
+            return redirect()->route('login');
+        }
 
-    //update account
-    public function updateAccount(Request $request)
-    {
-        $user = auth()->user();
-        $userDetails = $user->userDetails;
+         $userDetails = $user->userDetails;
+     
+         $folders = FolderName::all();
+     
+         return view('director.director-account', [
+             'folders' => $folders,
+             'userDetails' => $userDetails,
+             'user' => $user, 
+         ]);
+     }
+ 
+     //update account
+     public function updateDirectorAccount(Request $request)
+     {
+         $user = auth()->user();
+         $userDetails = $user->userDetails;
+ 
+         $request->validate([
+             'first-name' => 'required|string|max:255',
+             'last-name' => 'required|string|max:255',
+             'email' => 'required|email|max:255',
+             'contact-number' => 'required|numeric',
+             'recent-password' => 'required_with:new-password|current_password', 
+             'new-password' => 'nullable|confirmed|min:6', 
+             'confirm-password' => 'nullable|same:new-password', 
+         ]);
+ 
+         $user->update([
+             'email' => $request->input('email'),
+             'password' => $request->input('new-password') ? bcrypt($request->input('new-password')) : $user->password,
+         ]);
+ 
+         $userDetails->update([
+             'first_name' => $request->input('first-name'),
+             'last_name' => $request->input('last-name'),
+             'phone_number' => $request->input('contact-number'),
+         ]);
+ 
+         return redirect()->route('director.director-account')->with('success', 'Account details updated successfully!');
+     }
+ 
+     public function directorLogout(Request $request)
+     {
+         auth()->logout();
+         $request->session()->invalidate();
+         $request->session()->regenerateToken();
+         return response()->json(['success' => true]);
+     }
 
-        $request->validate([
-            'first-name' => 'required|string|max:255',
-            'last-name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'contact-number' => 'required|numeric',
-            'recent-password' => 'required_with:new-password|current_password', 
-            'new-password' => 'nullable|confirmed|min:6', 
-            'confirm-password' => 'nullable|same:new-password', 
-        ]);
-
-        $user->update([
-            'email' => $request->input('email'),
-            'password' => $request->input('new-password') ? bcrypt($request->input('new-password')) : $user->password,
-        ]);
-
-        $userDetails->update([
-            'first_name' => $request->input('first-name'),
-            'last_name' => $request->input('last-name'),
-            'phone_number' => $request->input('contact-number'),
-        ]);
-
-        return redirect()->route('admin.admin-account')->with('success', 'Account details updated successfully!');
-    }
-
-    public function adminLogout(Request $request)
-    {
-        auth()->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return response()->json(['success' => true]);
-    }
 }

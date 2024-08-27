@@ -237,13 +237,11 @@
                     });
 
                     $(document).ready(function() {
-                        // Handle the delete button click
                         $('.delete-button').on('click', function() {
                             var fileId = $(this).data('id');
                             var actionUrl = "{{ route('deleteFile', ['courses_files_id' => ':courses_files_id']) }}"
                                 .replace(':courses_files_id', fileId);
 
-                            // Show SweetAlert2 confirmation dialog
                             Swal.fire({
                                 title: 'Are you sure?',
                                 text: "You won't be able to recover this file!",
@@ -254,7 +252,6 @@
                                 confirmButtonText: 'Yes, delete it!'
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    // Perform the delete operation using AJAX
                                     $.ajax({
                                         url: actionUrl,
                                         type: 'DELETE',
@@ -268,7 +265,7 @@
                                                 'success'
                                             ).then(() => {
                                                 location
-                                                    .reload(); // Refresh the page to reflect changes
+                                                    .reload(); 
                                             });
                                         },
                                         error: function() {

@@ -11,8 +11,10 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\AdminEditDetailsController;
+use App\Http\Controllers\DirectorController;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
+use App\Http\Middleware\DirectorAuthenticate;
 
 
 Route::get('/', [RoleController::class, 'showLandingPage'])->name('welcome');
@@ -21,7 +23,7 @@ Route::post('/login', [RoleController::class, 'login'])->name('login.post');
 // Route::get('/', [RoleController::class, 'showLoginForm'])->name('login.form')->middleware(\App\Http\Middleware\PreventBackHistory::class);
 Route::post('/login', [RoleController::class, 'login'])->name('login.post')->middleware(\App\Http\Middleware\PreventBackHistory::class);
 
-Route::middleware(['auth', 'role:faculty'])->group(function () {
+Route::middleware(['auth', 'role:faculty', 'prevent-back-history'])->group(function () {
     
     /****************************************FACULTY**************************************/
     Route::get('/faculty-accomplishment', [FacultyController::class, 'accomplishmentPage'])->name('faculty.faculty-accomplishment'); 
@@ -39,8 +41,8 @@ Route::middleware(['auth', 'role:faculty'])->group(function () {
     Route::get('/announcement', [FacultyController::class, 'announcementPage'])->name('faculty.announcement'); 
 });
 
-    /**************admin**********************ADMIN***************************************/
-    Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], function () {
+    /************************************ADMIN***************************************/
+Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], function () {
 
     Route::get('/admin-accomplishment', [AdminController::class, 'accomplishmentPage'])->name('admin.admin-accomplishment');
     Route::get('/accomplishment/admin-uploaded-files/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.admin-uploaded-files');
@@ -86,4 +88,20 @@ Route::middleware(['auth', 'role:faculty'])->group(function () {
      Route::post('/update-account', [AdminController::class, 'updateAccount'])->name('updateAccount');
      Route::post('/logout', [AdminController::class, 'adminLogout'])->name('logout');
 
+    });
+
+    /************************************DIRECTOR***************************************/
+Route::group(['middleware' => ['auth', 'role:director', 'prevent-back-history']], function () {
+
+    Route::get('/accomplishment/uploaded-files/{folder_name_id}', [DirectorController::class, 'showDirectorUploadedFiles'])->name('director.accomplishment.uploaded-files');
+    Route::get('/accomplishment/view-faculty-accomplishment/{user_login_id}/{folder_name_id}', [DirectorController::class, 'viewFacultyAccomplishment'])->name('director.accomplishment.view-accomplishment');
+
+    Route::get('/director-dashboard', [DirectorController::class, 'directorDashboardPage'])->name('director.director-dashboard');
+
+    Route::get('/director-account', [DirectorController::class, 'directorAccountPage'])->name('director.director-account');
+    Route::post('/update-director-account', [DirectorController::class, 'updateDirectorAccount'])->name('updateDirectorAccount');
+
+    Route::post('/logout-director', [DirectorController::class, 'directorLogout'])->name('logout-director');
 });
+
+
