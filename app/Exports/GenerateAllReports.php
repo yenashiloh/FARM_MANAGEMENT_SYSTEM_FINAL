@@ -122,13 +122,15 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
             $subFolderCount = count($this->subFolders[$mainFolder]);
             $endCol = chr(ord($startCol) + $subFolderCount - 1);
             
-            $sheet->setCellValue("{$startCol}1", strtoupper($mainFolder));
-            $sheet->mergeCells("{$startCol}1:{$endCol}1");
-            $sheet->getStyle("{$startCol}1:{$endCol}1")->applyFromArray([
-                'font' => ['bold' => true],
-                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => $folderColors[$mainFolder]]],
-                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
-            ]);
+            if (ord($endCol) >= ord($startCol)) {
+                $sheet->setCellValue("{$startCol}1", strtoupper($mainFolder));
+                $sheet->mergeCells("{$startCol}1:{$endCol}1");
+                $sheet->getStyle("{$startCol}1:{$endCol}1")->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => $folderColors[$mainFolder]]],
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+                ]);
+            }
             
             $sheet->getStyle("{$startCol}2:{$endCol}2")->applyFromArray([
                 'font' => ['bold' => true],

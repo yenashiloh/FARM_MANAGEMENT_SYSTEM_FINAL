@@ -120,17 +120,27 @@
                              Maintenance
                          </li>
                          <li class="nav-item">
-                             <a class="nav-link {{ Request::routeIs('admin.maintenance.create-folder') ? 'active' : '' }}"
-                                 href="{{ route('admin.maintenance.create-folder') }}" aria-expanded="false"
-                                 data-target="#submenu-3" aria-controls="submenu-3">
-                                 <i class="fas fa-folder"></i> Manage Main Requirements
-                             </a>
-                         </li>
-                         <li class="nav-item ">
-                             <a class="nav-link" href="{{ route('admin.announcement.admin-announcement') }}"
-                                 aria-expanded="false" data-target="#submenu-4" aria-controls="submenu-4"><i
-                                     class="fas fa-bullhorn"></i>Manage Announcements</a>
-                         </li>
+                            <a class="nav-link {{ Request::routeIs('admin.maintenance.create-folder') ? 'active' : '' }}"
+                                href="{{ route('admin.maintenance.create-folder') }}" aria-expanded="false"
+                                data-target="#submenu-3" aria-controls="submenu-3">
+                                <i class="fas fa-folder"></i> Manage Main Requirements
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Request::routeIs('admin.announcement.admin-announcement') ? 'active' : '' }}"
+                                href="{{ route('admin.announcement.admin-announcement') }}" aria-expanded="false"
+                                data-target="#submenu-4" aria-controls="submenu-4">
+                                <i class="fas fa-bullhorn"></i> Manage Announcements
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Request::routeIs('admin.maintenance.upload-schedule') ? 'active' : '' }}"
+                                href="{{ route('admin.maintenance.upload-schedule') }}" aria-expanded="false"
+                                data-target="#submenu-4" aria-controls="submenu-4">
+                                <i class="fas fa-calendar-alt"></i> Manage Upload Schedule
+                            </a>
+                        </li>
+                        
                          <li class="nav-divider">
                              Accomplishment
                          </li>

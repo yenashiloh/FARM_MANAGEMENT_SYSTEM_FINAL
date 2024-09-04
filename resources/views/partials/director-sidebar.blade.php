@@ -90,7 +90,7 @@
                                         @if ($folder->main_folder_name == 'Classroom Management')
                                             <li class="nav-item">
                                                 <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                    href="{{ route('director.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
+                                                    href="{{ route('director.accomplishment.director-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
                                                     {{ $folder->folder_name }}
                                                 </a>
                                             </li>
@@ -112,7 +112,7 @@
                                         @if ($folder->main_folder_name == 'Test Administration')
                                             <li class="nav-item">
                                                 <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                    href="{{ route('director.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
+                                                    href="{{ route('director.accomplishment.director-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
                                                     {{ $folder->folder_name }}
                                                 </a>
                                             </li>
@@ -134,7 +134,7 @@
                                         @if ($folder->main_folder_name == 'Syllabus Preparation')
                                             <li class="nav-item">
                                                 <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                    href="{{ route('director.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
+                                                    href="{{ route('director.accomplishment.director-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
                                                     {{ $folder->folder_name }}
                                                 </a>
                                             </li>

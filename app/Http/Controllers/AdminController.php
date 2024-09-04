@@ -207,7 +207,7 @@ class AdminController extends Controller
         $folder = FolderName::find($folder_name_id);
     
         if (!$folder) {
-            return redirect()->route('faculty.faculty-accomplishment')->with('error', 'Folder not found.');
+            return redirect()->route('login')->with('error', 'Folder not found.');
         }
     
         $notifications = Notification::where('user_login_id', $user->user_login_id)

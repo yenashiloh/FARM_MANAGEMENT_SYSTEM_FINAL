@@ -22,4 +22,9 @@ class FolderName extends Model
     {
         return $this->hasMany(CoursesFile::class, 'folder_name_id');
     }
+
+    public function folderInputs()
+    {
+        return $this->hasMany(FolderInput::class, 'folder_name_id');
+    }
 }

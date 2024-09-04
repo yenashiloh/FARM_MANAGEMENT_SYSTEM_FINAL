@@ -215,12 +215,18 @@ class DashboardController extends Controller
         $approvedCount = \App\Models\CoursesFile::where('user_login_id', $userId)
                             ->where('status', 'Approved')
                             ->count();
+                            
+        $approvedCount = $approvedFiles->count();
 
         $declinedCount = \App\Models\CoursesFile::where('user_login_id', $userId)
                             ->where('status', 'Declined')
                             ->count();
 
-        $totalStorageUsed = \App\Models\CoursesFile::where('user_login_id', $userId)->sum('file_size');
+  
+
+       $totalStorageUsed = \App\Models\CoursesFile::where('user_login_id', $userId)
+                        ->where('is_archived', false) // Only non-archived files count towards storage
+                        ->sum('file_size');
         $formattedTotalStorageUsed = $this->formatBytes($totalStorageUsed);
 
         $totalStorageLimit = 20 * 1024 * 1024 * 1024; 

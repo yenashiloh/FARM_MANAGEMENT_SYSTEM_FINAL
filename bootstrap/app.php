@@ -7,6 +7,7 @@ use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\DirectorAuthenticate;
+use App\Console\Commands\SendAnnouncementEmails;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'prevent-back-history' => PreventBackHistory::class,
         ]);
     })
+    ->withCommands([
+        SendAnnouncementEmails::class,
+    ])
     ->withExceptions(function (Exceptions $exceptions) {
     })
     ->create();

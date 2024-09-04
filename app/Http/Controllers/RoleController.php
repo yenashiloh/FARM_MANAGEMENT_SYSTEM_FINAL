@@ -19,48 +19,31 @@ class RoleController extends Controller
 
     //login post
     public function login(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-    $user = UserLogin::where('email', $request->email)->first();
+        $user = UserLogin::where('email', $request->email)->first();
 
-    if (!$user || !Hash::check($request->password, $user->password)) {
-        return redirect()->back()->with('error', 'Invalid email or password.');
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return redirect()->back()->with('error', 'Invalid email or password.');
+        }
+
+        Auth::login($user);
+
+        switch ($user->role) {
+            case 'admin':
+                return redirect()->route('admin.admin-dashboard');
+            case 'faculty':
+                return redirect()->route('faculty.faculty-dashboard');
+            case 'director':
+                return redirect()->route('director.director-dashboard');
+            default:
+                return redirect()->back()->with('error', 'Invalid role.');
+        }
     }
-
-    Auth::login($user);
-
-    $folder_name_id = null;
-
-    if ($user->role === 'director') {
-        $folder = FolderName::firstOrCreate(
-            ['user_login_id' => $user->user_login_id],
-            [
-                'folder_name' => 'Director ' . $user->last_name . ' Folder',
-                'main_folder_name' => 'Director Folder' 
-            ]
-        );
-        $folder_name_id = $folder->folder_name_id;
-    }
-
-    switch ($user->role) {
-        case 'admin':
-            return redirect()->route('admin.admin-dashboard');
-        case 'faculty':
-            return redirect()->route('faculty.faculty-dashboard');
-        case 'director':
-            if ($folder_name_id) {
-                return redirect()->route('director.accomplishment.uploaded-files', ['folder_name_id' => $folder_name_id]);
-            } else {
-                return redirect()->back()->with('error', 'Unable to create a folder for the director. Please contact support.');
-            }
-        default:
-            return redirect()->back()->with('error', 'Invalid role.');
-    }
-}
     //landing page
     public function showLandingPage()
     {

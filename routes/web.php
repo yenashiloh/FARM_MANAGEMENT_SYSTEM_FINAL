@@ -13,6 +13,8 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\AdminEditDetailsController;
 use App\Http\Controllers\DirectorController;
 use App\Http\Controllers\MarkAsReadController;
+use App\Http\Controllers\FolderInputController;
+use App\Http\Controllers\UploadScheduleController;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
 use App\Http\Middleware\DirectorAuthenticate;
@@ -26,7 +28,7 @@ Route::post('/login', [RoleController::class, 'login'])->name('login.post')->mid
 Route::middleware(['auth', 'role:faculty', 'prevent-back-history'])->group(function () {
     
     /****************************************FACULTY**************************************/
-    Route::get('/faculty-accomplishment', [FacultyController::class, 'accomplishmentPage'])->name('faculty.faculty-accomplishment'); 
+    // Route::get('/faculty-accomplishment', [FacultyController::class, 'accomplishmentPage'])->name('faculty.faculty-accomplishment'); 
     Route::post('/logout', [FacultyController::class, 'facultyLogout'])->name('logout'); 
     Route::get('/accomplishment/uploaded-files/{folder_name_id}', [FacultyController::class, 'showUploadedFiles'])->name('faculty.accomplishment.uploaded-files');
     Route::get('/faculty-info', [FacultyController::class, 'getFacultyInfo']);
@@ -39,6 +41,8 @@ Route::middleware(['auth', 'role:faculty', 'prevent-back-history'])->group(funct
     Route::get('/notifications/list', [NotificationController::class, 'getNotificationList'])->name('notifications.list');
     Route::get('/notifications', [NotificationController::class, 'getNotifications'])->name('notifications.get');
     Route::get('/announcement', [FacultyController::class, 'announcementPage'])->name('faculty.announcement'); 
+    Route::post('/archive-file/{id}', [CoursesFileController::class, 'archiveFile'])->name('archive-file');
+
 });
 
     /************************************ADMIN***************************************/
@@ -69,27 +73,52 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/admin-dashboard', [DashboardController::class, 'adminDashboardPage'])->name('admin.admin-dashboard');
 
      //Announcement
-     Route::get('/announcement/admin-announcement', [AnnouncementController::class, 'showAnnouncementPage'])->name('admin.announcement.admin-announcement');
-     Route::get('/announcement/add-announcement', [AnnouncementController::class, 'showAddAnnouncementPage'])->name('admin.announcement.add-announcement');
-     Route::post('/announcement/add-announcement', [AnnouncementController::class, 'saveAnnouncement'])->name('admin.announcement.save-announcement');
+    Route::get('/announcement/admin-announcement', [AnnouncementController::class, 'showAnnouncementPage'])->name('admin.announcement.admin-announcement');
+    Route::get('/announcement/add-announcement', [AnnouncementController::class, 'showAddAnnouncementPage'])->name('admin.announcement.add-announcement');
+    Route::post('/announcement/add-announcement', [AnnouncementController::class, 'saveAnnouncement'])->name('admin.announcement.save-announcement');
     
     //Announcement
-     Route::get('admin/announcement/edit/{id_announcement}', [AnnouncementController::class, 'editAnnouncement'])->name('admin.announcement.edit-announcement');
-     Route::post('admin/announcement/update/{id_announcement}', [AnnouncementController::class, 'updateAnnouncement'])->name('admin.announcement.update-announcement');
-     Route::delete('admin/announcement/delete/{id_announcement}', [AnnouncementController::class, 'deleteAnnouncement'])->name('admin.announcement.delete-announcement');
-     Route::get('admin/announcement/publish/{id_announcement}', [AnnouncementController::class, 'publishAnnouncement'])->name('admin.announcement.publish-announcement');
-     Route::get('admin/announcement/unpublish/{id_announcement}', [AnnouncementController::class, 'unpublishAnnouncement'])->name('admin.announcement.unpublish-announcement');
+    Route::get('admin/announcement/edit/{id_announcement}', [AnnouncementController::class, 'editAnnouncement'])->name('admin.announcement.edit-announcement');
+    Route::post('admin/announcement/update/{id_announcement}', [AnnouncementController::class, 'updateAnnouncement'])->name('admin.announcement.update-announcement');
+    Route::delete('admin/announcement/delete/{id_announcement}', [AnnouncementController::class, 'deleteAnnouncement'])->name('admin.announcement.delete-announcement');
+    Route::get('admin/announcement/publish/{id_announcement}', [AnnouncementController::class, 'publishAnnouncement'])->name('admin.announcement.publish-announcement');
+    Route::get('admin/announcement/unpublish/{id_announcement}', [AnnouncementController::class, 'unpublishAnnouncement'])->name('admin.announcement.unpublish-announcement');
      
      //Notification
-     Route::get('/admin/notifications', [NotificationController::class, 'getAdminNotifications'])->name('admin.notifications.get');
-     Route::get('/admin/notifications/count', [NotificationController::class, 'getAdminNotificationCount'])->name('admin.notifications.count');
-     Route::post('/notifications/mark-as-read', [MarkAsReadController::class, 'markAsRead'])->name('notifications.markAsRead');
-     Route::post('/admin/notifications/log-click', [NotificationController::class, 'logClick'])->name('admin.notifications.logClick');
+    Route::get('/admin/notifications', [NotificationController::class, 'getAdminNotifications'])->name('admin.notifications.get');
+    Route::get('/admin/notifications/count', [NotificationController::class, 'getAdminNotificationCount'])->name('admin.notifications.count');
+    Route::post('/notifications/mark-as-read', [MarkAsReadController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/admin/notifications/log-click', [NotificationController::class, 'logClick'])->name('admin.notifications.logClick');
      
      //View Admin Account
-     Route::get('/admin-account', [AdminController::class, 'adminAccountPage'])->name('admin.admin-account');
-     Route::post('/update-account', [AdminController::class, 'updateAccount'])->name('updateAccount');
-     Route::post('/logout', [AdminController::class, 'adminLogout'])->name('logout');
+    Route::get('/admin-account', [AdminController::class, 'adminAccountPage'])->name('admin.admin-account');
+    Route::post('/update-account', [AdminController::class, 'updateAccount'])->name('updateAccount');
+    Route::post('/logout', [AdminController::class, 'adminLogout'])->name('logout');
+
+    //Add Input Field
+    Route::post('/folder-inputs', [FolderInputController::class, 'store'])->name('folder-inputs.store');
+    Route::delete('/folder-inputs/{id}', [FolderInputController::class, 'destroy'])->name('folder-inputs.destroy');
+    Route::get('/maintenance/view-file-input/{folder_input_id}', [FolderInputController::class, 'showInputs'])->name('admin.maintenance.view-file-input');
+    Route::put('/folder-inputs/{id}', [FolderInputController::class, 'update'])->name('folder-inputs.update');
+    Route::get('/folder-inputs/{id}', [FolderInputController::class, 'show'])->name('folder-inputs.show');
+
+    //Upload Schedule
+  
+    Route::get('/maintenance/upload-schedules', [UploadScheduleController::class, 'showUploadSchedule'])
+    ->name('admin.maintenance.upload-schedule');
+
+// Store a new upload schedule
+// Store a new or update existing upload schedule
+Route::post('/upload-schedule', [UploadScheduleController::class, 'store'])->name('upload-schedule.store');
+
+// Show the form for editing an upload schedule
+Route::get('/maintenance/upload-schedule/{id}/edit', [UploadScheduleController::class, 'edit'])->name('upload-schedule.edit');
+
+
+// Update an existing upload schedule
+Route::put('/maintenance/upload-schedules/{uploadSchedule}', [UploadScheduleController::class, 'update'])
+    ->name('upload_schedule.update');
+
 
     });
 

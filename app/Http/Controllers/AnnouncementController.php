@@ -10,7 +10,7 @@ use App\Models\CoursesFile;
 use App\Models\Announcement;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Mail;
 
 class AnnouncementController extends Controller
 {
@@ -111,20 +111,23 @@ class AnnouncementController extends Controller
               'announcement_message' => 'required',
               'recipient_emails' => 'required|array',
           ]);
-      
+  
           if ($validator->fails()) {
               return redirect()->back()->withErrors($validator)->withInput();
           }
-      
+  
           $recipientEmails = $request->input('recipient_emails', []);
-          
+  
           if ($recipientEmails === ['all-faculty']) {
               $recipientEmailsString = 'All Faculty';
+              // Fetch all faculty emails from the database
+              $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
           } else {
               $recipientEmails = array_diff($recipientEmails, ['all-faculty']);
               $recipientEmailsString = !empty($recipientEmails) ? implode(', ', $recipientEmails) : 'No Recipients Selected';
+              $facultyEmails = $recipientEmails;
           }
-      
+  
           $announcement = new Announcement();
           $announcement->subject = $request->input('announcement_subject');
           $announcement->message = $request->input('announcement_message');
@@ -132,12 +135,27 @@ class AnnouncementController extends Controller
           $announcement->type_of_recepient = $recipientEmailsString;
           $announcement->user_login_id = auth()->user()->user_login_id;
           $announcement->save();
-      
+  
+          // Send email to recipients
+          $this->sendAnnouncementEmails($announcement, $facultyEmails);
+  
           $request->session()->flash('success', 'Announcement Added Successfully!');
           return redirect()->route('admin.announcement.admin-announcement');
       }
+  
+      protected function sendAnnouncementEmails($announcement, $recipients)
+      {
+          foreach ($recipients as $email) {
+              Mail::send('admin.emails.announcement', ['announcement' => $announcement], function ($message) use ($announcement, $email) {
+                  $message->to($email)
+                      ->subject($announcement->subject);
+                  $message->from(config('mail.from.address'), config('mail.from.name'));
+              });
+          }
+      }
       
 
+      
       //edit Page
       public function showEditPage()
       {

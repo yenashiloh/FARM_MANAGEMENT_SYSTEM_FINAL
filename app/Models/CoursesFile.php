@@ -15,12 +15,14 @@ class CoursesFile extends Model
         'files',
         'user_login_id',
         'folder_name_id',
+        'folder_input_id',
         'semester',
         'original_file_name',
         'subject',
         'status',
         'declined_reason',
-        'file_size' 
+        'file_size',
+        'is_archived'
     ];
 
     public function userLogin()
@@ -33,6 +35,11 @@ class CoursesFile extends Model
         return $this->belongsTo(FolderName::class, 'folder_name_id', 'folder_name_id');
     }
 
+    public function folderInput()
+    {
+        return $this->belongsTo(FolderInput::class, 'folder_input_id');
+    }
+    
     public function getFormattedFileSizeAttribute()
     {
         $bytes = $this->file_size;

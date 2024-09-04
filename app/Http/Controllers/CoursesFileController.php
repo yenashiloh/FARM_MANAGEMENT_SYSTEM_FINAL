@@ -106,7 +106,6 @@ class CoursesFileController extends Controller
         return json_encode($data);
     }
     
-
     //store files
     public function store(Request $request)
     {
