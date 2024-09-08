@@ -70,7 +70,7 @@
                                  aria-labelledby="navbarDropdownMenuLink2">
                                  <div class="nav-user-info text-center">
                                      <h5 class="mb-0 text-white nav-user-name">
-                                         {{ $firstName }} {{ $lastName }}
+                                         {{ $firstName }} {{ $surname }}
                                      </h5>
                                      <span style="font-size:12px;">
                                          Faculty Member
@@ -120,6 +120,13 @@
                                  data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-bullhorn"></i>
                                  Announcements</a>
                          </li>
+                         <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('faculty.view-archive') ? 'active' : '' }}"
+                                href="{{route ('faculty.view-archive')}}" aria-expanded="false"
+                                data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-archive"></i>
+                                Archive</a>
+                        </li>
+
                          <li class="nav-divider">
                              Accomplishment
                          </li>
@@ -171,7 +178,7 @@
                              <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Syllabus Preparation')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
                                  href="#" data-toggle="collapse" aria-expanded="false"
                                  data-target="#submenu-3" aria-controls="submenu-3">
-                                 <i class="fas fa-clipboard-list"></i> Syllabus Preparation
+                                 <i class="fas fa-file-alt"></i> Syllabus Preparation
                              </a>
                              <div id="submenu-3" class="collapse submenu">
                                  <ul class="nav flex-column">
@@ -214,7 +221,7 @@
              confirmButtonText: 'Yes, logout!'
          }).then((result) => {
              if (result.isConfirmed) {
-                 fetch('{{ route('logout') }}', {
+                 fetch('{{ route('faculty-logout') }}', {
                          method: 'POST',
                          headers: {
                              'Content-Type': 'application/json',

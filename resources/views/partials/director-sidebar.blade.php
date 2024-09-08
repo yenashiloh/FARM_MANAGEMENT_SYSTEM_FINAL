@@ -32,7 +32,7 @@
                             aria-labelledby="navbarDropdownMenuLink2">
                             <div class="nav-user-info text-center">
                                 <h5 class="mb-0 text-white nav-user-name">
-                                    {{ $userDetails->first_name }} {{ $userDetails->last_name }}
+                                    {{ $user->first_name }} {{ $user->surname }}
                                 </h5>
                                 <span style="font-size:12px;">Director</span>
                             </div>

@@ -29,19 +29,35 @@ Route::middleware(['auth', 'role:faculty', 'prevent-back-history'])->group(funct
     
     /****************************************FACULTY**************************************/
     // Route::get('/faculty-accomplishment', [FacultyController::class, 'accomplishmentPage'])->name('faculty.faculty-accomplishment'); 
-    Route::post('/logout', [FacultyController::class, 'facultyLogout'])->name('logout'); 
+    Route::post('/faculty-logout', [FacultyController::class, 'facultyLogout'])->name('faculty-logout'); 
     Route::get('/accomplishment/uploaded-files/{folder_name_id}', [FacultyController::class, 'showUploadedFiles'])->name('faculty.accomplishment.uploaded-files');
     Route::get('/faculty-info', [FacultyController::class, 'getFacultyInfo']);
     Route::post('/accomplishment/uploaded-files', [CoursesFileController::class, 'store'])->name('files.store');
     Route::get('/files/semester/{semester}', [CoursesFileController::class, 'getFilesBySemester']);
-    Route::put('/files/update', [CoursesFileController::class, 'update'])->name('files.update');
+    // Route::put('/files/update', [CoursesFileController::class, 'update'])->name('files.update');
+  
+    Route::put('/update-file/{id}', [CoursesFileController::class, 'updateFile'])->name('update.file');
+
     Route::get('/faculty-dashboard', [DashboardController::class, 'facultyDashboardPage'])->name('faculty.faculty-dashboard');
     Route::get('/notifications/count', [NotificationController::class, 'getNotificationCount'])->name('notifications.count');
     Route::post('/notifications/mark-read', [NotificationController::class, 'markNotificationsAsRead'])->name('notifications.mark-read');
     Route::get('/notifications/list', [NotificationController::class, 'getNotificationList'])->name('notifications.list');
     Route::get('/notifications', [NotificationController::class, 'getNotifications'])->name('notifications.get');
     Route::get('/announcement', [FacultyController::class, 'announcementPage'])->name('faculty.announcement'); 
-    Route::post('/archive-file/{id}', [CoursesFileController::class, 'archiveFile'])->name('archive-file');
+    // Route::post('/archive-file/{id}', [CoursesFileController::class, 'archiveFile'])->name('archive-file');
+    // Route::get('/accomplishment/view-uploaded-files/{user_login_id}/{folder_name_id}', [FacultyController::class, 'viewUploadedFiles'])->name('faculty.accomplishment.view-uploaded-files');
+    Route::get('/view-uploaded-files/{user_login_id}/{folder_name_id}/{semester?}', [FacultyController::class, 'viewUploadedFiles'])->name('faculty.accomplishment.view-uploaded-files');
+
+    //Archive
+    Route::post('/files/archive/{id}', [CoursesFileController::class, 'archive'])->name('files.archive');
+    Route::get('/view-archive', [CoursesFileController::class, 'showArchive'])->name('faculty.view-archive');
+    Route::post('/files/unarchive/{courses_files_id}', [CoursesFileController::class, 'unarchive'])->name('files.unarchive');
+
+
+    Route::post('/files/archiveAll', [CoursesFileController::class, 'archiveAll'])->name('files.archiveAll');
+    Route::post('/files/bulk-unarchive', [CoursesFileController::class, 'bulkUnarchive'])->name('files.bulkUnarchive');
+
+
 
 });
 
@@ -51,8 +67,8 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     //Accomplishment
     Route::get('/admin-accomplishment', [AdminController::class, 'accomplishmentPage'])->name('admin.admin-accomplishment');
     Route::get('/accomplishment/admin-uploaded-files/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.admin-uploaded-files');
-    Route::get('/accomplishment/view-accomplishment/{user_login_id}/{folder_name_id}', [AdminController::class, 'viewAccomplishmentFaculty'])->name('admin.accomplishment.view-accomplishment');
-
+    Route::get('/view-accomplishment/{user_login_id}/{folder_name_id}/{semester?}', [AdminController::class, 'viewAccomplishmentFaculty'])
+    ->name('admin.accomplishment.view-accomplishment');
     //File Crud
     Route::get('/file/approve/{courses_files_id}', [FileController::class, 'approve'])->name('approveFile');
     Route::post('/file/decline/{courses_files_id}', [FileController::class, 'decline'])->name('declineFile');
@@ -93,7 +109,7 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
      //View Admin Account
     Route::get('/admin-account', [AdminController::class, 'adminAccountPage'])->name('admin.admin-account');
     Route::post('/update-account', [AdminController::class, 'updateAccount'])->name('updateAccount');
-    Route::post('/logout', [AdminController::class, 'adminLogout'])->name('logout');
+    Route::post('/admin-logout', [AdminController::class, 'adminLogout'])->name('admin-logout');
 
     //Add Input Field
     Route::post('/folder-inputs', [FolderInputController::class, 'store'])->name('folder-inputs.store');
@@ -103,21 +119,13 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/folder-inputs/{id}', [FolderInputController::class, 'show'])->name('folder-inputs.show');
 
     //Upload Schedule
-  
     Route::get('/maintenance/upload-schedules', [UploadScheduleController::class, 'showUploadSchedule'])
     ->name('admin.maintenance.upload-schedule');
+    Route::post('/upload-schedule', [UploadScheduleController::class, 'store'])->name('upload-schedule.store');
+    Route::get('/maintenance/upload-schedule/{id}/edit', [UploadScheduleController::class, 'edit'])->name('upload-schedule.edit');
+    Route::put('/maintenance/upload-schedules/{uploadSchedule}', [UploadScheduleController::class, 'update'])->name('upload_schedule.update');
 
-// Store a new upload schedule
-// Store a new or update existing upload schedule
-Route::post('/upload-schedule', [UploadScheduleController::class, 'store'])->name('upload-schedule.store');
-
-// Show the form for editing an upload schedule
-Route::get('/maintenance/upload-schedule/{id}/edit', [UploadScheduleController::class, 'edit'])->name('upload-schedule.edit');
-
-
-// Update an existing upload schedule
-Route::put('/maintenance/upload-schedules/{uploadSchedule}', [UploadScheduleController::class, 'update'])
-    ->name('upload_schedule.update');
+    Route::get('/admin/accomplishment/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.show');
 
 
     });
@@ -126,7 +134,11 @@ Route::put('/maintenance/upload-schedules/{uploadSchedule}', [UploadScheduleCont
 Route::group(['middleware' => ['auth', 'role:director', 'prevent-back-history']], function () {
 
     Route::get('/accomplishment/director-uploaded-files/{folder_name_id}', [DirectorController::class, 'showDirectorUploadedFiles'])->name('director.accomplishment.director-uploaded-files');
-    Route::get('/accomplishment/view-faculty-accomplishment/{user_login_id}/{folder_name_id}', [DirectorController::class, 'viewFacultyAccomplishment'])->name('director.accomplishment.view-accomplishment');
+    // Route::get('/accomplishment/view-faculty-accomplishment/{user_login_id}/{folder_name_id}', [DirectorController::class, 'viewFacultyAccomplishment'])->name('director.accomplishment.view-accomplishment');
+
+    Route::get('/accomplishment/view-accomplishment/{user_login_id}/{folder_name_id}/{semester?}', [DirectorController::class, 'viewFacultyAccomplishment'])
+    ->name('director.accomplishment.view-accomplishment');
+
 
     Route::get('/director-dashboard', [DirectorController::class, 'directorDashboardPage'])->name('director.director-dashboard');
 
@@ -134,6 +146,8 @@ Route::group(['middleware' => ['auth', 'role:director', 'prevent-back-history']]
     Route::post('/update-director-account', [DirectorController::class, 'updateDirectorAccount'])->name('updateDirectorAccount');
 
     Route::post('/logout-director', [DirectorController::class, 'directorLogout'])->name('logout-director');
+
+    Route::get('/director/accomplishment/{folder_name_id}', [DirectorController::class, 'showDirectorUploadedFiles'])->name('director.accomplishment.show');
 });
 
 

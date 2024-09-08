@@ -129,10 +129,10 @@
                                                     <td>{{ $folder->folder_name }}</td>
                                                     <td>{{ $folder->main_folder_name }}</td>
                                                     <td>
-                                                        <a href="{{ route('admin.maintenance.view-file-input', ['folder_input_id' => $folder->folder_name_id]) }}"
+                                                        {{-- <a href="{{ route('admin.maintenance.view-file-input', ['folder_input_id' => $folder->folder_name_id]) }}"
                                                             class="btn btn-info btn-sm">
                                                             View
-                                                        </a>
+                                                        </a> --}}
                                                         <button type="button" class="btn btn-warning btn-sm"
                                                             data-toggle="modal" data-target="#editFolderModal"
                                                             data-id="{{ $folder->folder_name_id }}"

@@ -88,37 +88,34 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="inputFirstName">First Name</label>
-                                                    <input id="inputFirstName" type="text" name="first-name" value="{{ old('first-name', $userDetails->first_name) }}" data-parsley-trigger="change" required="" placeholder="Enter first name" autocomplete="off" class="form-control">
+                                                    <input id="inputFirstName" type="text" name="first-name" value="{{ old('first-name', $user->first_name) }}" data-parsley-trigger="change" required placeholder="Enter first name" autocomplete="off" class="form-control">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="inputEmail">Email address</label>
-                                                    <input id="inputEmail" type="email" name="email" value="{{ old('email', $user->email) }}" data-parsley-trigger="change" required="" placeholder="Enter email" autocomplete="off" class="form-control">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="inputRecentPassword">Recent Password</label>
-                                                    <input id="inputRecentPassword" type="password" name="recent-password" data-parsley-trigger="change" required="" placeholder="Enter recent password" autocomplete="off" class="form-control">
-                                                </div>
-                                             
-                                                <div class="form-group">
-                                                    <label for="inputConfirmPassword">Confirm Password</label>
-                                                    <input id="inputConfirmPassword" type="password" name="confirm-password" data-parsley-equalto="#inputNewPassword"  placeholder="Confirm new password" autocomplete="off" class="form-control">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="inputLastName">Last Name</label>
-                                                    <input id="inputLastName" type="text" name="last-name" value="{{ old('last-name', $userDetails->last_name) }}" data-parsley-trigger="change" required="" placeholder="Enter last name" autocomplete="off" class="form-control">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="inputContactNumber">Contact Number</label>
-                                                    <input id="inputContactNumber" type="number" name="contact-number" value="{{ old('contact-number', $userDetails->phone_number) }}" data-parsley-trigger="change" required="" placeholder="Enter contact number" autocomplete="off" class="form-control">
+                                                    <input id="inputEmail" type="email" name="email" value="{{ old('email', $user->email) }}" data-parsley-trigger="change" required placeholder="Enter email" autocomplete="off" class="form-control">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="inputNewPassword">New Password</label>
                                                     <input id="inputNewPassword" type="password" name="new-password" data-parsley-trigger="change" placeholder="Enter new password" autocomplete="off" class="form-control">
                                                 </div>
                                             </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="inputLastName">Last Name</label>
+                                                    <input id="inputLastName" type="text" name="last-name" value="{{ old('last-name', $user->surname) }}" data-parsley-trigger="change" required placeholder="Enter last name" autocomplete="off" class="form-control">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="inputRecentPassword">Recent Password</label>
+                                                    <input id="inputRecentPassword" type="password" name="recent-password" data-parsley-trigger="change" required placeholder="Enter recent password" autocomplete="off" class="form-control">
+                                                </div>
+                                              
+                                                <div class="form-group">
+                                                    <label for="inputConfirmPassword">Confirm Password</label>
+                                                    <input id="inputConfirmPassword" type="password" name="confirm-password" data-parsley-equalto="#inputNewPassword" placeholder="Confirm new password" autocomplete="off" class="form-control">
+                                                </div>
+                                            </div>
                                         </div>
+                                        
                                         <div class="row">
                                             <div class="col-sm-6 mt-3">
                                                 <p>

@@ -12,112 +12,17 @@ use App\Models\Notification;
 
 class DashboardController extends Controller
 {
-    public function getFacultyInfo()
-    {
-        $semester = [
-            "id" => 1,
-            "semester" => "1st Semester 2024-2025",
-            "user_login_id" => 2
-        ];
-    
-        $programs = [
-            "Bachelor of Science in Applied Mathematics (BSAM)",
-            "Bachelor of Science in Information Technology (BSIT)",
-            "Bachelor of Science in Entrepreneurship (BSENTREP)"
-        ];
-    
-        $subjects = [
-            [
-                "id" => 1,
-                "code" => "MGT101",
-                "name" => "Principles of Management and Organization",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "1st Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ],
-            [
-                "id" => 2,
-                "code" => "IT202",
-                "name" => "Applications Development and Emerging Technologies",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 3,
-                "code" => "ENT301",
-                "name" => "Technopreneurship",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSENTREP"
-                    ]
-                ]
-            ],
-            [
-                "id" => 4,
-                "code" => "SYS202",
-                "name" => "Systems Analysis and Design",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 5,
-                "code" => "CS303",
-                "name" => "Computer Science",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "4th Year",
-                        "program" => "BSIT"
-                    ],
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ]
-        ];
-    
-        $data = [
-            "faculty" => [
-                "faculty_id" => 2,
-                "first_name" => "Diana",
-                "middle_name" => "M.",
-                "last_name" => "Rose",
-                "programs" => $programs,
-                "subjects" => $subjects
-            ]
-        ];
-    
-        return json_encode($data);
-    }
-
+   
     //show admin dashboard
     public function adminDashboardPage()
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
-        $userId = auth()->id();
-
     
+        $userId = auth()->id();
         $user = auth()->user();
+    
         if ($user->role !== 'admin') {
             return redirect()->route('login');
         }
@@ -128,10 +33,12 @@ class DashboardController extends Controller
     
         $notificationCount = $notifications->where('is_read', 0)->count();
     
-        $userDetails = $user->userDetails; 
+        $firstName = $user->first_name;
+        $surname = $user->surname;
     
         $folders = FolderName::all();
         $folder = FolderName::first(); 
+    
     
         $facultyCount = UserLogin::where('role', 'faculty')->count();
     
@@ -175,7 +82,8 @@ class DashboardController extends Controller
             'approvedCount' => $approvedCount,
             'declinedCount' => $declinedCount,
             'folderCounts' => $folderCounts,
-            'userDetails' => $userDetails,
+            'firstName' => $firstName,
+            'surname' => $surname,
             'chartData' => $chartData,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
@@ -189,50 +97,49 @@ class DashboardController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
+    
         $userId = auth()->id();
-
         $user = auth()->user();
+    
         if ($user->role !== 'faculty') {
             return redirect()->route('login');
         }
-
+    
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+    
         $folders = FolderName::all();
-        $folder = FolderName::first(); 
-
+        $folder = FolderName::first();
+    
         $notifications = \App\Models\Notification::where('user_login_id', $userId)
                             ->orderBy('created_at', 'desc')
                             ->get();
-
+    
         $notificationCount = $notifications->count();
-
+    
         $totalFilesSubmitted = \App\Models\CoursesFile::where('user_login_id', $userId)->count();
-
+    
         $toReviewCount = \App\Models\CoursesFile::where('user_login_id', $userId)
                             ->where('status', 'To Review')
                             ->count();
-
+    
         $approvedCount = \App\Models\CoursesFile::where('user_login_id', $userId)
                             ->where('status', 'Approved')
                             ->count();
-                            
-        $approvedCount = $approvedFiles->count();
-
+    
         $declinedCount = \App\Models\CoursesFile::where('user_login_id', $userId)
                             ->where('status', 'Declined')
                             ->count();
-
-  
-
-       $totalStorageUsed = \App\Models\CoursesFile::where('user_login_id', $userId)
-                        ->where('is_archived', false) // Only non-archived files count towards storage
-                        ->sum('file_size');
+    
+        $totalStorageUsed = \App\Models\CoursesFile::where('user_login_id', $userId)
+                            ->where('is_archived', false)
+                            ->sum('file_size');
         $formattedTotalStorageUsed = $this->formatBytes($totalStorageUsed);
-
-        $totalStorageLimit = 20 * 1024 * 1024 * 1024; 
+    
+        $totalStorageLimit = 30 * 1024 * 1024 * 1024;
         $storageAvailable = $totalStorageLimit - $totalStorageUsed;
         $formattedStorageAvailable = $this->formatBytes($storageAvailable);
-
+    
         $folderStatusCounts = FolderName::withCount([
             'coursesFiles as approved_count' => function ($query) {
                 $query->where('status', 'Approved');
@@ -244,7 +151,7 @@ class DashboardController extends Controller
                 $query->where('status', 'To Review');
             }
         ])->get();
-
+    
         $chartData = $folderStatusCounts->map(function ($folder) {
             return [
                 'folder_name' => $folder->folder_name,
@@ -253,12 +160,7 @@ class DashboardController extends Controller
                 'to_review' => $folder->to_review_count,
             ];
         });
-
-        $facultyInfo = json_decode($this->getFacultyInfo(), true);
-        $firstName = $facultyInfo['faculty']['first_name'];
-        $lastName = $facultyInfo['faculty']['last_name'];
     
-
         return view('faculty.faculty-dashboard', [
             'folders' => $folders,
             'folder' => $folder,
@@ -275,7 +177,7 @@ class DashboardController extends Controller
             'storageAvailable' => $storageAvailable,
             'formattedStorageAvailable' => $formattedStorageAvailable,
             'firstName' => $firstName,
-            'lastName' => $lastName,
+            'surname' => $surname,
         ]);
     }
 

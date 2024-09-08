@@ -102,7 +102,6 @@ class NotificationController extends Controller
         return response()->json(['count' => $count]);
     }
     
-
     //log click
     public function logClick(Request $request)
     {

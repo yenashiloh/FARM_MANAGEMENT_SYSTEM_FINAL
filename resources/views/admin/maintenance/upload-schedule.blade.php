@@ -104,7 +104,7 @@
                                                         required class="form-control">
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="inputStopTime">Stop Time</label>
+                                                    <label for="inputStopTime">End Time</label>
                                                     <input id="inputStopTime" type="time" name="stop_time"
                                                         value="{{ old('stop_time', $uploadSchedule['stop_time'] ?? '') }}"
                                                         required class="form-control">

@@ -15,6 +15,13 @@ class UserLogin extends Authenticatable
     protected $primaryKey = 'user_login_id';
 
     protected $fillable = [
+        'Fcode',
+        'surname',           
+        'first_name',
+        'middle_name',
+        'name_extension',
+        'employment_type',
+        'department',
         'email',
         'password',
         'role',
@@ -32,6 +39,11 @@ class UserLogin extends Authenticatable
     public function userDetails()
     {
         return $this->hasOne(UserDetails::class, 'user_login_id');
+    }
+
+    public function courseSchedules()
+    {
+        return $this->hasMany(CourseSchedule::class, 'user_login_id');
     }
 
 }

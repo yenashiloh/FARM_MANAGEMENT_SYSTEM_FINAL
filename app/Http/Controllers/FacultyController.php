@@ -12,6 +12,7 @@ use App\Models\FolderInput;
 use App\Http\Middleware\RoleAuthenticate;
 use Carbon\Carbon;
 use App\Models\UploadSchedule;
+use App\Models\CourseSchedule;
 use Illuminate\Support\Facades\Log;
 
 class FacultyController extends Controller
@@ -111,25 +112,6 @@ class FacultyController extends Controller
         return json_encode($data);
     }
 
-    //view accomplishment page
-    // public function accomplishmentPage()
-    // {
-    //     if (!auth()->check()) {
-    //         return redirect()->route('login');
-    //     }
-        
-    //     $folders = FolderName::all();
-
-    //     $notifications = \App\Models\Notification::where('user_login_id', auth()->id())->get();
-    //     $notificationCount = $notifications->count();
-    
-    //     return view('faculty.faculty-accomplishment', [
-    //         'folders' => $folders,
-    //         'notifications' => $notifications,
-    //         'notificationCount' => $notificationCount,
-    //     ]);
-    // }
-    
     //faculty logout
     public function facultyLogout(Request $request)
     {
@@ -159,24 +141,20 @@ class FacultyController extends Controller
     
         $currentDateTime = Carbon::now('Asia/Manila');
         $uploadSchedule = UploadSchedule::first();
-        
+    
         $isUploadOpen = false;
         $statusMessage = '';
         $remainingTime = null;
         $formattedStartDate = null;
         $formattedEndDate = null;
-        
+    
         if ($uploadSchedule) {
             $startDateTime = Carbon::parse($uploadSchedule->start_date . ' ' . $uploadSchedule->start_time, 'Asia/Manila');
             $endDateTime = Carbon::parse($uploadSchedule->end_date . ' ' . $uploadSchedule->stop_time, 'Asia/Manila');
-        
+    
             $formattedStartDate = $startDateTime->format('l, j F Y, g:i A');
             $formattedEndDate = $endDateTime->format('l, j F Y, g:i A');
-        
-            // Log::info("Current DateTime: " . $currentDateTime);
-            // Log::info("Start DateTime: " . $startDateTime);
-            // Log::info("End DateTime: " . $endDateTime);
-        
+    
             if ($currentDateTime->between($startDateTime, $endDateTime)) {
                 $isUploadOpen = true;
                 $remainingTime = $currentDateTime->diffForHumans($endDateTime, [
@@ -195,7 +173,7 @@ class FacultyController extends Controller
                 $statusMessage = "Upload opens in {$remainingTime}.";
             } elseif ($currentDateTime->gt($endDateTime)) {
                 $isUploadOpen = false;
-                $statusMessage = "The upload period has ended.";
+                $statusMessage = "The upload period is already closed.";
             } else {
                 $isUploadOpen = false;
                 $statusMessage = "Upload is closed.";
@@ -203,35 +181,40 @@ class FacultyController extends Controller
         } else {
             $statusMessage = "No upload schedule set.";
         }
-        
     
-        $facultyInfo = json_decode($this->getFacultyInfo(), true);
-        $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester'] ?? 'N/A';
+        $courseSchedules = CourseSchedule::where('user_login_id', $user->user_login_id)->get();
+    
+        $semester = $courseSchedules->pluck('sem_academic_year')->unique()->first() ?? 'N/A';
+    
         $files = CoursesFile::where('folder_name_id', $folder_name_id)
             ->where('user_login_id', auth()->id())
             ->get();
     
-        $filesWithSubjects = $files->map(function ($file) use ($facultyInfo) {
-            $subjectInfo = collect($facultyInfo['faculty']['subjects'])->firstWhere('name', $file->subject);
-    
-            if ($subjectInfo) {
-                $file->subject_name = $file->subject;
-                $file->year = $subjectInfo['year_programs'][0]['year'] ?? 'N/A';
-                $file->program = $subjectInfo['year_programs'][0]['program'] ?? 'N/A';
-                $file->code = $subjectInfo['code'] ?? 'N/A';
-            } else {
-                $file->subject_name = 'N/A';
-                $file->year = 'N/A';
-                $file->program = 'N/A';
-                $file->code = 'N/A';
-            }
-    
-            return $file;
-        });
-    
+            $filesWithSubjects = $files->map(function ($file) use ($courseSchedules) {
+                $courseSchedule = $courseSchedules->firstWhere('course_code', $file->subject);
+            
+                if ($courseSchedule) {
+                    $file->subject_name = $file->subject;
+                    $file->year = $courseSchedule->year_section ?? 'N/A';
+                    $file->program = $courseSchedule->program ?? 'N/A';
+                    $file->code = $courseSchedule->course_code ?? 'N/A';
+                    $file->schedule = $courseSchedule->schedule ?? 'N/A';
+                    $file->sem_academic_year = $courseSchedule->sem_academic_year ?? 'N/A'; 
+                } else {
+                    $file->subject_name = 'N/A';
+                    $file->year = 'N/A';
+                    $file->program = 'N/A';
+                    $file->code = 'N/A';
+                    $file->schedule = 'N/A';
+                    $file->sem_academic_year = 'N/A'; 
+                }
+            
+                return $file;
+            });
+            
         $groupedFiles = $filesWithSubjects->groupBy('semester');
     
-        $subjects = $facultyInfo['faculty']['subjects'] ?? [];
+        $subjects = $courseSchedules->pluck('course_subjects')->unique();
     
         $folderInputs = FolderInput::where('folder_name_id', $folder->folder_name_id)->get();
     
@@ -240,52 +223,120 @@ class FacultyController extends Controller
     
         $folders = FolderName::all();
     
-        $firstName = $facultyInfo['faculty']['first_name'] ?? 'N/A';
-        $lastName = $facultyInfo['faculty']['last_name'] ?? 'N/A';
+        $firstName = $user->first_name;
+        $surname = $user->surname;
     
         return view('faculty.accomplishment.uploaded-files', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
             'groupedFiles' => $groupedFiles,
-            'semester' => $semester,
+            'semester' => $semester,  
             'subjects' => $subjects,
             'filesWithSubjects' => $filesWithSubjects,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
             'folders' => $folders,
             'firstName' => $firstName,
-            'lastName' => $lastName,
+            'surname' => $surname,
             'folder_inputs' => $folderInputs,
             'isUploadOpen' => $isUploadOpen,
             'statusMessage' => $statusMessage,
             'formattedStartDate' => $formattedStartDate,
-            'formattedEndDate' => $formattedEndDate
+            'formattedEndDate' => $formattedEndDate,
+            'courseSchedules' => $courseSchedules 
         ]);
     }
     
+    //show uploaded files page
+    public function viewUploadedFiles($user_login_id, $folder_name_id, $semester = null)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
     
+        $user = auth()->user();
+    
+        if ($user->role !== 'faculty') {
+            return redirect()->route('login');
+        }
+    
+        $folder = FolderName::find($folder_name_id);
+    
+        if (!$folder) {
+            return redirect()->back()->with('error', 'Folder not found.');
+        }
+    
+        $folders = FolderName::all();
+        $folderInputs = FolderInput::where('folder_name_id', $folder->folder_name_id)->get();
+    
+        $notifications = \App\Models\Notification::where('user_login_id', auth()->id())->get();
+        $notificationCount = $notifications->count();
+    
+        // Query builder for uploaded files
+        $uploadedFilesQuery = CoursesFile::where('courses_files.user_login_id', $user_login_id)
+            ->where('courses_files.folder_name_id', $folder_name_id)
+            ->where('courses_files.is_archived', false)
+            ->with(['userLogin', 'folderName', 'folderInput', 'courseSchedule']);
+    
+        // If a semester is specified, filter by it
+        if ($semester) {
+            $uploadedFilesQuery->whereHas('courseSchedule', function ($query) use ($semester) {
+                $query->where('sem_academic_year', $semester);
+            });
+        }
+    
+        $uploadedFiles = $uploadedFilesQuery->get();
+    
+        // Get unique semesters for the dropdown
+        $semesters = CoursesFile::where('courses_files.user_login_id', $user_login_id)
+            ->where('courses_files.folder_name_id', $folder_name_id)
+            ->where('courses_files.is_archived', false)
+            ->join('course_schedules', 'courses_files.course_schedule_id', '=', 'course_schedules.course_schedule_id')
+            ->select('course_schedules.sem_academic_year')
+            ->distinct()
+            ->pluck('course_schedules.sem_academic_year');
+    
+        return view('faculty.accomplishment.view-uploaded-files', [
+            'uploadedFiles' => $uploadedFiles,
+            'folder' => $folder,
+            'folderName' => $folder->folder_name,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'folderInputs' => $folderInputs,
+            'firstName' => $user->first_name,
+            'surname' => $user->surname,
+            'folders' => $folders,
+            'semesters' => $semesters,
+            'selectedSemester' => $semester,
+        ]);
+    }
+
     //show announcement page
     public function announcementPage()
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-    
+
         $userId = auth()->id();
-        $userEmail = auth()->user()->email; 
-    
+        $user = auth()->user(); 
+
+        $userEmail = $user->email;
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+
         $folders = FolderName::all();
-    
+
         $notifications = \App\Models\Notification::where('user_login_id', $userId)->get();
         $notificationCount = $notifications->count();
-    
+
         $announcements = \App\Models\Announcement::where(function ($query) use ($userEmail) {
             $query->where('type_of_recepient', 'All Faculty')
-                  ->orWhere('type_of_recepient', $userEmail);
-        })->where('published', 1) 
-          ->orderBy('created_at', 'desc') 
-          ->get();
-    
+                ->orWhere('type_of_recepient', $userEmail);
+        })->where('published', 1)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
         foreach ($announcements as $announcement) {
             $emails = explode(',', $announcement->type_of_recepient);
             if (count($emails) > 3) {
@@ -297,24 +348,19 @@ class FacultyController extends Controller
             }
         }
 
-        $folder = $folders->first(); 
-    
-        $facultyInfo = json_decode($this->getFacultyInfo(), true);
-        $firstName = $facultyInfo['faculty']['first_name'];
-        $lastName = $facultyInfo['faculty']['last_name'];
-    
+        $folder = $folders->first();
 
         return view('faculty.announcement', [
             'folders' => $folders,
-            'folder' => $folder, 
+            'folder' => $folder,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
             'announcements' => $announcements,
             'firstName' => $firstName,
-            'lastName' => $lastName,
+            'surname' => $surname,
         ]);
     }
-  
+
     //show upload schedule
     public function showUploadForm()
     {
@@ -338,11 +384,9 @@ class FacultyController extends Controller
             return back()->with('error', 'Only approved files can be archived.');
         }
 
-        // Set the file as archived
         $file->is_archived = true;
         $file->save();
 
-        // Subtract the file size from the total storage used
         $userId = auth()->id();
         $totalStorageUsed = \App\Models\CoursesFile::where('user_login_id', $userId)->sum('file_size');
         $file->user->total_storage_used = $totalStorageUsed - $file->file_size;

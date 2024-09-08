@@ -33,14 +33,13 @@ class UploadScheduleController extends Controller
             ->get();
     
         $notificationCount = $notifications->where('is_read', 0)->count();
-        $userDetails = $user->userDetails; 
+        $firstName = $user->first_name;
+        $surname = $user->surname;
         $folders = FolderName::all();
         $folder = FolderName::first(); 
     
-        // Use UploadSchedule::first() to get the first record
         $uploadSchedule = UploadSchedule::first();
     
-        // Format the dates and times for the form
         if ($uploadSchedule) {
             $startDate = $uploadSchedule->start_date ? (is_string($uploadSchedule->start_date) ? $uploadSchedule->start_date : $uploadSchedule->start_date->format('Y-m-d')) : '';
             $startTime = $uploadSchedule->start_time;
@@ -53,7 +52,8 @@ class UploadScheduleController extends Controller
         return view('admin.maintenance.upload-schedule', [
             'folders' => $folders,
             'folder' => $folder,
-            'userDetails' => $userDetails,
+            'firstName' => $firstName,
+            'surname' => $surname,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
             'uploadSchedule' => [
@@ -64,7 +64,6 @@ class UploadScheduleController extends Controller
             ],
         ]);
     }
-    
 
     public function store(Request $request)
     {
@@ -108,37 +107,4 @@ class UploadScheduleController extends Controller
         $schedule->save();
         return redirect()->route('admin.maintenance.upload-schedule')->with('success', 'Schedule updated successfully!');
     }
-
-    
-    // public function edit(UploadSchedule $uploadSchedule)
-    // {
-    //     // Format the dates and times before passing them to the view
-    //     $uploadSchedule->start_date = \Carbon\Carbon::parse($uploadSchedule->start_date)->format('Y-m-d');
-    //     $uploadSchedule->end_date = \Carbon\Carbon::parse($uploadSchedule->end_date)->format('Y-m-d');
-    //     $uploadSchedule->start_time = \Carbon\Carbon::parse($uploadSchedule->start_time)->format('H:i');
-    //     $uploadSchedule->stop_time = \Carbon\Carbon::parse($uploadSchedule->stop_time)->format('H:i');
-    
-    //     // Pass the formatted data to the view
-    //     return view('upload-schedules.edit', compact('uploadSchedule'));
-    // }
-    
-
-    
-    
-
-  
-
-    // public function update(Request $request, UploadSchedule $uploadSchedule)
-    // {
-    //     $validatedData = $request->validate([
-    //         'start_date' => 'required|date',
-    //         'end_date' => 'required|date|after_or_equal:start_date',
-    //         'start_time' => 'required',
-    //         'stop_time' => 'required|after:start_time',
-    //     ]);
-
-    //     $uploadSchedule->update($validatedData);
-
-    //     return redirect()->route('admin.maintenance.upload-schedule')->with('success', 'Upload schedule updated successfully.');
-    // }
 }

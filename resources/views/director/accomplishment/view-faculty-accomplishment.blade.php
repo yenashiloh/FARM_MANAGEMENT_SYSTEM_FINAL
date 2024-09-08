@@ -69,64 +69,70 @@
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table id="example" class="table table-striped table-bordered second"
-                                        style="width:100%">
+                                    <table id="example" class="table table-striped table-bordered second" style="width:100%">
                                         <thead>
                                             <div id="alertContainer">
-
+                                                @if (session('success'))
+                                                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert" id="successAlert">
+                                                        {{ session('success') }}
+                                                    </div>
+                                                @endif
+                            
+                                                @if (session('error'))
+                                                    <div class="alert alert-danger alert-dismissible fade show text-center" role="alert" id="errorAlert">
+                                                        {{ session('error') }}
+                                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                @endif
+                                            </div>
+                            
                                             <tr>
                                                 <th>No.</th>
                                                 <th>Date & Time</th>
                                                 <th>Employee Name</th>
-                                                <th>Code & Subject</th>
+                                                <th>Course Code & Course</th>
                                                 <th>Year & Program</th>
                                                 <th>File</th>
                                                 <th>Status</th>
-                                              
                                             </tr>
                                         </thead>
                                         <tbody>
-
-                                            @foreach ($groupedFiles as $semester => $files)
-                                                @foreach ($files as $index => $file)
-                                                    <tr>
-                                                        <td>{{ $index + 1 }}</td>
-                                                        <td>{{ $file->created_at->timezone('Asia/Manila')->format('F j, Y, g:i A') }}
-                                                        </td>
-                                                        <td>{{ $file->user_name }}</td>
-                                                        <td>
-                                                            <div
-                                                                style="display: flex; flex-direction: column; margin-bottom: 20px;">
-                                                                {{ $file->code }}
-                                                                <span
-                                                                    style="margin-top: 5px;">{{ $file->subject_name ?? 'N/A' }}</span>
-                                                            </div>
-                                                        </td>
-
-                                                        <td>{{ $file->year ?? 'N/A' }} -
-                                                            <span>{{ $file->program ?? 'N/A' }}</span>
-                                                        </td>
-                                                        <td>
-                                                            <a href="{{ Storage::url('/' . $file->files) }}"
-                                                                target="_blank">{{ $file->original_file_name }}</a>
-                                                        </td>
-                                                        <td>
-                                                            @if ($file->status === 'To Review')
-                                                                <span
-                                                                    class="badge badge-primary">{{ $file->status }}</span>
-                                                            @elseif ($file->status === 'Declined')
-                                                                <span
-                                                                    class="badge badge-danger">{{ $file->status }}</span>
-                                                                <br>
-                                                                <span>Declined Reason:
-                                                                    {{ $file->declined_reason }}</span>
-                                                            @elseif ($file->status === 'Approved')
-                                                                <span
-                                                                    class="badge badge-success">{{ $file->status }}</span>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
+                                            @php $index = 1; @endphp
+                                            @foreach ($groupedFiles[$currentSemester] ?? [] as $file)
+                                                <tr>
+                                                    <td>{{ $index++ }}</td>
+                                                    <td>{{ $file->created_at->timezone('Asia/Manila')->format('F j, Y, g:i A') }}</td>
+                                                    <td>{{ $file->userLogin->first_name }} {{ $file->userLogin->surname }}</td>
+                                                    <td>
+                                                        <div style="display: flex; flex-direction: column; margin-bottom: 20px;">
+                                                            {{ $file->courseSchedule->course_code ?? 'N/A' }}
+                                                            <span style="margin-top: 5px;">{{ $file->subject ?? 'N/A' }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {{ $file->courseSchedule->year_section ?? 'N/A' }} -
+                                                        <span>{{ $file->courseSchedule->program ?? 'N/A' }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ Storage::url($file->files) }}" target="_blank"
+                                                           style="color: rgb(65, 65, 231); text-decoration: underline;">
+                                                            {{ $file->original_file_name }}
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        @if ($file->status === 'To Review')
+                                                            <span class="badge badge-primary">{{ $file->status }}</span>
+                                                        @elseif ($file->status === 'Declined')
+                                                            <span class="badge badge-danger">{{ $file->status }}</span>
+                                                            <br>
+                                                            <span>Declined Reason: {{ $file->declined_reason }}</span>
+                                                        @elseif ($file->status === 'Approved')
+                                                            <span class="badge badge-success">{{ $file->status }}</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
                                             @endforeach
                                         </tbody>
                                     </table>

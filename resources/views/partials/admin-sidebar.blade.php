@@ -30,40 +30,41 @@
                          </a>
 
                          <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
-                             <li>
-                                 <div class="notification-title">Notification</div>
-                                 <div class="notification-list">
-                                     <div class="list-group">
-                                         @if ($notifications->isEmpty())
-                                             <div class="text-center p-3">
-                                                 <span>No notifications available</span>
-                                             </div>
-                                         @else
-                                             @foreach ($notifications as $notification)
-                                                 <a href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $notification->folder_name_id]) }}"
-                                                     class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
-                                                     data-notification-id="{{ $notification->id }}">
-                                                     <div class="notification-info">
-                                                         <div class="notification-list-user-img">
-                                                             <i class="fas fa-user-circle user-avatar-md"
-                                                                 style="font-size:30px;"></i>
-                                                         </div>
-                                                         <div class="notification-list-user-block">
-                                                             <span
-                                                                 class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
-                                                             <span>{{ $notification->notification_message }}</span>
-                                                             <div class="notification-date">
-                                                                 {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
-                                                             </div>
-                                                         </div>
-                                                     </div>
-                                                 </a>
-                                             @endforeach
-                                         @endif
-                                     </div>
-                                 </div>
-                             </li>
-                         </ul>
+                            <li>
+                                <div class="notification-title">Notification</div>
+                                <div class="notification-list">
+                                    <div class="list-group">
+                                        @if ($notifications->isEmpty())
+                                            <div class="text-center p-3">
+                                                <span>No notifications available</span>
+                                            </div>
+                                        @else
+                                            @foreach ($notifications as $notification)
+                                                <a href="{{ route('admin.accomplishment.view-accomplishment', [
+                                                    'user_login_id' => auth()->user()->user_login_id,
+                                                    'folder_name_id' => $notification->folder_name_id,
+                                                    'semester' => $notification->semester
+                                                ]) }}" class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
+                                                   data-notification-id="{{ $notification->id }}">
+                                                    <div class="notification-info">
+                                                        <div class="notification-list-user-img">
+                                                            <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
+                                                        </div>
+                                                        <div class="notification-list-user-block">
+                                                            <span class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
+                                                            <span>{{ $notification->notification_message }}</span>
+                                                            <div class="notification-date">
+                                                                {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                      </li>
 
                      <li class="nav-item dropdown nav-user">
@@ -75,7 +76,7 @@
                              aria-labelledby="navbarDropdownMenuLink2">
                              <div class="nav-user-info text-center">
                                  <h5 class="mb-0 text-white nav-user-name">
-                                     {{ $userDetails->first_name }} {{ $userDetails->last_name }}
+                                    {{ $firstName }} {{ $surname }}
                                  </h5>
                                  <span style="font-size:12px;">Admin</span>
                              </div>
@@ -234,7 +235,7 @@
             confirmButtonText: 'Yes, log me out!'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch('{{ route('logout') }}', {
+                fetch('{{ route('admin-logout') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

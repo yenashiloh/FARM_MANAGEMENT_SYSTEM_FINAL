@@ -108,67 +108,71 @@ class DirectorController extends Controller
         return json_encode($data);
     }
 
+    //show faculty uploaded files
     public function showDirectorUploadedFiles($folder_name_id)
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-    
+
         $user = auth()->user();
-        $userDetails = $user->userDetails; 
-    
-        $folder = FolderName::find($folder_name_id);
-    
-        if (!$folder) {
-            return redirect()->route('login')->with('error', 'Folder not found.');
+        if ($user->role !== 'director') {
+            return redirect()->route('login');
         }
-    
-        $facultyInfo = json_decode($this->getFacultyInfo(), true);
-        $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester'];
-        $files = CoursesFile::where('folder_name_id', $folder_name_id)->get();
-    
-        $faculty = $facultyInfo['faculty'];
-        $userIdToName = [$faculty['faculty_id'] => $faculty['first_name'] . ' ' . $faculty['last_name']];
-    
-        $filesWithSubjects = $files->map(function ($file) use ($facultyInfo, $userIdToName) {
-            $file->subject_name = $file->subject;
-    
-            $subjectInfo = collect($facultyInfo['faculty']['subjects'])->firstWhere('name', $file->subject);
-    
-            if ($subjectInfo) {
-                $file->year = $subjectInfo['year_programs'][0]['year'] ?? 'N/A';
-                $file->program = $subjectInfo['year_programs'][0]['program'] ?? 'N/A';
-                $file->code = $subjectInfo['code'] ?? 'N/A';
-            } else {
-                $file->year = 'N/A';
-                $file->program = 'N/A';
-                $file->code = 'N/A';
-            }
-    
-            $file->user_name = $userIdToName[$file->user_login_id] ?? 'N/A';
-    
-            return $file;
-        });
-    
-        $groupedFiles = $filesWithSubjects->groupBy('semester');
-    
-        $subjects = $facultyInfo['faculty']['subjects'] ?? [];
-        $user_login_id = $files->first()->user_login_id ?? null;
-    
+
+        $user = auth()->user();
+        $folder = FolderName::findOrFail($folder_name_id);
+
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        $notificationCount = $notifications->where('is_read', 0)->count();
+
+        $allSemesters = CoursesFile::where('folder_name_id', $folder_name_id)
+            ->select('semester')
+            ->distinct()
+        ->pluck('semester');
+
+        $selectedSemester = request('semester');
+
+        $filesQuery = CoursesFile::where('folder_name_id', $folder_name_id)
+            ->with(['userLogin', 'courseSchedule']);
+        
+        if ($selectedSemester) {
+            $filesQuery->where('semester', $selectedSemester);
+        }
+
+        $files = $filesQuery->get();
+
+        $groupedFiles = $files->groupBy(function ($file) {
+            return $file->user_login_id . '-' . $file->semester;
+        })->map(function ($group) {
+            $firstFile = $group->first();
+            return [
+                'user_name' => $firstFile->userLogin->first_name . ' ' . $firstFile->userLogin->surname,
+                'user_login_id' => $firstFile->user_login_id,
+                'semester' => $firstFile->semester,
+                'created_at' => $group->max('created_at'),
+                'file_count' => $group->count(),
+            ];
+        })->values();
+
         $folders = FolderName::all();
-    
+
+
         return view('director.accomplishment.director-uploaded-files', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
             'groupedFiles' => $groupedFiles,
-            'semester' => $semester,
-            'subjects' => $subjects,
-            'filesWithSubjects' => $filesWithSubjects,
-            'files' => $files,
-            'user_login_id' => $user_login_id, 
-            'folder_name_id' => $folder_name_id, 
-            'folders' => $folders, 
-            'userDetails' => $userDetails,
+            'folder_name_id' => $folder_name_id,
+            'folders' => $folders,
+            'firstName' => $user->first_name,
+            'surname' => $user->surname,
+            'allSemesters' => $allSemesters,
+            'selectedSemester' => $selectedSemester, 
+            'user' => $user, 
+            
         ]);
     }
 
@@ -179,16 +183,11 @@ class DirectorController extends Controller
             return redirect()->route('login');
         }
 
-        $userId = auth()->id();
-
-    
         $user = auth()->user();
         if ($user->role !== 'director') {
             return redirect()->route('login');
         }
-    
-        $userDetails = $user->userDetails; 
-    
+
         $folders = FolderName::all();
         $folder = FolderName::first(); 
     
@@ -223,6 +222,7 @@ class DirectorController extends Controller
         });
     
         $semesters = CoursesFile::select('semester')->distinct()->get();
+
         return view('director.director-dashboard', [
             'folders' => $folders,
             'folder' => $folder,
@@ -233,137 +233,120 @@ class DirectorController extends Controller
             'approvedCount' => $approvedCount,
             'declinedCount' => $declinedCount,
             'folderCounts' => $folderCounts,
-            'userDetails' => $userDetails,
+            'user' => $user, 
             'chartData' => $chartData,
             'semesters' => $semesters,
         ]);
     }
 
+    //view faculty accomplishment 
     public function viewFacultyAccomplishment($user_login_id, $folder_name_id)
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
-        $userId = auth()->id();
-
     
         $user = auth()->user();
-        if ($user->role !== 'director') {
-            return redirect()->route('login');
-        }
-
         $folder = FolderName::find($folder_name_id);
     
         if (!$folder) {
             return redirect()->route('login')->with('error', 'Folder not found.');
         }
-
-        $userDetails = $user->userDetails; 
-        
-        $facultyInfo = json_decode($this->getFacultyInfo(), true);
-        $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester'];
-        
-        $files = CoursesFile::where('folder_name_id', $folder_name_id)->get();
     
-        $faculty = $facultyInfo['faculty'];
-        $userIdToName = [$faculty['faculty_id'] => $faculty['first_name'] . ' ' . $faculty['last_name']];
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
     
-        $filesWithSubjects = $files->map(function ($file) use ($facultyInfo, $userIdToName) {
-            $file->subject_name = $file->subject;
+        $filesQuery = CoursesFile::where('courses_files.folder_name_id', $folder_name_id)
+            ->where('courses_files.user_login_id', $user_login_id)
+            ->with(['userLogin', 'courseSchedule']);
     
-            $subjectInfo = collect($facultyInfo['faculty']['subjects'])->firstWhere('name', $file->subject);
+        $allSemesters = CoursesFile::where('courses_files.folder_name_id', $folder_name_id)
+            ->where('courses_files.user_login_id', $user_login_id)
+            ->join('course_schedules', 'courses_files.course_schedule_id', '=', 'course_schedules.course_schedule_id')
+            ->select('course_schedules.sem_academic_year')
+            ->distinct()
+            ->pluck('course_schedules.sem_academic_year');
     
-            if ($subjectInfo) {
-                $file->year = $subjectInfo['year_programs'][0]['year'] ?? 'N/A';
-                $file->program = $subjectInfo['year_programs'][0]['program'] ?? 'N/A';
-                $file->code = $subjectInfo['code'] ?? 'N/A';
-            } else {
-                $file->year = 'N/A';
-                $file->program = 'N/A';
-                $file->code = 'N/A';
-            }
+        // Initialize $semester
+        $semester = $allSemesters->first();
     
-            $file->user_name = $userIdToName[$file->user_login_id] ?? 'N/A';
+        $files = $filesQuery
+            ->whereHas('courseSchedule', function ($query) use ($semester) {
+                $query->where('sem_academic_year', $semester);
+            })
+            ->get();
     
-            return $file;
+        $groupedFiles = $files->groupBy(function ($file) {
+            return $file->courseSchedule->sem_academic_year;
         });
     
-        $groupedFiles = $filesWithSubjects->groupBy('semester');
-    
-        $subjects = $facultyInfo['faculty']['subjects'] ?? [];
-    
         $folders = FolderName::all();
+        $viewedUser = UserLogin::find($user_login_id);
     
         return view('director.accomplishment.view-faculty-accomplishment', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
             'groupedFiles' => $groupedFiles,
-            'semester' => $semester,
-            'subjects' => $subjects,
-            'filesWithSubjects' => $filesWithSubjects,
             'files' => $files,
-            'folders' => $folders, 
-            'userDetails' => $userDetails,
+            'folders' => $folders,
+            'user' => $user,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'viewedUser' => $viewedUser,
+            'currentSemester' => $semester,
+            'allSemesters' => $allSemesters,
         ]);
     }
 
      //show director account
      public function directorAccountPage()
      {
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
-
-        $userId = auth()->id();
-
-    
-        $user = auth()->user();
-        if ($user->role !== 'director') {
-            return redirect()->route('login');
-        }
-
-         $userDetails = $user->userDetails;
+         if (!auth()->check()) {
+             return redirect()->route('login');
+         }
+     
+         $user = auth()->user();
+     
+         if ($user->role !== 'director') {
+             return redirect()->route('login');
+         }
      
          $folders = FolderName::all();
      
          return view('director.director-account', [
              'folders' => $folders,
-             'userDetails' => $userDetails,
-             'user' => $user, 
+             'user' => $user,
          ]);
      }
- 
-     //update account
+     
+     //update the director account
      public function updateDirectorAccount(Request $request)
      {
          $user = auth()->user();
-         $userDetails = $user->userDetails;
- 
+     
          $request->validate([
              'first-name' => 'required|string|max:255',
              'last-name' => 'required|string|max:255',
              'email' => 'required|email|max:255',
-             'contact-number' => 'required|numeric',
-             'recent-password' => 'required_with:new-password|current_password', 
-             'new-password' => 'nullable|confirmed|min:6', 
-             'confirm-password' => 'nullable|same:new-password', 
+             'recent-password' => 'required_with:new-password|current_password',
+             'new-password' => 'nullable|confirmed|min:6',
+             'confirm-password' => 'nullable|same:new-password',
          ]);
- 
+     
          $user->update([
              'email' => $request->input('email'),
              'password' => $request->input('new-password') ? bcrypt($request->input('new-password')) : $user->password,
-         ]);
- 
-         $userDetails->update([
              'first_name' => $request->input('first-name'),
-             'last_name' => $request->input('last-name'),
-             'phone_number' => $request->input('contact-number'),
+             'surname' => $request->input('last-name'),
+
          ]);
- 
+     
          return redirect()->route('director.director-account')->with('success', 'Account details updated successfully!');
      }
- 
+     
+     //director logout
      public function directorLogout(Request $request)
      {
          auth()->logout();

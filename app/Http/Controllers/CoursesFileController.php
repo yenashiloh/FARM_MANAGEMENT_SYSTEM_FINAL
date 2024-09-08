@@ -5,247 +5,240 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\UserLogin;
+use App\Models\CourseSchedule;
 use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Notification;
 
 class CoursesFileController extends Controller
 {
-    public function getFacultyInfo()
-    {
-        $semester = [
-            "id" => 1,
-            "semester" => "1st Semester 2024-2025",
-            "user_login_id" => 2
-        ];
-    
-        $programs = [
-            "Bachelor of Science in Applied Mathematics (BSAM)",
-            "Bachelor of Science in Information Technology (BSIT)",
-            "Bachelor of Science in Entrepreneurship (BSENTREP)"
-        ];
-    
-        $subjects = [
-            [
-                "id" => 1,
-                "code" => "MGT101",
-                "name" => "Principles of Management and Organization",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "1st Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ],
-            [
-                "id" => 2,
-                "code" => "IT202",
-                "name" => "Applications Development and Emerging Technologies",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 3,
-                "code" => "ENT301",
-                "name" => "Technopreneurship",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSENTREP"
-                    ]
-                ]
-            ],
-            [
-                "id" => 4,
-                "code" => "SYS202",
-                "name" => "Systems Analysis and Design",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 5,
-                "code" => "CS303",
-                "name" => "Computer Science",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "4th Year",
-                        "program" => "BSIT"
-                    ],
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ]
-        ];
-    
-        $data = [
-            "faculty" => [
-                "faculty_id" => 2,
-                "first_name" => "Diana",
-                "middle_name" => "M.",
-                "last_name" => "Rose",
-                "programs" => $programs,
-                "subjects" => $subjects
-            ]
-        ];
-    
-        return json_encode($data);
-    }
-    
     //store files
     public function store(Request $request)
     {
         $request->validate([
-            'files.*' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480',
-            'folder_name_id' => 'required|exists:folder_name,folder_name_id'
+            'files.*' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480', 
+            'folder_name_id' => 'required|exists:folder_name,folder_name_id',
         ]);
-        
+    
         try {
             $userLoginId = auth()->user()->user_login_id;
-            $facultyInfoJson = $this->getFacultyInfo();
-            $facultyInfo = json_decode($facultyInfoJson, true);
-            $semester = $facultyInfo['faculty']['subjects'][0]['semester']['semester']; 
+    
             $folder_name_id = $request->input('folder_name_id');
+    
+            $courseSchedules = CourseSchedule::where('user_login_id', $userLoginId)->get();
+    
+            if ($courseSchedules->isEmpty()) {
+                return redirect()->back()->with('error', 'No course schedules found for this user.');
+            }
 
             foreach ($request->file('files') as $index => $file) {
-                $path = $file->store('courses_files', 'public'); 
-                $subject_name = $facultyInfo['faculty']['subjects'][$index]['name'] ?? null; 
+                $path = $file->store('courses_files', 'public');
+                $courseSchedule = $courseSchedules[$index % $courseSchedules->count()]; 
+                $subject_name = $courseSchedule->course_subjects ?? 'N/A';
+                $semester = $courseSchedule->sem_academic_year ?? 'N/A';
                 $fileSize = $file->getSize(); 
-
+                $course_schedule_id = $courseSchedule->course_schedule_id; 
+    
                 CoursesFile::create([
-                    'files' => $path,
+                    'files' => $path, 
                     'original_file_name' => $file->getClientOriginalName(), 
-                    'user_login_id' => $userLoginId,
-                    'folder_name_id' => $folder_name_id,
-                    'semester' => $semester,
+                    'user_login_id' => $userLoginId, 
+                    'folder_name_id' => $folder_name_id, 
+                    'course_schedule_id' => $course_schedule_id,
+                    'semester' => $semester, 
                     'subject' => $subject_name, 
                     'file_size' => $fileSize, 
                 ]);
             }
-
+    
             return redirect()->back()->with('success', 'Files uploaded successfully!');
         } catch (\Exception $e) {
             logger()->error('File upload failed: ' . $e->getMessage());
-
             return redirect()->back()->with('error', 'File upload failed. Please try again.');
         }
     }
     
     //update file
-    public function update(Request $request)
+    public function updateFile(Request $request, $id)
     {
         $request->validate([
-            'files.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480',
-            'existingFiles.*' => 'required|string',
-            'semester' => 'required|string',
-            'folder_name_id' => 'required|exists:folder_name,folder_name_id'
+            'files' => 'nullable|file|mimes:pdf', 
         ]);
     
         try {
+            $file = CoursesFile::findOrFail($id);
+    
             $userLoginId = auth()->user()->user_login_id;
-            $semester = $request->input('semester');
-            $folder_name_id = $request->input('folder_name_id');
+            $folder_name_id = $file->folder_name_id; 
+            $semester = $file->semester;
+            $originalStatus = $file->status;
     
-            foreach ($request->file('files') as $index => $file) {
-                if ($file) {
-                    $path = $file->store('courses_files', 'public');
+            // Get the current user's details
+            $currentUser = UserLogin::findOrFail($userLoginId);
+            $senderName = $currentUser->first_name . ' ' . $currentUser->surname;
     
-                    $existingFileData = explode('|', $request->input("existingFiles.$index"));
-                    $existingFilePath = $existingFileData[0];
-                    $existingFileName = $existingFileData[1];
-                    $originalStatus = $request->input("originalStatus.$index");
+            if ($request->hasFile('files')) {
+                if (Storage::disk('public')->exists($file->files)) {
+                    Storage::disk('public')->delete($file->files);
+                }
     
-                    $newStatus = ($originalStatus === 'Declined') ? 'To Review' : $originalStatus;
+                $path = $request->file('files')->store('courses_files', 'public');
     
-                    if ($existingFilePath && Storage::disk('public')->exists($existingFilePath)) {
-                        Storage::disk('public')->delete($existingFilePath);
-                    }
+                $file->update([
+                    'files' => $path,
+                    'original_file_name' => $request->file('files')->getClientOriginalName(),
+                    'user_login_id' => $userLoginId,
+                    'file_size' => $request->file('files')->getSize(), 
+                    'status' => ($originalStatus === 'Declined') ? 'To Review' : $originalStatus, 
+                ]);
     
-                    $fileRecord = CoursesFile::where('files', $existingFilePath)->first();
+                if ($originalStatus === 'Declined') {
+                    $folderName = FolderName::find($folder_name_id)->folder_name;
+                    $subject = $file->subject;
     
-                    if ($fileRecord) {
-                        $fileRecord->update([
-                            'files' => $path,
-                            'original_file_name' => $file->getClientOriginalName(),
-                            'user_login_id' => $userLoginId,
+                    $adminUsers = UserLogin::where('role', 'admin')->get();
+                    foreach ($adminUsers as $admin) {
+                        Notification::create([
+                            'courses_files_id' => $file->courses_files_id,
+                            'user_login_id' => $admin->user_login_id,
                             'folder_name_id' => $folder_name_id,
-                            'semester' => $semester,
-                            'subject' => $request->input("subject.$index"),
-                            'status' => $newStatus
+                            'sender' => $senderName, 
+                            'notification_message' => "has re-uploaded the previously declined course {$subject} in {$folderName}.",
+                            'is_read' => false,
                         ]);
-    
-                        $folderName = FolderName::find($folder_name_id)->folder_name;
-    
-                        $subject = $fileRecord->subject;
-    
-                        if ($originalStatus === 'Declined') {
-                            $adminUsers = UserLogin::where('role', 'admin')->get();
-                            foreach ($adminUsers as $admin) {
-                                Notification::create([
-                                    'courses_files_id' => $fileRecord->courses_files_id,
-                                    'user_login_id' => $admin->user_login_id,
-                                    'folder_name_id' => $folder_name_id,
-                                    'sender' => $this->getFacultyFullName(), 
-                                    'notification_message' => "re-uploaded the course {$subject} in {$folderName}.",
-                                    'is_read' => false
-                                ]);
-                            }
-                        }
                     }
                 }
+    
+                session()->flash('success', 'File updated successfully!');
+    
+                return response()->json(['success' => true]);
             }
     
-            return redirect()->back()->with('success', 'Files updated successfully!');
+            return response()->json(['success' => false, 'message' => 'No file has been selected. Please select a file'], 400);
+    
         } catch (\Exception $e) {
             logger()->error('File update failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'File update failed. Please try again.');
+            return response()->json(['success' => false, 'message' => 'File update failed. Please try again.'], 500);
         }
     }
     
-    //edit file
-    public function edit($semester)
+    //show view archive page
+    public function showArchive()
     {
-        $files = CoursesFile::where('semester', $semester)->get();
-        return view('your-view-file', [
-            'groupedFiles' => $files->groupBy('semester'),
-            'files' => $files,
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+    
+        $user = auth()->user();
+    
+        if ($user->role !== 'faculty') {
+            return redirect()->route('login');
+        }
+    
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+    
+        $folder = FolderName::first();
+    
+        if (!$folder) {
+            return redirect()->back()->with('error', 'Folder not found.');
+        }
+    
+        $folders = FolderName::all();
+        $folderInputs = CoursesFile::where('folder_name_id', $folder->folder_name_id)->get();
+    
+        $notifications = \App\Models\Notification::where('user_login_id', auth()->id())->get();
+        $notificationCount = $notifications->count();
+    
+        $uploadedFiles = CoursesFile::where('user_login_id', $user->user_login_id)
+            ->where('folder_name_id', $folder->folder_name_id)
+            ->where('is_archived', true)
+            ->with(['userLogin', 'folderName', 'folderInput', 'courseSchedule'])
+            ->get();
+    
+        return view('faculty.view-archive', [
+            'uploadedFiles' => $uploadedFiles,
+            'folder' => $folder,
+            'folderName' => $folder->folder_name,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'folderInputs' => $folderInputs,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'folders' => $folders,
         ]);
     }
     
-    public function getFileDetails($id)
+    //archive file
+    public function archive($id)
     {
         $file = CoursesFile::find($id);
-    
-        if (!$file) {
-            return response()->json(['error' => 'File not found'], 404);
+
+        if ($file) {
+            $file->is_archived = true;
+            $file->save();
+
+            return redirect()->back()->with('success', 'File archived successfully!');
         }
-    
-        return response()->json($file);
-    }
-    
-    public function getFacultyFullName()
-    {
-        $data = $this->getFacultyInfo();
-        $data = json_decode($data, true);
-        $faculty = $data['faculty'];
-    
-        return "{$faculty['first_name']} {$faculty['last_name']}";
+
+        return redirect()->back()->with('error', 'File not found.');
     }
 
-    
-    
+    public function unarchive($courses_files_id)
+    {
+        $file = CoursesFile::find($courses_files_id);
+
+        if (!$file) {
+            return redirect()->back()->with('error', 'File not found.');
+        }
+
+        if ($file->user_login_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
+        $file->is_archived = false;
+        $file->save();
+
+        return redirect()->back()->with('success', 'File has been restored');
     }
+
+    //archive all
+    public function archiveAll(Request $request)
+    {
+        $fileIds = json_decode($request->input('file_ids', '[]'), true);
+        \Log::info('Received file IDs:', $fileIds);
+    
+        if (!empty($fileIds)) {
+            $query = CoursesFile::whereIn('courses_files_id', $fileIds)
+                ->where('status', 'Approved');
+            
+            \Log::info('SQL query:', [$query->toSql()]);
+            \Log::info('SQL bindings:', $query->getBindings());
+    
+            $updatedCount = $query->update(['is_archived' => true]);
+    
+            \Log::info('Updated count:', [$updatedCount]);
+    
+            if ($updatedCount > 0) {
+                return redirect()->back()->with('success', "$updatedCount files have been archived.");
+            } else {
+                return redirect()->back()->with('error', 'No eligible files were found to archive.');
+            }
+        }
+    
+        return redirect()->back()->with('error', 'No files selected.');
+    }
+
+
+    public function bulkUnarchive(Request $request)
+{
+    $fileIds = $request->input('file_ids', []);
+    
+    if (!empty($fileIds)) {
+        CoursesFile::whereIn('courses_files_id', $fileIds)->update(['is_archived' => false]);
+        return redirect()->back()->with('success', count($fileIds) . ' files have been restored.');
+    }
+
+    return redirect()->back()->with('error', 'No files selected for restoration.');
+}
+}

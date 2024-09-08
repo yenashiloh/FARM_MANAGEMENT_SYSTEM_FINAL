@@ -44,6 +44,7 @@ class RoleController extends Controller
                 return redirect()->back()->with('error', 'Invalid role.');
         }
     }
+    
     //landing page
     public function showLandingPage()
     {

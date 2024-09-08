@@ -14,105 +14,105 @@ use App\Exports\ExportNotPassed;
 use App\Exports\GenerateAllReports;
 use App\Exports\AllReportNotPassed;
 use Maatwebsite\Excel\Facades\Excel;
-
+use Illuminate\Support\Facades\Log;
 
 class FileController extends Controller
 {
     
-    public function getFacultyInfo()
-    {
-        $semester = [
-            "id" => 1,
-            "semester" => "1st Semester 2024-2025",
-            "user_login_id" => 2
-        ];
+    // public function getFacultyInfo()
+    // {
+    //     $semester = [
+    //         "id" => 1,
+    //         "semester" => "1st Semester 2024-2025",
+    //         "user_login_id" => 2
+    //     ];
     
-        $programs = [
-            "Bachelor of Science in Applied Mathematics (BSAM)",
-            "Bachelor of Science in Information Technology (BSIT)",
-            "Bachelor of Science in Entrepreneurship (BSENTREP)"
-        ];
+    //     $programs = [
+    //         "Bachelor of Science in Applied Mathematics (BSAM)",
+    //         "Bachelor of Science in Information Technology (BSIT)",
+    //         "Bachelor of Science in Entrepreneurship (BSENTREP)"
+    //     ];
     
-        $subjects = [
-            [
-                "id" => 1,
-                "code" => "MGT101",
-                "name" => "Principles of Management and Organization",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "1st Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ],
-            [
-                "id" => 2,
-                "code" => "IT202",
-                "name" => "Applications Development and Emerging Technologies",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 3,
-                "code" => "ENT301",
-                "name" => "Technopreneurship",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSENTREP"
-                    ]
-                ]
-            ],
-            [
-                "id" => 4,
-                "code" => "SYS202",
-                "name" => "Systems Analysis and Design",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 5,
-                "code" => "CS303",
-                "name" => "Computer Science",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "4th Year",
-                        "program" => "BSIT"
-                    ],
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ]
-        ];
+    //     $subjects = [
+    //         [
+    //             "id" => 1,
+    //             "code" => "MGT101",
+    //             "name" => "Principles of Management and Organization",
+    //             "semester" => $semester,
+    //             "year_programs" => [
+    //                 [
+    //                     "year" => "1st Year",
+    //                     "program" => "BSAM"
+    //                 ]
+    //             ]
+    //         ],
+    //         [
+    //             "id" => 2,
+    //             "code" => "IT202",
+    //             "name" => "Applications Development and Emerging Technologies",
+    //             "semester" => $semester,
+    //             "year_programs" => [
+    //                 [
+    //                     "year" => "2nd Year",
+    //                     "program" => "BSIT"
+    //                 ]
+    //             ]
+    //         ],
+    //         [
+    //             "id" => 3,
+    //             "code" => "ENT301",
+    //             "name" => "Technopreneurship",
+    //             "semester" => $semester,
+    //             "year_programs" => [
+    //                 [
+    //                     "year" => "3rd Year",
+    //                     "program" => "BSENTREP"
+    //                 ]
+    //             ]
+    //         ],
+    //         [
+    //             "id" => 4,
+    //             "code" => "SYS202",
+    //             "name" => "Systems Analysis and Design",
+    //             "semester" => $semester,
+    //             "year_programs" => [
+    //                 [
+    //                     "year" => "2nd Year",
+    //                     "program" => "BSIT"
+    //                 ]
+    //             ]
+    //         ],
+    //         [
+    //             "id" => 5,
+    //             "code" => "CS303",
+    //             "name" => "Computer Science",
+    //             "semester" => $semester,
+    //             "year_programs" => [
+    //                 [
+    //                     "year" => "4th Year",
+    //                     "program" => "BSIT"
+    //                 ],
+    //                 [
+    //                     "year" => "3rd Year",
+    //                     "program" => "BSAM"
+    //                 ]
+    //             ]
+    //         ]
+    //     ];
     
-        $data = [
-            "faculty" => [
-                "faculty_id" => 2,
-                "first_name" => "Diana",
-                "middle_name" => "M.",
-                "last_name" => "Rose",
-                "programs" => $programs,
-                "subjects" => $subjects
-            ]
-        ];
+    //     $data = [
+    //         "faculty" => [
+    //             "faculty_id" => 2,
+    //             "first_name" => "Diana",
+    //             "middle_name" => "M.",
+    //             "last_name" => "Rose",
+    //             "programs" => $programs,
+    //             "subjects" => $subjects
+    //         ]
+    //     ];
     
-        return json_encode($data);
-    }
+    //     return json_encode($data);
+    // }
 
     //approve files
     public function approve($courses_files_id)
@@ -133,9 +133,9 @@ class FileController extends Controller
         $file->save();
 
         $folder = FolderName::find($file->folder_name_id);
-        $userDetails = UserDetails::where('user_login_id', $user->user_login_id)->first();
+        $userDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
 
-        $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->last_name : 'Unknown Sender';
+        $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
 
         Notification::create([
             'courses_files_id' => $file->courses_files_id,
@@ -171,9 +171,9 @@ class FileController extends Controller
             $file->save();
 
             $folder = FolderName::find($file->folder_name_id);
-            $userDetails = UserDetails::where('user_login_id', $user->user_login_id)->first();
+            $userDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
 
-            $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->last_name : 'Unknown Sender';
+            $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
 
             Notification::create([
                 'courses_files_id' => $file->courses_files_id,
@@ -210,29 +210,34 @@ class FileController extends Controller
     //generate reports
     public function generateAllReports($semester)
     {
-        return Excel::download(new GenerateAllReports($semester), 'faculty_report.xlsx');
+        Log::info('Starting generateAllReports for semester: ' . $semester);
+        
+        $export = new GenerateAllReports($semester);
+        
+        Log::info('Created GenerateAllReports instance');
+        
+        $result = Excel::download($export, 'faculty_report.xlsx');
+        
+        Log::info('Excel::download completed');
+        
+        return $result;
     }
 
     public function deleteSelectedFiles(Request $request)
     {
         $ids = $request->input('ids');
 
-        // Delete related notifications
         Notification::whereIn('courses_files_id', $ids)->delete();
 
-        // Delete selected files
         CoursesFile::whereIn('courses_files_id', $ids)->delete();
 
         return response()->json(['success' => true]);
     }
 
-    // Method to delete all files
     public function deleteAllFiles(Request $request)
     {
-        // Delete related notifications
         Notification::whereIn('courses_files_id', CoursesFile::pluck('courses_files_id'))->delete();
 
-        // Delete all files
         CoursesFile::truncate();
 
         return response()->json(['success' => true]);

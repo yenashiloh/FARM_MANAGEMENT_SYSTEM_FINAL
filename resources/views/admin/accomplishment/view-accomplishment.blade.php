@@ -8,15 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>View Accomplishment</title>
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="../../../../asset/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../../asset/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="icon" href="{{ asset('assets/images/pup-logo.png') }}" type="image/x-icon">
-    <link href="../../../../asset/vendor/fonts/circular-std/style.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../../../asset/libs/css/style.css">
-    <link rel="stylesheet" href="../../../../asset/vendor/fonts/fontawesome/css/fontawesome-all.css">
-    <link rel="stylesheet" type="text/css" href="../../../../asset/vendor/datatables/css/dataTables.bootstrap4.css">
-    <link rel="stylesheet" type="text/css" href="../../../../asset/vendor/datatables/css/buttons.bootstrap4.css">
-    <link rel="stylesheet" type="text/css" href="../../../../asset/vendor/datatables/css/select.bootstrap4.css">
-    <link rel="stylesheet" type="text/css" href="../../../../asset/vendor/datatables/css/fixedHeader.bootstrap4.css">
+    <link href="../../../../../asset/vendor/fonts/circular-std/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../../asset/libs/css/style.css">
+    <link rel="stylesheet" href="../../../../../asset/vendor/fonts/fontawesome/css/fontawesome-all.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../asset/vendor/datatables/css/dataTables.bootstrap4.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../asset/vendor/datatables/css/buttons.bootstrap4.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../asset/vendor/datatables/css/select.bootstrap4.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../asset/vendor/datatables/css/fixedHeader.bootstrap4.css">
 </head>
 
 <body>
@@ -69,35 +69,45 @@
                                     explains the rules, responsibilities, and expectations associated with it.)</h5>
                             </div>
                             <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="semesterSelect" class="col-form-label ml-3">Semester:</label>
+                                    <div class="col-md-10">
+                                        <select id="semesterSelect" class="form-control" onchange="this.form.submit()" disabled style="width: 250px;">
+                                            @foreach($allSemesters as $sem)
+                                                <option value="{{ $sem }}" {{ $sem == $currentSemester ? 'selected' : '' }}>
+                                                    {{ $sem }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        
+                                    </div>
+                                </div>
+                                
                                 <div class="table-responsive">
-                                    <table id="example" class="table table-striped table-bordered second"
-                                        style="width:100%">
+                                    <table id="example" class="table table-striped table-bordered second" style="width:100%">
                                         <thead>
                                             <div id="alertContainer">
                                                 @if (session('success'))
-                                                    <div class="alert alert-success alert-dismissible fade show text-center"
-                                                        role="alert" id="successAlert">
+                                                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert" id="successAlert">
                                                         {{ session('success') }}
                                                     </div>
                                                 @endif
-
+                            
                                                 @if (session('error'))
-                                                    <div class="alert alert-danger alert-dismissible fade show text-center"
-                                                        role="alert" id="errorAlert">
+                                                    <div class="alert alert-danger alert-dismissible fade show text-center" role="alert" id="errorAlert">
                                                         {{ session('error') }}
-                                                        <button type="button" class="close" data-dismiss="alert"
-                                                            aria-label="Close">
+                                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                                             <span aria-hidden="true">&times;</span>
                                                         </button>
                                                     </div>
                                                 @endif
                                             </div>
-
+                            
                                             <tr>
                                                 <th>No.</th>
                                                 <th>Date & Time</th>
                                                 <th>Employee Name</th>
-                                                <th>Code & Subject</th>
+                                                <th>Course Code & Course</th>
                                                 <th>Year & Program</th>
                                                 <th>File</th>
                                                 <th>Status</th>
@@ -105,70 +115,59 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-
-                                            @foreach ($groupedFiles as $semester => $files)
-                                                @foreach ($files as $index => $file)
-                                                    <tr>
-                                                        <td>{{ $index + 1 }}</td>
-                                                        <td>{{ $file->created_at->timezone('Asia/Manila')->format('F j, Y, g:i A') }}
-                                                        </td>
-                                                        <td>{{ $file->user_name }}</td>
-                                                        <td>
-                                                            <div
-                                                                style="display: flex; flex-direction: column; margin-bottom: 20px;">
-                                                                {{ $file->code }}
-                                                                <span
-                                                                    style="margin-top: 5px;">{{ $file->subject_name ?? 'N/A' }}</span>
-                                                            </div>
-                                                        </td>
-
-                                                        <td>{{ $file->year ?? 'N/A' }} -
-                                                            <span>{{ $file->program ?? 'N/A' }}</span>
-                                                        </td>
-                                                        <td>
-                                                            <a href="{{ Storage::url('/' . $file->files) }}"
-                                                                target="_blank">{{ $file->original_file_name }}</a>
-                                                        </td>
-                                                        <td>
+                                            @php $index = 1; @endphp
+                                            @foreach ($groupedFiles[$currentSemester] ?? [] as $file)
+                                                <tr>
+                                                    <td>{{ $index++ }}</td>
+                                                    <td>{{ $file->created_at->timezone('Asia/Manila')->format('F j, Y, g:i A') }}</td>
+                                                    <td>{{ $file->userLogin->first_name }} {{ $file->userLogin->surname }}</td>
+                                                    <td>
+                                                        <div style="display: flex; flex-direction: column; margin-bottom: 20px;">
+                                                            {{ $file->courseSchedule->course_code ?? 'N/A' }}
+                                                            <span style="margin-top: 5px;">{{ $file->subject ?? 'N/A' }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {{ $file->courseSchedule->year_section ?? 'N/A' }} -
+                                                        <span>{{ $file->courseSchedule->program ?? 'N/A' }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ Storage::url($file->files) }}" target="_blank"
+                                                           style="color: rgb(65, 65, 231); text-decoration: underline;">
+                                                            {{ $file->original_file_name }}
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        @if ($file->status === 'To Review')
+                                                            <span class="badge badge-primary">{{ $file->status }}</span>
+                                                        @elseif ($file->status === 'Declined')
+                                                            <span class="badge badge-danger">{{ $file->status }}</span>
+                                                            <br>
+                                                            <span>Declined Reason: {{ $file->declined_reason }}</span>
+                                                        @elseif ($file->status === 'Approved')
+                                                            <span class="badge badge-success">{{ $file->status }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex flex-column">
                                                             @if ($file->status === 'To Review')
-                                                                <span
-                                                                    class="badge badge-primary">{{ $file->status }}</span>
-                                                            @elseif ($file->status === 'Declined')
-                                                                <span
-                                                                    class="badge badge-danger">{{ $file->status }}</span>
-                                                                <br>
-                                                                <span>Declined Reason:
-                                                                    {{ $file->declined_reason }}</span>
-                                                            @elseif ($file->status === 'Approved')
-                                                                <span
-                                                                    class="badge badge-success">{{ $file->status }}</span>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            <div class="d-flex flex-column">
-                                                                @if ($file->status === 'To Review')
-                                                                    <a href="{{ route('approveFile', ['courses_files_id' => $file->courses_files_id]) }}"
-                                                                        class="btn btn-success btn-sm mb-2">
-                                                                        Approve
-                                                                    </a>
-
-                                                                    <button type="button"
-                                                                        class="btn btn-warning btn-sm mb-2"
+                                                                <a href="{{ route('approveFile', ['courses_files_id' => $file->courses_files_id]) }}"
+                                                                   class="btn btn-success btn-sm mb-2">
+                                                                    Approve
+                                                                </a>
+                                                                <button type="button" class="btn btn-warning btn-sm mb-2"
                                                                         data-toggle="modal" data-target="#declineModal"
                                                                         data-id="{{ $file->courses_files_id }}">
-                                                                        Decline
-                                                                    </button>
-                                                                @endif
-
-                                                                <button type="button"
-                                                                class="btn btn-primary btn-sm delete-button"
-                                                                data-id="{{ $file->courses_files_id }}">
+                                                                    Decline
+                                                                </button>
+                                                            @endif
+                                                            <button type="button" class="btn btn-primary btn-sm delete-button"
+                                                                    data-id="{{ $file->courses_files_id }}">
                                                                 Delete
                                                             </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
+                                                        </div>
+                                                    </td>
+                                                </tr>
                                             @endforeach
                                         </tbody>
                                     </table>
@@ -176,6 +175,7 @@
                             </div>
                         </div>
                     </div>
+
                     <!-- Decline Modal -->
                     <div class="modal fade" id="declineModal" tabindex="-1" role="dialog"
                         aria-labelledby="declineModalLabel" aria-hidden="true">
@@ -266,7 +266,7 @@
                                                 'success'
                                             ).then(() => {
                                                 location
-                                                    .reload(); 
+                                                    .reload();
                                             });
                                         },
                                         error: function() {

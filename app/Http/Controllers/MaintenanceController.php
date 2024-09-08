@@ -17,7 +17,8 @@ class MaintenanceController extends Controller
          }
      
          $user = auth()->user();
-         $userDetails = $user->userDetails;
+         $firstName = $user->first_name;
+         $surname = $user->surname;
      
          $notifications = Notification::where('user_login_id', $user->user_login_id)
              ->orderBy('created_at', 'desc')
@@ -31,12 +32,12 @@ class MaintenanceController extends Controller
          return view('admin.maintenance.create-folder', [
              'folders' => $folders,
              'folder' => $folder,
-             'userDetails' => $userDetails,
+             'firstName' => $firstName,
+             'surname' => $surname,
              'notifications' => $notifications,
              'notificationCount' => $notificationCount,
          ]);
      }
-     
 
     //store main folder
     public function storeFolder(Request $request)

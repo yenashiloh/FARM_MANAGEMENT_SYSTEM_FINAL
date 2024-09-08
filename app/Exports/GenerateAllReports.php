@@ -12,10 +12,12 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
-    protected $facultyInfo;
+   
     protected $mainFolders;
     protected $subFolders;
     protected $semester;
@@ -23,7 +25,6 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
     public function __construct($semester)
     {
         $this->semester = $semester;
-        $this->facultyInfo = $this->getFacultyInfo();
         
         $this->mainFolders = ['Test Administration', 'Classroom Management', 'Syllabus Preparation'];
         
@@ -35,48 +36,61 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
         foreach ($this->mainFolders as $mainFolder) {
             $this->subFolders[$mainFolder] = $allFolders
                 ->where('main_folder_name', $mainFolder)
-                ->values()
+                ->pluck('folder_name', 'folder_name_id')
                 ->toArray();
         }
     }
     
+    
     public function collection()
     {
+        $facultyMembers = $this->getFacultyWithSubmissions();
+        
+        Log::info('Number of faculty members with submissions: ' . $facultyMembers->count());
+        
         $data = collect();
         
-        $rowData = [
-            'no' => 1,
-            'date_submitted' => $this->getLatestSubmissionDate(),
-            'faculty_name' => $this->facultyInfo['faculty']['first_name'] . ' ' . 
-                              $this->facultyInfo['faculty']['middle_name'] . ' ' . 
-                              $this->facultyInfo['faculty']['last_name'],
-            'semester' => $this->semester,
-        ];
-        
-        foreach ($this->mainFolders as $mainFolder) {
-            foreach ($this->subFolders[$mainFolder] as $subFolder) {
-                $fileCount = CoursesFile::where('folder_name_id', $subFolder['folder_name_id'])
-                    ->where('user_login_id', $this->facultyInfo['faculty']['faculty_id'])
-                    ->where('semester', $this->semester)
-                    ->count();
+        foreach ($facultyMembers as $index => $faculty) {
+            Log::info('Processing faculty member: ' . $faculty->first_name . ' ' . $faculty->surname);
+            
+            $rowData = [
+                'no' => $index + 1,
+                'date_submitted' => $this->getLatestSubmissionDate($faculty->user_login_id),
+                'faculty_name' => $faculty->first_name . ' ' . $faculty->surname,
+            ];
+            
+            foreach ($this->mainFolders as $mainFolder) {
+                foreach ($this->subFolders[$mainFolder] as $folderNameId => $folderName) {
+                    $fileCount = CoursesFile::where('folder_name_id', $folderNameId)
+                        ->where('user_login_id', $faculty->user_login_id)
+                        ->where('semester', $this->semester)
+                        ->count();
                 
-                $key = $mainFolder . '|' . $subFolder['folder_name'];
-                $rowData[$key] = $fileCount > 0 ? $fileCount : 'X';
+                    $rowData[$folderName] = $fileCount > 0 ? $fileCount : 'X';
+                    Log::info("Faculty: {$faculty->surname}, Folder: {$folderName}, Count: {$rowData[$folderName]}");
+                }
             }
+            
+            $rowData['semester'] = $this->semester;
+            
+            $data->push($rowData);
+            Log::info('Added row data for faculty: ' . $faculty->surname);
         }
         
-        $data->push($rowData);
+        Log::info('Number of rows in final data collection: ' . $data->count());
+        Log::info('Data collection: ' . json_encode($data));
         
         return $data;
     }
+    
 
     public function headings(): array
     {
         $headers = ['No.', 'Date Submitted', 'Faculty Name'];
 
         foreach ($this->mainFolders as $mainFolder) {
-            foreach ($this->subFolders[$mainFolder] as $subFolder) {
-                $headers[] = $subFolder['folder_name'];
+            foreach ($this->subFolders[$mainFolder] as $folderName) {
+                $headers[] = $folderName;
             }
         }
 
@@ -87,6 +101,8 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
 
     public function map($row): array
     {
+        Log::info('Mapping row: ' . json_encode($row));
+
         $mappedRow = [
             $row['no'],
             $row['date_submitted'],
@@ -94,20 +110,27 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
         ];
 
         foreach ($this->mainFolders as $mainFolder) {
-            foreach ($this->subFolders[$mainFolder] as $subFolder) {
-                $key = $mainFolder . '|' . $subFolder['folder_name'];
-                $mappedRow[] = $row[$key];
+            foreach ($this->subFolders[$mainFolder] as $folderNameId => $subFolderName) {
+                $value = $row[$subFolderName] ?? 'X';
+                $mappedRow[] = $value;
+                Log::info("Mapping folder: {$subFolderName}, Value: {$value}");
             }
         }
 
         $mappedRow[] = $row['semester'];
 
+        Log::info('Mapped row: ' . json_encode($mappedRow));
+
         return $mappedRow;
     }
+
 
     public function styles(Worksheet $sheet)
     {
         $lastColumn = $sheet->getHighestColumn();
+        $lastRow = $sheet->getHighestRow();
+        
+        Log::info("Styling sheet. Highest column: {$lastColumn}, Highest row: {$lastRow}");
         
         $startCol = 'D';
         $endCol = $startCol;
@@ -163,7 +186,10 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
             'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
         ]);
         
-        $sheet->fromArray($this->map($this->collection()->first()), null, 'A3');
+        $data = $this->collection();
+        $sheet->fromArray($data->map(function ($item) {
+            return $this->map($item);
+        })->toArray(), null, 'A3');
         
         $highestRow = $sheet->getHighestRow();
         $highestColumn = $sheet->getHighestColumn();
@@ -174,111 +200,35 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
             ],
         ]);
         
+        for ($row = 3; $row <= $lastRow; $row++) {
+            $cellValue = $sheet->getCell("C{$row}")->getValue();
+            Log::info("Row {$row}, Faculty Name: {$cellValue}");
+        }
+        
         return [];
     }
     
-    private function getFacultyInfo()
+    private function getFacultyWithSubmissions()
     {
-        $semester = [
-            "id" => 1,
-            "semester" => "1st Semester 2024-2025",
-            "user_login_id" => 2
-        ];
-    
-        $programs = [
-            "Bachelor of Science in Applied Mathematics (BSAM)",
-            "Bachelor of Science in Information Technology (BSIT)",
-            "Bachelor of Science in Entrepreneurship (BSENTREP)"
-        ];
-    
-        $subjects = [
-            [
-                "id" => 1,
-                "code" => "MGT101",
-                "name" => "Principles of Management and Organization",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "1st Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ],
-            [
-                "id" => 2,
-                "code" => "IT202",
-                "name" => "Applications Development and Emerging Technologies",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 3,
-                "code" => "ENT301",
-                "name" => "Technopreneurship",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSENTREP"
-                    ]
-                ]
-            ],
-            [
-                "id" => 4,
-                "code" => "SYS202",
-                "name" => "Systems Analysis and Design",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 5,
-                "code" => "CS303",
-                "name" => "Computer Science",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "4th Year",
-                        "program" => "BSIT"
-                    ],
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ]
-        ];
-    
-        $data = [
-            "faculty" => [
-                "faculty_id" => 2,
-                "first_name" => "Diana",
-                "middle_name" => "M.",
-                "last_name" => "Rose",
-                "programs" => $programs,
-                "subjects" => $subjects
-            ]
-        ];
-    
-        return $data;
+        $query = UserLogin::where('role', 'faculty')
+            ->whereHas('coursesFiles', function ($query) {
+                $query->where('semester', $this->semester);
+            })
+            ->orderBy('surname')
+            ->orderBy('first_name');
+
+        $faculty = $query->get();
+        
+        return $faculty;
     }
 
-    private function getLatestSubmissionDate()
+    private function getLatestSubmissionDate($facultyId)
     {
-        $latestFile = CoursesFile::where('user_login_id', $this->facultyInfo['faculty']['faculty_id'])
+        $latestFile = CoursesFile::where('user_login_id', $facultyId)
             ->where('semester', $this->semester)
             ->latest('created_at')
             ->first();
 
-        return $latestFile ? $latestFile->created_at->setTimezone('Asia/Manila')->format('F d, Y, h:i A') : 'N/A';
+        return $latestFile ? Carbon::parse($latestFile->created_at)->setTimezone('Asia/Manila')->format('F d, Y, h:i A') : 'N/A';
     }
 }

@@ -133,45 +133,45 @@
 
         @include('partials.faculty-footer')
         <script>
-           function initializeChart() {
-        const ctx = document.getElementById('statusBarChart').getContext('2d');
-        const chartData = @json($chartData);
+            function initializeChart() {
+                const ctx = document.getElementById('statusBarChart').getContext('2d');
+                const chartData = @json($chartData);
 
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: chartData.map(data => data.folder_name),
-                datasets: [{
-                        label: 'Approved',
-                        data: chartData.map(data => data.approved),
-                        backgroundColor: 'rgba(144, 238, 144, 0.5)',
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.map(data => data.folder_name),
+                        datasets: [{
+                                label: 'Approved',
+                                data: chartData.map(data => data.approved),
+                                backgroundColor: 'rgba(144, 238, 144, 0.5)',
+                            },
+                            {
+                                label: 'Declined',
+                                data: chartData.map(data => data.declined),
+                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            },
+                            {
+                                label: 'To Review',
+                                data: chartData.map(data => data.to_review),
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            }
+                        ]
                     },
-                    {
-                        label: 'Declined',
-                        data: chartData.map(data => data.declined),
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    },
-                    {
-                        label: 'To Review',
-                        data: chartData.map(data => data.to_review),
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    options: {
+                        scales: {
+                            x: {
+                                stacked: true,
+                            },
+                            y: {
+                                stacked: true,
+                            }
+                        }
                     }
-                ]
-            },
-            options: {
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true,
-                    }
-                }
+                });
             }
-        });
-    }
 
-    document.addEventListener('DOMContentLoaded', initializeChart);
+            document.addEventListener('DOMContentLoaded', initializeChart);
 
             function formatBytes(bytes) {
                 if (bytes >= 1073741824) {

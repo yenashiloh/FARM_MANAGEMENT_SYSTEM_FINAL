@@ -22,7 +22,8 @@ class AnnouncementController extends Controller
           }
       
           $user = auth()->user();
-          $userDetails = $user->userDetails; 
+          $firstName = $user->first_name;
+          $surname = $user->surname;
           $userLoginId = $user->user_login_id;
           $userRole = $user->role;
       
@@ -68,7 +69,8 @@ class AnnouncementController extends Controller
               'folders' => $folders,
               'folder' => $folder,
               'facultyEmails' => $facultyEmails,
-              'userDetails' => $userDetails,
+              'firstName' => $firstName,
+              'surname' => $surname,
               'notifications' => $notifications,
               'notificationCount' => $notificationCount,
           ]);
@@ -81,7 +83,8 @@ class AnnouncementController extends Controller
         $folder = FolderName::first();
 
         $user = auth()->user();
-        $userDetails = $user->userDetails; 
+        $firstName = $user->first_name;
+        $surname = $user->surname;
 
         $notifications = Notification::where('user_login_id', $user->user_login_id)
         ->orderBy('created_at', 'desc')
@@ -89,19 +92,18 @@ class AnnouncementController extends Controller
 
         $notificationCount = $notifications->where('is_read', 0)->count();
 
-
         $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
 
           return view('admin.announcement.add-announcement', [
             'folders' => $folders,
             'folder' => $folder,
             'facultyEmails' => $facultyEmails,
-            'userDetails' => $userDetails,
+            'firstName' => $firstName,
+            'surname' => $surname,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
         ]);
       }
-      
       
       //save the Announcement
       public function saveAnnouncement(Request $request)
@@ -120,7 +122,6 @@ class AnnouncementController extends Controller
   
           if ($recipientEmails === ['all-faculty']) {
               $recipientEmailsString = 'All Faculty';
-              // Fetch all faculty emails from the database
               $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
           } else {
               $recipientEmails = array_diff($recipientEmails, ['all-faculty']);
@@ -136,7 +137,6 @@ class AnnouncementController extends Controller
           $announcement->user_login_id = auth()->user()->user_login_id;
           $announcement->save();
   
-          // Send email to recipients
           $this->sendAnnouncementEmails($announcement, $facultyEmails);
   
           $request->session()->flash('success', 'Announcement Added Successfully!');
@@ -153,8 +153,6 @@ class AnnouncementController extends Controller
               });
           }
       }
-      
-
       
       //edit Page
       public function showEditPage()
@@ -187,7 +185,8 @@ class AnnouncementController extends Controller
           }
 
           $user = auth()->user();
-          $userDetails = $user->userDetails; 
+          $firstName = $user->first_name;
+          $surname = $user->surname;
       
           $folders = FolderName::all();
 
@@ -205,7 +204,8 @@ class AnnouncementController extends Controller
               'announcement' => $announcement,
               'folders' => $folders,
               'facultyEmails' => $facultyEmails,
-              'userDetails' => $userDetails,
+              'firstName' => $firstName,
+              'surname' => $surname,
               'notifications' => $notifications,
               'notificationCount' => $notificationCount,
           ]);
