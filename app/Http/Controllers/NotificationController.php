@@ -50,16 +50,17 @@ class NotificationController extends Controller
                                     ->map(function ($notification) {
                                         return [
                                             'id' => $notification->id,
-                                            'sender' => $notification->sender,
+                                            'sender' => $notification->sender ? $notification->sender->first_name . ' ' . $notification->sender->surname : 'Unknown',
                                             'message' => $notification->notification_message,
                                             'created_at' => $notification->created_at->format('F j, Y, g:ia'),
                                             'is_read' => $notification->is_read,
                                             'url' => route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $notification->folder_name_id])
                                         ];
                                     });
-
+    
         return response()->json(['notifications' => $notifications]);
     }
+    
 
     //get admin notification
     public function getAdminNotifications()
@@ -71,10 +72,11 @@ class NotificationController extends Controller
             ->map(function ($notification) {
                 $user_login_id = $notification->user_login_id; 
                 $folder_name_id = $notification->folder_name_id; 
-    
+                $sender = $notification->sender ? $notification->sender->first_name . ' ' . $notification->sender->surname : 'Unknown';
+        
                 return [
                     'id' => $notification->id,
-                    'sender' => $notification->sender,
+                    'sender' => $sender,
                     'message' => $notification->notification_message,
                     'created_at' => $notification->created_at->format('F j, Y, g:ia'),
                     'is_read' => $notification->is_read,

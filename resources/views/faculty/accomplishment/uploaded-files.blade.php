@@ -189,73 +189,40 @@
                                             <h5 class="mb-3">Current Semester: {{ $semester }}</h5>
                                         </div>
                                     </div>
-                                    <form action="{{ route('files.store') }}" method="POST"
-                                        enctype="multipart/form-data">
+                                    <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data">
                                         @csrf
-                                        <input type="hidden" name="folder_name_id"
-                                            value="{{ $folder->folder_name_id }}">
+                                        <input type="hidden" name="folder_name_id" value="{{ $folder->folder_name_id }}">
+                                    
                                         @foreach ($courseSchedules as $index => $schedule)
+                                            <input type="hidden" name="course_schedule_ids[]" value="{{ $schedule->course_schedule_id }}">
+                                    
                                             <div class="card mb-3">
                                                 <div class="card-body">
                                                     <div class="form-group">
-                                                        <label for="file{{ $index + 1 }}"
-                                                            style="display: inline-block; margin-bottom: 0;">
+                                                        <label for="file{{ $index + 1 }}" style="display: inline-block; margin-bottom: 0;">
                                                             <span>
-                                                                <strong>Subject:</strong>
-                                                                {{ $schedule->course_subjects }}
-                                                                <span style="color: red;">*</span>
-                                                                <br>
-                                                                <strong>Subject Code:</strong>
-                                                                {{ $schedule->course_code }}
-                                                                <br>
-                                                                <strong>Schedule:</strong>
-                                                                {{ $schedule->schedule }}
+                                                                <strong>Subject:</strong> {{ $schedule->course_subjects }} <span style="color: red;">*</span><br>
+                                                                <strong>Subject Code:</strong> {{ $schedule->course_code }}<br>
+                                                                <strong>Schedule:</strong> {{ $schedule->schedule }}
                                                             </span>
                                                         </label>
                                                         <p>
-                                                            <span><strong>Year & Section:</strong>
-                                                                {{ $schedule->year_section }}</span>
-                                                            <br>
-                                                            <span><strong>Program:</strong>
-                                                                {{ $schedule->program }}</span>
+                                                            <span><strong>Year & Section:</strong> {{ $schedule->year_section }}</span><br>
+                                                            <span><strong>Program:</strong> {{ $schedule->program }}</span>
                                                         </p>
-
-                                                        <input type="file"
-                                                            class="form-control-file bordered-file-input"
-                                                            id="file{{ $index + 1 }}" name="files[]"
-                                                            accept=".pdf" required>
+                                    
+                                                        <!-- File input field with unique ID -->
+                                                        <input type="file" name="files[{{ $schedule->course_schedule_id }}][]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required>
+            <input type="hidden" name="course_schedule_ids[]" value="{{ $schedule->course_schedule_id }}">
                                                     </div>
                                                 </div>
                                             </div>
                                         @endforeach
-
-                                        @foreach ($folder_inputs as $input)
-                                            <div class="card mb-3">
-                                                <div class="card-body">
-                                                    <div class="form-group">
-                                                        <label
-                                                            for="{{ $input->input_label }}">{{ $input->input_label }}<span
-                                                                style="color: red;"> *</span></label>
-                                                        @if ($input->input_type == 'text')
-                                                            <input type="text" class="form-control"
-                                                                id="{{ $input->input_label }}"
-                                                                name="{{ $input->input_label }}">
-                                                        @elseif ($input->input_type == 'file')
-                                                            <input type="file"
-                                                                class="form-control-file bordered-file-input"
-                                                                id="{{ $input->input_label }}" name="files[]"
-                                                                required>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
+                                    
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                             <button type="submit" class="btn btn-success">Upload Files</button>
                                         </div>
-                                       
                                     </form>
                                 </div>
                             </div>
@@ -292,6 +259,7 @@
             <script src="../../../../asset/vendor/datatables/js/loading.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+           
 
 </body>
 

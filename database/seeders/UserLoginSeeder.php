@@ -9,9 +9,6 @@ use App\Models\UserLogin;
 
 class UserLoginSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run()
     {
         // Seed for admin
@@ -28,7 +25,7 @@ class UserLoginSeeder extends Seeder
             'department' => null,
         ]);
 
-        // Seed for faculty
+        // Seed for faculty 1
         UserLogin::create([
             'email' => 'dianrosefidel@gmail.com',
             'password' => Hash::make('facultypassword'),
@@ -56,7 +53,7 @@ class UserLoginSeeder extends Seeder
             'department' => null,
         ]);
 
-        // Seed for Kazel Villamarzo
+        // Seed for faculty 2
         UserLogin::create([
             'email' => 'kazelvillamarzo@gmail.com',
             'password' => Hash::make('faculty2024'),
@@ -65,19 +62,6 @@ class UserLoginSeeder extends Seeder
             'surname' => 'Villamarzo',
             'first_name' => 'Kazel',
             'middle_name' => 'Jane',
-            'name_extension' => null,
-            'employment_type' => 'fulltime',
-            'department' => 'IT',
-        ]);
-
-        UserLogin::create([
-            'email' => 'karen_casim@gmail.com',
-            'password' => Hash::make('faculty2024'),
-            'role' => 'faculty',
-            'Fcode' => 'F003',
-            'surname' => 'Casim',
-            'first_name' => 'Karen',
-            'middle_name' => 'Alonica',
             'name_extension' => null,
             'employment_type' => 'fulltime',
             'department' => 'IT',

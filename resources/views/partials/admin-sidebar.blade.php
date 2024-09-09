@@ -40,12 +40,18 @@
                                             </div>
                                         @else
                                             @foreach ($notifications as $notification)
+                                                @php
+                                                    $coursesFile = $notification->coursesFile;
+                                                    $facultyUserLoginId = $coursesFile->user_login_id;
+                                                    $semester = $coursesFile->semester; 
+                                                @endphp
                                                 <a href="{{ route('admin.accomplishment.view-accomplishment', [
-                                                    'user_login_id' => auth()->user()->user_login_id,
+                                                    'user_login_id' => $facultyUserLoginId, 
                                                     'folder_name_id' => $notification->folder_name_id,
-                                                    'semester' => $notification->semester
-                                                ]) }}" class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
-                                                   data-notification-id="{{ $notification->id }}">
+                                                    'semester' => $semester 
+                                                ]) }}" 
+                                                class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
+                                                data-notification-id="{{ $notification->id }}">
                                                     <div class="notification-info">
                                                         <div class="notification-list-user-img">
                                                             <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
@@ -65,6 +71,10 @@
                                 </div>
                             </li>
                         </ul>
+                        
+                        
+                        
+                        
                      </li>
 
                      <li class="nav-item dropdown nav-user">

@@ -19,17 +19,18 @@ class Notification extends Model
         'sender',
         'notification_message',
         'is_read',
+        'sender_user_login_id',
     ];
-
+    
     protected $casts = [
         'is_read' => 'boolean',
     ];
     
     public function coursesFile()
     {
-        return $this->belongsTo(CoursesFile::class, 'courses_files_id');
+        return $this->belongsTo(CoursesFile::class, 'courses_files_id', 'courses_files_id');
     }
-
+    
     public function userLogin()
     {
         return $this->belongsTo(UserLogin::class, 'user_login_id');

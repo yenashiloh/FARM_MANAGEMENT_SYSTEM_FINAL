@@ -20,45 +20,57 @@
                  <span class="navbar-toggler-icon"></span>
              </button>
              <div class="collapse navbar-collapse " id="navbarSupportedContent">
-                 <ul class="navbar-nav ml-auto navbar-right-top">
-                     <li class="nav-item dropdown notification">
-                         <a class="nav-link nav-icons"
-                             @if ($folder) href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
-                     @else
-                         href="#" @endif
-                             id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
-                             aria-expanded="false">
-                             <i class="fas fa-fw fa-bell"></i>
-                             <span class="indicator" id="notification-count" style="display: none;">0</span>
-                         </a>
-                         <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
-                             <li>
-                                 <div class="notification-title">Notification</div>
-                                 <div class="notification-list">
-                                     <div class="list-group">
-                                         @foreach ($notifications as $notification)
-                                             <a href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $notification->folder_name_id]) }}"
-                                                 class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}">
-                                                 <div class="notification-info">
-                                                     <div class="notification-list-user-img">
-                                                         <i class="fas fa-user-circle user-avatar-md"
-                                                             style="font-size:30px;"></i>
-                                                     </div>
-                                                     <div class="notification-list-user-block">
-                                                         <span
-                                                             class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
-                                                         <span>{{ $notification->notification_message }}</span>
-                                                         <div class="notification-date">
-                                                             {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
-                                                         </div>
-                                                     </div>
-                                                 </div>
-                                             </a>
-                                         @endforeach
-                                     </div>
-                                 </div>
-                             </li>
-                         </ul>
+                <ul class="navbar-nav ml-auto navbar-right-top">
+                    <li class="nav-item dropdown notification">
+                        <a class="nav-link nav-icons"
+                           @if ($folder)
+                               href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
+                           @else
+                               href="#" 
+                           @endif
+                           id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
+                           aria-expanded="false">
+                            <i class="fas fa-fw fa-bell"></i>
+                            <span class="indicator" id="notification-count" style="display: none;">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
+                            <li>
+                                <div class="notification-title">Notification</div>
+                                <div class="notification-list">
+                                    <div class="list-group">
+                                        @foreach ($notifications as $notification)
+                                            @php
+                                                $coursesFile = $notification->coursesFile;
+                                                $facultyUserLoginId = $coursesFile->user_login_id;
+                                                $semester = $coursesFile->semester;
+                                            @endphp
+                                            <a href="{{ route('faculty.accomplishment.view-uploaded-files', [
+                                                'user_login_id' => $facultyUserLoginId,
+                                                'folder_name_id' => $notification->folder_name_id,
+                                                'semester' => $semester
+                                            ]) }}"
+                                            class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img">
+                                                        <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
+                                                    </div>
+                                                    <div class="notification-list-user-block">
+                                                        <span class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
+                                                        <span>{{ $notification->notification_message }}</span>
+                                                        <div class="notification-date">
+                                                            {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                
                      </li>
 
                      <li class="nav-item dropdown nav-user">

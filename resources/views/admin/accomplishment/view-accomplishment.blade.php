@@ -161,7 +161,7 @@
                                                                     Decline
                                                                 </button>
                                                             @endif
-                                                            <button type="button" class="btn btn-primary btn-sm delete-button"
+                                                            <button type="button" class="btn btn-danger btn-sm delete-button"
                                                                     data-id="{{ $file->courses_files_id }}">
                                                                 Delete
                                                             </button>
