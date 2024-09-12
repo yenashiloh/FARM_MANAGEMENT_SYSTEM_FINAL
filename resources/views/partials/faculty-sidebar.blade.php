@@ -20,81 +20,76 @@
                  <span class="navbar-toggler-icon"></span>
              </button>
              <div class="collapse navbar-collapse " id="navbarSupportedContent">
-                <ul class="navbar-nav ml-auto navbar-right-top">
-                    <li class="nav-item dropdown notification">
-                        <a class="nav-link nav-icons"
-                           @if ($folder)
-                               href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
+                 <ul class="navbar-nav ml-auto navbar-right-top">
+                     <li class="nav-item dropdown notification">
+                         <a class="nav-link nav-icons"
+                             @if ($folder) href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
                            @else
-                               href="#" 
-                           @endif
-                           id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
-                           aria-expanded="false">
-                            <i class="fas fa-fw fa-bell"></i>
-                            <span class="indicator" id="notification-count" style="display: none;">0</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
-                            <li>
-                                <div class="notification-title">Notification</div>
-                                <div class="notification-list">
-                                    <div class="list-group">
-                                        @foreach ($notifications as $notification)
-                                            @php
-                                                $coursesFile = $notification->coursesFile;
-                                                $facultyUserLoginId = $coursesFile->user_login_id;
-                                                $semester = $coursesFile->semester;
-                                            @endphp
-                                            <a href="{{ route('faculty.accomplishment.view-uploaded-files', [
-                                                'user_login_id' => $facultyUserLoginId,
-                                                'folder_name_id' => $notification->folder_name_id,
-                                                'semester' => $semester
-                                            ]) }}"
-                                            class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}">
-                                                <div class="notification-info">
-                                                    <div class="notification-list-user-img">
-                                                        <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
-                                                    </div>
-                                                    <div class="notification-list-user-block">
-                                                        <span class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
-                                                        <span>{{ $notification->notification_message }}</span>
-                                                        <div class="notification-date">
-                                                            {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                
+                               href="#" @endif
+                             id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
+                             aria-expanded="false">
+                             <i class="fas fa-fw fa-bell"></i>
+                             <span class="indicator" id="notification-count" style="display: none;">0</span>
+                         </a>
+                         <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
+                             <li>
+                                 <div class="notification-title">Notification</div>
+                                 <div class="notification-list">
+                                     <div class="list-group">
+                                         @foreach ($notifications as $notification)
+                                             @php
+                                                 $coursesFile = $notification->coursesFile;
+                                                 $facultyUserLoginId = $coursesFile->user_login_id;
+                                                 $semester = $coursesFile->semester;
+                                             @endphp
+                                             <a href="{{ route('faculty.accomplishment.view-uploaded-files', [
+                                                 'user_login_id' => $facultyUserLoginId,
+                                                 'folder_name_id' => $notification->folder_name_id,
+                                                 'semester' => $semester,
+                                             ]) }}"
+                                                 class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}">
+                                                 <div class="notification-info">
+                                                     <div class="notification-list-user-img">
+                                                         <i class="fas fa-user-circle user-avatar-md"
+                                                             style="font-size:30px;"></i>
+                                                     </div>
+                                                     <div class="notification-list-user-block">
+                                                         <span
+                                                             class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
+                                                         <span>{{ $notification->notification_message }}</span>
+                                                         <div class="notification-date">
+                                                             {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             </a>
+                                         @endforeach
+                                     </div>
+                                 </div>
+                             </li>
+                         </ul>
+                     </li>
                      </li>
 
                      <li class="nav-item dropdown nav-user">
                          <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
-                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i
-                                 class="fas fa-user-circle user-avatar-md rounded-circle" style="font-size:25px;"></i>
-
-                             <div class="dropdown-menu dropdown-menu-right nav-user-dropdown"
-                                 aria-labelledby="navbarDropdownMenuLink2">
-                                 <div class="nav-user-info text-center">
-                                     <h5 class="mb-0 text-white nav-user-name">
-                                         {{ $firstName }} {{ $surname }}
-                                     </h5>
-                                     <span style="font-size:12px;">
-                                         Faculty Member
-                                     </span>
-                                 </div>
-                                 {{-- <a class="dropdown-item" href="#"><i class="fas fa-user mr-2"></i>Account</a>
-                                 <a class="dropdown-item" href="#"><i class="fas fa-cog mr-2"></i>Setting</a> --}}
-                                 <a class="dropdown-item" href="#" id="logout-link">
-                                     <i class="fas fa-power-off mr-2"></i>Logout
-                                 </a>
+                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                             <i class="fas fa-user-circle user-avatar-md rounded-circle" style="font-size:25px;"></i>
+                         </a>
+                         <div class="dropdown-menu dropdown-menu-right nav-user-dropdown"
+                             aria-labelledby="navbarDropdownMenuLink2">
+                             <div class="nav-user-info text-center">
+                                 <h5 class="mb-0 text-white nav-user-name">
+                                     {{ $firstName }} {{ $surname }}
+                                 </h5>
+                                 <span style="font-size:12px;">
+                                     Faculty Member
+                                 </span>
                              </div>
-
+                             <a class="dropdown-item" href="#" id="logout-link">
+                                 <i class="fas fa-power-off mr-2"></i>Logout
+                             </a>
+                         </div>
                      </li>
                  </ul>
              </div>
@@ -133,19 +128,19 @@
                                  Announcements</a>
                          </li>
                          <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('faculty.view-archive') ? 'active' : '' }}"
-                                href="{{route ('faculty.view-archive')}}" aria-expanded="false"
-                                data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-archive"></i>
-                                Archive</a>
-                        </li>
+                             <a class="nav-link {{ request()->routeIs('faculty.view-archive') ? 'active' : '' }}"
+                                 href="{{ route('faculty.view-archive') }}" aria-expanded="false"
+                                 data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-archive"></i>
+                                 Archive</a>
+                         </li>
 
                          <li class="nav-divider">
                              Accomplishment
                          </li>
                          <li class="nav-item">
                              <a class="nav-link {{ request()->routeIs('faculty.accomplishment.uploaded-files') && request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Classroom Management')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
-                                 href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-6"
-                                 aria-controls="submenu-6">
+                                 href="#" data-toggle="collapse" aria-expanded="false"
+                                 data-target="#submenu-6" aria-controls="submenu-6">
                                  <i class="fas fa-book"></i> Classroom Management
                              </a>
                              <div id="submenu-6" class="collapse submenu">
