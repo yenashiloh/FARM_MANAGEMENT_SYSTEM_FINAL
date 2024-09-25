@@ -57,6 +57,7 @@
                                 @csrf
                                 <div class="email-compose-fields">
                                     <div class="to">
+                                          <h5 >This edit will only apply to the announcement on this website and not in the email received by the faculty.</h5>
                                         <div class="form-group row pt-0">
                                             <label class="col-md-1 control-label">To:</label>
                                             <div class="col-md-11">
@@ -72,6 +73,7 @@
 
                                         </div>
                                     </div>
+
                                     <div class="subject">
                                         <div class="form-group row pt-2">
                                             <label class="col-md-1 control-label">Subject</label>
@@ -83,8 +85,10 @@
                                         </div>
                                     </div>
                                 </div>
+                                 
                                 <div class="email editor">
                                     <div class="col-md-12 pl-4 px-4">
+                                
                                         <div class="form-group">
                                             <label class="control-label sr-only" for="summernote">Descriptions </label>
                                             <textarea class="form-control" id="summernote" id="announcement-editor" name="announcement_message" rows="6"

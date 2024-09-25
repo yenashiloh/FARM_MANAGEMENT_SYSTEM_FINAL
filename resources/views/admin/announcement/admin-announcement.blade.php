@@ -71,28 +71,29 @@
                                 </div>
                             @endif
 
+                           <div class="container mb-4">
+                            <input type="text" id="search" class="form-control" placeholder="Search announcements..." />
+                        </div>
 
+                        <div id="announcements-list">
                             @if ($announcements->isEmpty())
                                 <div class="alert alert-info" role="alert">
                                     No announcements available.
                                 </div>
                             @else
                                 @foreach ($announcements as $announcement)
-                                    <div class="main-content container-fluid p-0 mb-4">
+                                    <div class="main-content container-fluid p-0 mb-4 announcement-item">
                                         <div class="email-head d-flex justify-content-between align-items-center">
                                             <div class="email-head-subject d-flex align-items-center">
                                                 <div class="title">
                                                     <a class="active" href="#"></a>
-                                                    <span
-                                                        style="font-size: 20px; mt-0">{{ $announcement->subject }}</span>
+                                                    <span style="font-size: 20px; mt-0">{{ $announcement->subject }}</span>
                                                     <div class="date" style="font-size:12px;">
                                                         {{ \Carbon\Carbon::parse($announcement->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:i a') }}
                                                     </div>
-                                                    <div class="date  mt-2" style="font-size:12px;">
+                                                    <div class="date mt-2" style="font-size:12px;">
                                                         To: @foreach ($announcement->displayEmails as $email)
-                                                            {{ $email }}@if (!$loop->last)
-                                                                ,
-                                                            @endif
+                                                            {{ $email }}@if (!$loop->last),@endif
                                                         @endforeach
                                                         @if ($announcement->moreEmailsCount > 0)
                                                             and {{ $announcement->moreEmailsCount }} more
@@ -134,6 +135,8 @@
                                     </div>
                                 @endforeach
                             @endif
+</div>
+
 
 
                             <!-- ============================================================== -->
@@ -147,6 +150,7 @@
                         @include('partials.admin-footer')
                         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
                         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
                         <script>
                             //dropdown toggle
@@ -227,6 +231,23 @@
                                     }, 8000);
                                 }
                             });
+                            
+                  $(document).ready(function() {
+        $('#search').on('input', function() {
+            var query = $(this).val();
+            $.ajax({
+                url: "{{ route('admin.announcement.admin-announcement') }}",
+                method: 'GET',
+                data: { query: query },
+                success: function(response) {
+                    $('#announcements-list').html($(response).find('#announcements-list').html());
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error: ' + status + error);
+                }
+            });
+        });
+    });
                         </script>
 </body>
 

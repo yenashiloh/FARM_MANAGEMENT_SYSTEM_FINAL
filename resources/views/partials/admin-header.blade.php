@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="../../../../asset/vendor/bootstrap/css/bootstrap.min.css">
 <link href="../../../../asset/vendor/fonts/circular-std/style.css" rel="stylesheet">
 <link rel="stylesheet" href="../../../../asset/libs/css/style.css">
+<link rel="stylesheet" href="../../../../asset/libs/css/header-responsive.css">
 <link rel="stylesheet" href="../../../../asset/vendor/fonts/fontawesome/css/fontawesome-all.css">
 <link rel="stylesheet" href="../../../../asset/vendor/charts/chartist-bundle/chartist.css">
 <link rel="stylesheet" href="../../../../asset/vendor/charts/morris-bundle/morris.css">

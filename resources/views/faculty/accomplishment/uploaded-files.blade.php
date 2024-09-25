@@ -43,11 +43,26 @@
         .form-group {
             margin-bottom: 1rem;
         }
+
         p {
             color: #3d405c;
         }
-        strong{
+
+        strong {
             color: rgb(27, 27, 27);
+        }
+
+        .file-input-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-input-container input[type="file"] {
+            margin-bottom: 5px;
+        }
+
+        .file-input-container small {
+            order: 1;
         }
     </style>
 </head>
@@ -100,11 +115,16 @@
                                         <strong>Opened:</strong> {{ $formattedStartDate }}<br>
                                         <strong>Due:</strong> {{ $formattedEndDate }}<br>
                                     </p>
-
-                                    <a href="#" class="btn btn-success mb-3" data-bs-toggle="modal"
-                                        data-bs-target="#addFolderModal">
-                                        <i class="fas fa-plus"></i> Upload Files
-                                    </a>
+                                    @if (!$hasUploaded)
+                                        <a href="#" class="btn btn-success mb-3" data-bs-toggle="modal"
+                                            data-bs-target="#addFolderModal" id="uploadButton">
+                                            <i class="fas fa-plus"></i> Upload Files
+                                        </a>
+                                    @else
+                                        <button class="btn btn-secondary mb-3" disabled id="uploadButton">
+                                            Successfully Uploaded
+                                        </button>
+                                    @endif
                                 @else
                                     <p class="text-danger">
                                         {{ $statusMessage }}
@@ -135,7 +155,6 @@
                                         </ul>
                                     </div>
                                 @endif
-
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered first">
                                         <thead>
@@ -153,10 +172,11 @@
                                                         </td>
                                                         <td>{{ $semester }}</td>
                                                         <td>
-                                                            <a href="{{ route('faculty.accomplishment.view-uploaded-files', ['user_login_id' => auth()->id(), 'folder_name_id' => $folder->folder_name_id, 'semester' => $semester]) }}" class="btn btn-info text-white">
+                                                            <a href="{{ route('faculty.accomplishment.view-uploaded-files', ['user_login_id' => auth()->id(), 'folder_name_id' => $folder->folder_name_id, 'semester' => $semester]) }}"
+                                                                class="btn btn-info text-white">
                                                                 View
                                                             </a>
-                                                            
+
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -181,7 +201,7 @@
                                         <h5 class="m-0">
                                             <strong>Instructions:</strong>
                                             Please upload the files related to your teaching courses. All input fields
-                                            with the symbol (<span style="color: red;">*</span>) are required.
+                                            with the symbol (<span style="color: red;">*</span>) are required. Only <strong>PDF</strong> file is accepted.
                                         </h5>
                                     </div>
                                     <div class="mb-3">
@@ -189,45 +209,65 @@
                                             <h5 class="mb-3">Current Semester: {{ $semester }}</h5>
                                         </div>
                                     </div>
-                                    <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data">
+                                    <form id="uploadForm" action="{{ route('files.store') }}" method="POST"
+                                        enctype="multipart/form-data">
                                         @csrf
-                                        <input type="hidden" name="folder_name_id" value="{{ $folder->folder_name_id }}">
-                                    
+                                        <input type="hidden" name="folder_name_id"
+                                            value="{{ $folder->folder_name_id }}">
                                         @foreach ($courseSchedules as $index => $schedule)
-                                            <input type="hidden" name="course_schedule_ids[]" value="{{ $schedule->course_schedule_id }}">
-                                    
+                                            <input type="hidden" name="course_schedule_ids[]"
+                                                value="{{ $schedule->course_schedule_id }}">
                                             <div class="card mb-3">
                                                 <div class="card-body">
                                                     <div class="form-group">
-                                                        <label for="file{{ $index + 1 }}" style="display: inline-block; margin-bottom: 0;">
+                                                        <label for="file{{ $index + 1 }}"
+                                                            style="display: inline-block; margin-bottom: 0;">
                                                             <span>
-                                                                <strong>Subject:</strong> {{ $schedule->course_subjects }} <span style="color: red;">*</span><br>
-                                                                <strong>Subject Code:</strong> {{ $schedule->course_code }}<br>
+                                                                <strong>Subject:</strong>
+                                                                {{ $schedule->course_subjects }} <span
+                                                                    style="color: red;">*</span><br>
+                                                                <strong>Subject Code:</strong>
+                                                                {{ $schedule->course_code }}<br>
                                                                 <strong>Schedule:</strong> {{ $schedule->schedule }}
                                                             </span>
                                                         </label>
                                                         <p>
-                                                            <span><strong>Year & Section:</strong> {{ $schedule->year_section }}</span><br>
-                                                            <span><strong>Program:</strong> {{ $schedule->program }}</span>
+                                                            <span><strong>Year & Section:</strong>
+                                                                {{ $schedule->year_section }}</span><br>
+                                                            <span><strong>Program:</strong>
+                                                                {{ $schedule->program }}</span>
                                                         </p>
-                                    
-                                                        <!-- File input field with unique ID -->
-                                                        <input type="file" name="files[{{ $schedule->course_schedule_id }}][]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required>
-            <input type="hidden" name="course_schedule_ids[]" value="{{ $schedule->course_schedule_id }}">
+                                                        <div class="file-input-container">
+                                                            <input type="file"
+                                                                id="fileInput{{ $schedule->course_schedule_id }}"
+                                                                name="files[{{ $schedule->course_schedule_id }}][]"
+                                                                multiple accept=".pdf" required>
+                                                            <small class="text-danger"
+                                                                id="error{{ $schedule->course_schedule_id }}"></small>
+                                                        </div>
+                                                        <input type="hidden" name="course_schedule_ids[]"
+                                                            value="{{ $schedule->course_schedule_id }}">
                                                     </div>
                                                 </div>
                                             </div>
                                         @endforeach
-                                    
+                                        <div class="progress mt-3 d-none" id="uploadProgress">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%;"
+                                                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                        </div>
+
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-success">Upload Files</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-success" id="uploadButton">Upload
+                                                Files</button>
                                         </div>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
                 <!-- ============================================================== -->
                 <!-- end wrapper  -->
@@ -259,8 +299,86 @@
             <script src="../../../../asset/vendor/datatables/js/loading.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-           
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.querySelectorAll('input[type="file"]').forEach(input => {
+                        input.addEventListener('change', function() {
+                            const fileInput = this;
+                            const errorElement = document.getElementById('error' + fileInput.id.replace(
+                                'fileInput', ''));
 
+                            if (fileInput.files.length > 0) {
+                                const validTypes = ['application/pdf'];
+                                let valid = true;
+
+                                for (let i = 0; i < fileInput.files.length; i++) {
+                                    if (!validTypes.includes(fileInput.files[i].type)) {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+
+                                if (!valid) {
+                                    errorElement.textContent = 'Please upload only PDF files.';
+                                    fileInput.value = '';
+                                } else {
+                                    errorElement.textContent = '';
+                                }
+                            } else {
+                                errorElement.textContent = '';
+                            }
+                        });
+                    });
+
+                    const form = document.getElementById('uploadForm');
+                    const uploadButton = document.getElementById('uploadButton');
+                    const progressBar = document.querySelector('#uploadProgress .progress-bar');
+                    const progressContainer = document.getElementById('uploadProgress');
+
+                    if (form && uploadButton) {
+                        form.addEventListener('submit', function(e) {
+                            e.preventDefault();
+
+                            const formData = new FormData(form);
+
+                            uploadButton.textContent = 'Uploading...';
+                            uploadButton.disabled = true;
+                            uploadButton.classList.remove('btn-success');
+                            uploadButton.classList.add('btn-secondary');
+                            uploadButton.removeAttribute('data-bs-toggle');
+                            uploadButton.removeAttribute('data-bs-target');
+
+                            progressContainer.classList.remove('d-none');
+
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', form.action, true);
+                            xhr.upload.onprogress = function(e) {
+                                if (e.lengthComputable) {
+                                    const percentComplete = (e.loaded / e.total) * 100;
+                                    progressBar.style.width = percentComplete + '%';
+                                    progressBar.textContent = percentComplete.toFixed(0) + '%';
+                                    progressBar.setAttribute('aria-valuenow', percentComplete);
+                                }
+                            };
+                            xhr.onload = function() {
+                                if (xhr.status === 200) {
+                                    uploadButton.textContent = 'Successfully Uploaded';
+                                    window.location.reload();
+                                } else {
+                                    const errorMessage = xhr.responseText ? JSON.parse(xhr.responseText)
+                                        .message : 'An error occurred during upload.';
+                                    alert(errorMessage);
+                                    uploadButton.textContent = 'Upload Files';
+                                    uploadButton.disabled = false;
+                                    uploadButton.classList.remove('btn-secondary');
+                                    uploadButton.classList.add('btn-success');
+                                }
+                            };
+                            xhr.send(formData);
+                        });
+                    }
+                });
+            </script>
 </body>
 
 </html>

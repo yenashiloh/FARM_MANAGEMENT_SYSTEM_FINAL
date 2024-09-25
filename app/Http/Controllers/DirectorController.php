@@ -9,6 +9,9 @@ use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Announcement;
 use App\Models\Notification;
+use App\Exports\GenerateAllReports;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class DirectorController extends Controller
@@ -269,7 +272,6 @@ class DirectorController extends Controller
             ->distinct()
             ->pluck('course_schedules.sem_academic_year');
     
-        // Initialize $semester
         $semester = $allSemesters->first();
     
         $files = $filesQuery
@@ -354,5 +356,21 @@ class DirectorController extends Controller
          $request->session()->regenerateToken();
          return response()->json(['success' => true]);
      }
+     
+     public function generateAllReportsDirector($semester)
+{
+    Log::info('Starting generateAllReportsDirector for semester: ' . $semester);
+
+    $export = new GenerateAllReports($semester);
+
+    Log::info('Created GenerateAllReports instance');
+
+    $result = Excel::download($export, 'faculty_report_director.xlsx');
+
+    Log::info('Excel::download completed');
+
+    return $result;
+}
+
 
 }

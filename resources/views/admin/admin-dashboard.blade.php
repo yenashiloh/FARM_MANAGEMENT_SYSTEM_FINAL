@@ -57,7 +57,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                
                             </div>
                             
                             <div class="page-breadcrumb">
@@ -65,7 +64,7 @@
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
                                                 style="cursor: default; color: #3d405c;">Menu</a></li>
-                                        <li class="breadcrumb-item"><a href="{{ route('faculty.faculty-dashboard') }}"
+                                        <li class="breadcrumb-item"><a href="{{ route('admin.admin-dashboard') }}"
                                                 class="breadcrumb-link">Dashboard</a></li>
                                     </ol>
                                 </nav>

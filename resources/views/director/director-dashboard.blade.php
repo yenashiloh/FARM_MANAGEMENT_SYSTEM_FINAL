@@ -40,16 +40,31 @@
                         <div class="page-header">
                             <div class="col d-flex justify-content-between align-items-center">
                                 <h2 class="pageheader-title mb-0">Director Dashboard</h2>
-                               
-                                
                             </div>
+                            
+                                 <div class="ml-auto text-right">
+                                    <div class="dropdown">
+                                        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Generate Reports
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            @foreach($semesters as $semester)
+                                                <a class="dropdown-item" href="{{ route('generate.all.reports.director', ['semester' => $semester->semester]) }}">
+                                                    {{ $semester->semester }}
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                  
                             
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
                                                 style="cursor: default; color: #3d405c;">Menu</a></li>
-                                        <li class="breadcrumb-item"><a href="{{ route('faculty.faculty-dashboard') }}"
+                                        <li class="breadcrumb-item"><a href="{{ route('director.director-dashboard') }}"
                                                 class="breadcrumb-link">Dashboard</a></li>
                                     </ol>
                                 </nav>

@@ -15,6 +15,7 @@ use App\Http\Controllers\DirectorController;
 use App\Http\Controllers\MarkAsReadController;
 use App\Http\Controllers\FolderInputController;
 use App\Http\Controllers\UploadScheduleController;
+use App\Http\Controllers\AuditController;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
 use App\Http\Middleware\DirectorAuthenticate;
@@ -56,6 +57,8 @@ Route::middleware(['auth', 'role:faculty', 'prevent-back-history'])->group(funct
 
     Route::post('/files/archiveAll', [CoursesFileController::class, 'archiveAll'])->name('files.archiveAll');
     Route::post('/files/bulk-unarchive', [CoursesFileController::class, 'bulkUnarchive'])->name('files.bulkUnarchive');
+Route::post('/log-logout', [AuditController::class, 'logLogout'])->name('log-logout');
+
 
 
 
@@ -92,6 +95,7 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/announcement/admin-announcement', [AnnouncementController::class, 'showAnnouncementPage'])->name('admin.announcement.admin-announcement');
     Route::get('/announcement/add-announcement', [AnnouncementController::class, 'showAddAnnouncementPage'])->name('admin.announcement.add-announcement');
     Route::post('/announcement/add-announcement', [AnnouncementController::class, 'saveAnnouncement'])->name('admin.announcement.save-announcement');
+
     
     //Announcement
     Route::get('admin/announcement/edit/{id_announcement}', [AnnouncementController::class, 'editAnnouncement'])->name('admin.announcement.edit-announcement');
@@ -127,18 +131,19 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
 
     Route::get('/admin/accomplishment/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.show');
 
+    Route::get('/audit-trail', [AdminController::class, 'showAuditTrail'])->name('admin.maintenance.audit-trail');
 
     });
 
     /************************************DIRECTOR***************************************/
-Route::group(['middleware' => ['auth', 'role:director', 'prevent-back-history']], function () {
+    Route::group(['middleware' => ['auth', 'role:director', 'prevent-back-history']], function () {
 
     Route::get('/accomplishment/director-uploaded-files/{folder_name_id}', [DirectorController::class, 'showDirectorUploadedFiles'])->name('director.accomplishment.director-uploaded-files');
     // Route::get('/accomplishment/view-faculty-accomplishment/{user_login_id}/{folder_name_id}', [DirectorController::class, 'viewFacultyAccomplishment'])->name('director.accomplishment.view-accomplishment');
 
     Route::get('/accomplishment/view-accomplishment/{user_login_id}/{folder_name_id}/{semester?}', [DirectorController::class, 'viewFacultyAccomplishment'])
     ->name('director.accomplishment.view-accomplishment');
-
+    Route::get('/generate-all-reports-director/{semester}', [DirectorController::class, 'generateAllReportsDirector'])->name('generate.all.reports.director');
 
     Route::get('/director-dashboard', [DirectorController::class, 'directorDashboardPage'])->name('director.director-dashboard');
 

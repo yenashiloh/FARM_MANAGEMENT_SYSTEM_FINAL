@@ -12,7 +12,6 @@ use App\Models\Notification;
 
 class DashboardController extends Controller
 {
-   
     //show admin dashboard
     public function adminDashboardPage()
     {
@@ -140,17 +139,18 @@ class DashboardController extends Controller
         $storageAvailable = $totalStorageLimit - $totalStorageUsed;
         $formattedStorageAvailable = $this->formatBytes($storageAvailable);
     
-        $folderStatusCounts = FolderName::withCount([
-            'coursesFiles as approved_count' => function ($query) {
-                $query->where('status', 'Approved');
-            },
-            'coursesFiles as declined_count' => function ($query) {
-                $query->where('status', 'Declined');
-            },
-            'coursesFiles as to_review_count' => function ($query) {
-                $query->where('status', 'To Review');
-            }
-        ])->get();
+         $folderStatusCounts = FolderName::withCount([
+        'coursesFiles as approved_count' => function ($query) use ($userId) {
+            $query->where('status', 'Approved')->where('user_login_id', $userId);
+        },
+        'coursesFiles as declined_count' => function ($query) use ($userId) {
+            $query->where('status', 'Declined')->where('user_login_id', $userId);
+        },
+        'coursesFiles as to_review_count' => function ($query) use ($userId) {
+            $query->where('status', 'To Review')->where('user_login_id', $userId);
+        }
+    ])->get();
+
     
         $chartData = $folderStatusCounts->map(function ($folder) {
             return [

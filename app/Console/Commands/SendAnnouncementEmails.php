@@ -41,7 +41,6 @@ class SendAnnouncementEmails extends Command
         $recipientEmailsString = $announcement->type_of_recepient;
 
         if ($recipientEmailsString === 'All Faculty') {
-            // Fetch all faculty emails from the database
             $recipients = User::where('role', 'faculty')->pluck('email')->toArray();
         } else {
             $recipients = explode(', ', $recipientEmailsString);

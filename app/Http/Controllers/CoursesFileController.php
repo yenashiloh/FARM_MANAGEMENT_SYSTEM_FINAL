@@ -120,10 +120,8 @@ class CoursesFileController extends Controller
         }
     }
     
-    
-    
     //show view archive page
-    public function showArchive()
+   public function showArchive()
     {
         if (!auth()->check()) {
             return redirect()->route('login');
@@ -147,12 +145,13 @@ class CoursesFileController extends Controller
         $folders = FolderName::all();
         $folderInputs = CoursesFile::where('folder_name_id', $folder->folder_name_id)->get();
     
-        $notifications = \App\Models\Notification::where('user_login_id', auth()->id())->get();
+       $notifications = \App\Models\Notification::where('user_login_id', auth()->id())
+                ->orderBy('created_at', 'desc') 
+                ->get();
         $notificationCount = $notifications->count();
     
         $uploadedFiles = CoursesFile::where('user_login_id', $user->user_login_id)
-            ->where('folder_name_id', $folder->folder_name_id)
-            ->where('is_archived', true)
+            ->where('is_archived', 1) 
             ->with(['userLogin', 'folderName', 'folderInput', 'courseSchedule'])
             ->get();
     

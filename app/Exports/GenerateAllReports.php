@@ -42,11 +42,11 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
     }
     
     
-    public function collection()
+  public function collection()
     {
-        $facultyMembers = $this->getFacultyWithSubmissions();
+        $facultyMembers = $this->getAllFaculty();
         
-        Log::info('Number of faculty members with submissions: ' . $facultyMembers->count());
+        Log::info('Number of faculty members: ' . $facultyMembers->count());
         
         $data = collect();
         
@@ -61,13 +61,9 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
             
             foreach ($this->mainFolders as $mainFolder) {
                 foreach ($this->subFolders[$mainFolder] as $folderNameId => $folderName) {
-                    $fileCount = CoursesFile::where('folder_name_id', $folderNameId)
-                        ->where('user_login_id', $faculty->user_login_id)
-                        ->where('semester', $this->semester)
-                        ->count();
-                
-                    $rowData[$folderName] = $fileCount > 0 ? $fileCount : 'X';
-                    Log::info("Faculty: {$faculty->surname}, Folder: {$folderName}, Count: {$rowData[$folderName]}");
+                    $fileCount = $this->getFileCount($faculty->user_login_id, $folderNameId);
+                    $rowData[$folderName] = $fileCount;
+                    Log::info("Faculty: {$faculty->surname}, Folder: {$folderName}, Count: {$fileCount}");
                 }
             }
             
@@ -82,6 +78,8 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
         
         return $data;
     }
+
+
     
 
     public function headings(): array
@@ -99,6 +97,18 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
         return $headers;
     }
 
+    private function getFileCount($facultyId, $folderNameId)
+    {
+        $count = CoursesFile::where('folder_name_id', $folderNameId)
+            ->where('user_login_id', $facultyId)
+            ->where('semester', $this->semester)
+            ->count();
+        
+        Log::info("File count for faculty {$facultyId}, folder {$folderNameId}: {$count}");
+        
+        return $count;
+    }
+
     public function map($row): array
     {
         Log::info('Mapping row: ' . json_encode($row));
@@ -111,8 +121,8 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
 
         foreach ($this->mainFolders as $mainFolder) {
             foreach ($this->subFolders[$mainFolder] as $folderNameId => $subFolderName) {
-                $value = $row[$subFolderName] ?? 'X';
-                $mappedRow[] = $value;
+                $value = $row[$subFolderName];
+                $mappedRow[] = $value > 0 ? $value : 'X';
                 Log::info("Mapping folder: {$subFolderName}, Value: {$value}");
             }
         }
@@ -208,18 +218,12 @@ class GenerateAllReports implements FromCollection, WithHeadings, WithMapping, W
         return [];
     }
     
-    private function getFacultyWithSubmissions()
+  private function getAllFaculty()
     {
-        $query = UserLogin::where('role', 'faculty')
-            ->whereHas('coursesFiles', function ($query) {
-                $query->where('semester', $this->semester);
-            })
+        return UserLogin::where('role', 'faculty')
             ->orderBy('surname')
-            ->orderBy('first_name');
-
-        $faculty = $query->get();
-        
-        return $faculty;
+            ->orderBy('first_name')
+            ->get();
     }
 
     private function getLatestSubmissionDate($facultyId)

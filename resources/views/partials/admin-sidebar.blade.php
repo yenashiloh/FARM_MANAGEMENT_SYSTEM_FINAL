@@ -1,3 +1,72 @@
+
+ <style>
+  .nav-link {
+  display: flex;
+  align-items: center;
+}
+
+.nav-text {
+  display: inline-block;
+  line-height: 1.2;
+  margin-left: 0.5em; 
+}
+
+.uploading-manage {
+  margin-right: 0.5em; 
+  margin-top: -0.9em;
+}
+    .navbar {
+    padding: 0.5rem;
+  }
+  
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+  
+  .logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 0.5rem;
+  }
+  
+  .brand-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .main-title {
+    font-size: 1rem;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+  
+  .sub-title {
+    font-size: 0.7rem;
+    line-height: 1.2;
+  }
+  
+  @media (max-width: 768px) {
+    .navbar {
+      padding: 0.25rem 0.5rem;
+    }
+  
+    .logo {
+      width: 30px;
+      height: 30px;
+    }
+  
+    .main-title {
+      font-size: 0.9rem;
+    }
+  
+    .sub-title {
+      font-size: 0.6rem;
+    }
+  }
+</style>
+
  <!-- ============================================================== -->
  <!-- main wrapper -->
  <!-- ============================================================== -->
@@ -125,8 +194,15 @@
                                  href="{{ route('admin.admin-dashboard') }}" aria-expanded="false"
                                  data-target="#submenu-1" aria-controls="submenu-1"><i
                                      class="fas fa-tachometer-alt"></i>
-                                 Dashboard <span class="badge badge-success">6</span></a>
-
+                                 Dashboard </a>
+                         </li>
+                         <li class="nav-item ">
+                            <a class="nav-link {{ Request::routeIs('admin.admin-dashboard') ? 'active' : '' }}"
+                                href="{{ route('admin.maintenance.audit-trail') }}" aria-expanded="false"
+                                data-target="#submenu-1" aria-controls="submenu-1"><i
+                                    class="fas fa-history"></i>
+                                Audit Trail </a>
+                        </li>
                          <li class="nav-divider">
                              Maintenance
                          </li>
@@ -137,20 +213,27 @@
                                 <i class="fas fa-folder"></i> Manage Main Requirements
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ Request::routeIs('admin.announcement.admin-announcement') ? 'active' : '' }}"
-                                href="{{ route('admin.announcement.admin-announcement') }}" aria-expanded="false"
-                                data-target="#submenu-4" aria-controls="submenu-4">
-                                <i class="fas fa-bullhorn"></i> Manage Announcements
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ Request::routeIs('admin.maintenance.upload-schedule') ? 'active' : '' }}"
-                                href="{{ route('admin.maintenance.upload-schedule') }}" aria-expanded="false"
-                                data-target="#submenu-4" aria-controls="submenu-4">
-                                <i class="fas fa-calendar-alt"></i> Manage Upload Schedule
-                            </a>
-                        </li>
+                       <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.announcement.admin-announcement', 'admin.announcement.edit-announcement', 'admin.announcement.add-announcement') ? 'active' : '' }}"
+                            href="{{ route('admin.announcement.admin-announcement') }}" aria-expanded="false"
+                            data-target="#submenu-4" aria-controls="submenu-4">
+                            <i class="fas fa-bullhorn"></i> Manage Announcements
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ Request::routeIs('admin.maintenance.upload-schedule') ? 'active' : '' }}" 
+                           href="{{ route('admin.maintenance.upload-schedule') }}" 
+                           aria-expanded="false" 
+                           data-target="#submenu-4" 
+                           aria-controls="submenu-4">
+                          <i class="fas fa-calendar-alt uploading-manage"></i>
+                          <span class="nav-text">
+                            Manage Schedule of<br>
+                            Uploading
+                          </span>
+                        </a>
+                      </li>
                         
                          <li class="nav-divider">
                              Accomplishment

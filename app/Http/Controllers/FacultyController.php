@@ -17,101 +17,6 @@ use Illuminate\Support\Facades\Log;
 
 class FacultyController extends Controller
 {
-    public function getFacultyInfo()
-    {
-        $semester = [
-            "id" => 1,
-            "semester" => "1st Semester 2024-2025",
-            "user_login_id" => 2
-        ];
-    
-        $programs = [
-            "Bachelor of Science in Applied Mathematics (BSAM)",
-            "Bachelor of Science in Information Technology (BSIT)",
-            "Bachelor of Science in Entrepreneurship (BSENTREP)"
-        ];
-    
-        $subjects = [
-            [
-                "id" => 1,
-                "code" => "MGT101",
-                "name" => "Principles of Management and Organization",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "1st Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ],
-            [
-                "id" => 2,
-                "code" => "IT202",
-                "name" => "Applications Development and Emerging Technologies",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 3,
-                "code" => "ENT301",
-                "name" => "Technopreneurship",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSENTREP"
-                    ]
-                ]
-            ],
-            [
-                "id" => 4,
-                "code" => "SYS202",
-                "name" => "Systems Analysis and Design",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "2nd Year",
-                        "program" => "BSIT"
-                    ]
-                ]
-            ],
-            [
-                "id" => 5,
-                "code" => "CS303",
-                "name" => "Computer Science",
-                "semester" => $semester,
-                "year_programs" => [
-                    [
-                        "year" => "4th Year",
-                        "program" => "BSIT"
-                    ],
-                    [
-                        "year" => "3rd Year",
-                        "program" => "BSAM"
-                    ]
-                ]
-            ]
-        ];
-    
-        $data = [
-            "faculty" => [
-                "faculty_id" => 2,
-                "first_name" => "Diana",
-                "middle_name" => "M.",
-                "last_name" => "Rose",
-                "programs" => $programs,
-                "subjects" => $subjects
-            ]
-        ];
-    
-        return json_encode($data);
-    }
-
     //faculty logout
     public function facultyLogout(Request $request)
     {
@@ -218,14 +123,16 @@ class FacultyController extends Controller
     
         $folderInputs = FolderInput::where('folder_name_id', $folder->folder_name_id)->get();
     
-        $notifications = \App\Models\Notification::where('user_login_id', auth()->id())->get();
+       $notifications = \App\Models\Notification::where('user_login_id', auth()->id())
+            ->orderBy('created_at', 'desc') 
+            ->get();
         $notificationCount = $notifications->count();
     
         $folders = FolderName::all();
     
         $firstName = $user->first_name;
         $surname = $user->surname;
-    
+        $hasUploaded = $filesWithSubjects->isNotEmpty();
         return view('faculty.accomplishment.uploaded-files', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
@@ -243,17 +150,19 @@ class FacultyController extends Controller
             'statusMessage' => $statusMessage,
             'formattedStartDate' => $formattedStartDate,
             'formattedEndDate' => $formattedEndDate,
-            'courseSchedules' => $courseSchedules 
+            'courseSchedules' => $courseSchedules,
+             'hasUploaded' => $hasUploaded,
         ]);
     }
     
     //show uploaded files page
     public function viewUploadedFiles($user_login_id, $folder_name_id, $semester = null)
     {
-        if (!auth()->check()) {
+         if (!auth()->check()) {
             return redirect()->route('login');
         }
     
+        $userId = auth()->id();
         $user = auth()->user();
     
         if ($user->role !== 'faculty') {
@@ -269,16 +178,17 @@ class FacultyController extends Controller
         $folders = FolderName::all();
         $folderInputs = FolderInput::where('folder_name_id', $folder->folder_name_id)->get();
     
-        $notifications = \App\Models\Notification::where('user_login_id', auth()->id())->get();
+      $notifications = \App\Models\Notification::where('user_login_id', $userId)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+    
         $notificationCount = $notifications->count();
     
-        // Query builder for uploaded files
         $uploadedFilesQuery = CoursesFile::where('courses_files.user_login_id', $user_login_id)
             ->where('courses_files.folder_name_id', $folder_name_id)
             ->where('courses_files.is_archived', false)
             ->with(['userLogin', 'folderName', 'folderInput', 'courseSchedule']);
     
-        // If a semester is specified, filter by it
         if ($semester) {
             $uploadedFilesQuery->whereHas('courseSchedule', function ($query) use ($semester) {
                 $query->where('sem_academic_year', $semester);
@@ -287,7 +197,6 @@ class FacultyController extends Controller
     
         $uploadedFiles = $uploadedFilesQuery->get();
     
-        // Get unique semesters for the dropdown
         $semesters = CoursesFile::where('courses_files.user_login_id', $user_login_id)
             ->where('courses_files.folder_name_id', $folder_name_id)
             ->where('courses_files.is_archived', false)
@@ -327,7 +236,9 @@ class FacultyController extends Controller
 
         $folders = FolderName::all();
 
-        $notifications = \App\Models\Notification::where('user_login_id', $userId)->get();
+       $notifications = \App\Models\Notification::where('user_login_id', $userId)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
         $notificationCount = $notifications->count();
 
         $announcements = \App\Models\Announcement::where(function ($query) use ($userEmail) {

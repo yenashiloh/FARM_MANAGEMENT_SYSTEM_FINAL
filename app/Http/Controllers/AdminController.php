@@ -9,6 +9,9 @@ use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Announcement;
 use App\Models\Notification;
+use App\Models\LogoutLog;
+use App\Models\LoginLog;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -212,4 +215,60 @@ class AdminController extends Controller
         $request->session()->regenerateToken();
         return response()->json(['success' => true]);
     }
+
+    public function showAuditTrail()
+{
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    $user = auth()->user();
+    $firstName = $user->first_name;
+    $surname = $user->surname;
+
+    $notifications = Notification::where('user_login_id', $user->user_login_id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+    $notificationCount = $notifications->where('is_read', 0)->count();
+    $folders = FolderName::all();
+
+    // Fetch logout and login logs
+    $logoutLogs = LogoutLog::with('user')->select('user_login_id', 'logout_time', 'logout_message')->orderBy('logout_time', 'desc')->get();
+    $loginLogs = LoginLog::with('user')->select('user_login_id', 'login_time', 'login_message')->orderBy('login_time', 'desc')->get(); 
+
+    // Merge both logs into a single collection
+    $allLogs = $loginLogs->map(function ($log) {
+        return [
+            'email' => $log->user->email,
+            'message' => $log->login_message,
+            'time' => $log->login_time,
+            'type' => 'Login'
+        ];
+    })->merge($logoutLogs->map(function ($log) {
+        return [
+            'email' => $log->user->email,
+            'message' => $log->logout_message,
+            'time' => $log->logout_time,
+            'type' => 'Logout'
+        ];
+    }));
+
+    // Sort the combined logs by time
+    $sortedLogs = $allLogs->sortByDesc('time');
+
+    \Log::info('All Logs:', $sortedLogs->toArray());
+
+    return view('admin.maintenance.audit-trail', [
+        'folders' => $folders,
+        'notifications' => $notifications,
+        'notificationCount' => $notificationCount,
+        'firstName' => $firstName,
+        'surname' => $surname,
+        'user' => $user,
+        'logs' => $sortedLogs, // Pass the combined logs to the view
+    ]);
+}
+
+
+    
 }

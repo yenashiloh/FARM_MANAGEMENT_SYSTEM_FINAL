@@ -4,6 +4,7 @@
 <head>
     <!-- Required meta tags -->
     @include('partials.faculty-header')
+        <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <title>Dashboard</title>
@@ -35,7 +36,7 @@
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
                                                 style="cursor: default; color: #3d405c;">Menu</a></li>
-                                        <li class="breadcrumb-item"><a href="{{ route('admin.admin-dashboard') }}"
+                                        <li class="breadcrumb-item"><a href="{{ route('faculty.faculty-dashboard') }}"
                                                 class="breadcrumb-link">Dashboard</a></li>
                                     </ol>
                                 </nav>

@@ -50,6 +50,10 @@
         strong {
             color: rgb(27, 27, 27);
         }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; 
+        }
     </style>
 </head>
 
@@ -118,83 +122,85 @@
                                         {{ session('success') }}
                                     </div>
                                 @endif
-                                <table class="table table-striped table-bordered first">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                @if ($uploadedFiles->contains('status', 'Approved'))
-                                                    <input type="checkbox" id="select-all">
-                                                @else
-                                                    &nbsp;
-                                                @endif
-                                            </th>
-                                            <th>No.</th>
-                                            <th>Date & Time</th>
-                                            <th>Program</th>
-                                            <th>Course & Course Code</th>
-                                            <th>Year & Section</th>
-                                            <th>File Name</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($uploadedFiles as $file)
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered first">
+                                        <thead>
                                             <tr>
-                                                <td>
-                                                    @if ($file->status === 'Approved')
-                                                        <input type="checkbox" class="file-checkbox"
-                                                            value="{{ $file->courses_files_id }}">
+                                                <th>
+                                                    @if ($uploadedFiles->contains('status', 'Approved'))
+                                                        <input type="checkbox" id="select-all">
                                                     @else
                                                         &nbsp;
                                                     @endif
-                                                </td>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($file->created_at)->locale('en_PH')->format('F j, Y, g:i A') }}
-                                                </td>
-                                                <td>{{ $file->courseSchedule->program }}</td>
-                                                <td>{{ $file->subject }} - {{ $file->courseSchedule->course_code }}
-                                                </td>
-                                                <td>{{ $file->courseSchedule->year_section }}</td>
-                                                <td>
-                                                    <a href="{{ Storage::url('/' . $file->files) }}" target="_blank"
-                                                        style="color: rgb(65, 65, 231); text-decoration: underline;">
-                                                        {{ $file->original_file_name }}
-                                                    </a>
-                                                </td>
-                                                <td>
-                                                    @if ($file->status === 'To Review')
-                                                        <span class="badge badge-primary">{{ $file->status }}</span>
-                                                    @elseif($file->status === 'Approved')
-                                                        <span class="badge badge-success">{{ $file->status }}</span>
-                                                    @elseif($file->status === 'Declined')
-                                                        <span class="badge badge-danger">{{ $file->status }}</span>
-                                                        @if ($file->declined_reason)
-                                                            <div class="mt-2">Declined Reason:
-                                                                {{ $file->declined_reason }}</div>
-                                                        @endif
-                                                    @else
-                                                        <span class="badge bg-secondary">{{ $file->status }}</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($file->status === 'Declined' || $file->status === 'To Review')
-                                                        <button class="btn btn-warning btn-sm edit-file-btn"
-                                                            data-file-id="{{ $file->courses_files_id }}"
-                                                            data-semester="{{ $file->courseSchedule->sem_academic_year }}"
-                                                            data-program="{{ $file->courseSchedule->program }}"
-                                                            data-course-subject-code="{{ $file->subject }} - {{ $file->courseSchedule->course_code }}"
-                                                            data-year-section="{{ $file->courseSchedule->year_section }}"
-                                                            data-original-file-name="{{ $file->original_file_name }}">
-                                                            Edit
-                                                        </button>
-                                                    @endif
-                                                </td>
+                                                </th>
+                                                <th>No.</th>
+                                                <th>Date & Time</th>
+                                                <th>Program</th>
+                                                <th>Course & Course Code</th>
+                                                <th>Year & Section</th>
+                                                <th>File Name</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
                                             </tr>
-                                        @empty
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($uploadedFiles as $file)
+                                                <tr>
+                                                    <td>
+                                                        @if ($file->status === 'Approved')
+                                                            <input type="checkbox" class="file-checkbox"
+                                                                value="{{ $file->courses_files_id }}">
+                                                        @else
+                                                            &nbsp;
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $loop->iteration }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($file->created_at)->locale('en_PH')->format('F j, Y, g:i A') }}
+                                                    </td>
+                                                    <td>{{ $file->courseSchedule->program }}</td>
+                                                    <td>{{ $file->subject }} - {{ $file->courseSchedule->course_code }}</td>
+                                                    <td>{{ $file->courseSchedule->year_section }}</td>
+                                                    <td>
+                                                        <a href="{{ Storage::url('/' . $file->files) }}" target="_blank"
+                                                            style="color: rgb(65, 65, 231); text-decoration: underline;">
+                                                            {{ $file->original_file_name }}
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        @if ($file->status === 'To Review')
+                                                            <span class="badge badge-primary">{{ $file->status }}</span>
+                                                        @elseif($file->status === 'Approved')
+                                                            <span class="badge badge-success">{{ $file->status }}</span>
+                                                        @elseif($file->status === 'Declined')
+                                                            <span class="badge badge-danger">{{ $file->status }}</span>
+                                                            @if ($file->declined_reason)
+                                                                <div class="mt-2">Declined Reason:
+                                                                    {{ $file->declined_reason }}</div>
+                                                            @endif
+                                                        @else
+                                                            <span class="badge bg-secondary">{{ $file->status }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($file->status === 'Declined' || $file->status === 'To Review')
+                                                            <button class="btn btn-warning btn-sm edit-file-btn"
+                                                                data-file-id="{{ $file->courses_files_id }}"
+                                                                data-semester="{{ $file->courseSchedule->sem_academic_year }}"
+                                                                data-program="{{ $file->courseSchedule->program }}"
+                                                                data-course-subject-code="{{ $file->subject }} - {{ $file->courseSchedule->course_code }}"
+                                                                data-year-section="{{ $file->courseSchedule->year_section }}"
+                                                                data-original-file-name="{{ $file->original_file_name }}">
+                                                                Edit
+                                                            </button>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
                             </div>
 
                         </div>
@@ -281,6 +287,8 @@
                                                     <div class="mt-2 mt-0">
                                                         <span style="font-size: 12px;">Current File: <span
                                                                 id="currentFileName"></span></span>
+                                                        <br>
+                                                         <small class="text-danger" id="fileError"></small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -416,31 +424,46 @@
                     });
                 });
 
-                document.getElementById('archive-all-form').addEventListener('submit', function(e) {
-                    e.preventDefault(); 
-
-                    let selectedIds = [];
-                    fileCheckboxes.forEach(checkbox => {
-                        if (checkbox.checked) {
-                            selectedIds.push(checkbox.value);
-                        }
-                    });
-
-                    if (selectedIds.length > 0) {
-                        console.log('Selected file IDs:', selectedIds);
-
-                        let input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'file_ids';
-                        input.value = JSON.stringify(selectedIds);
-                        this.appendChild(input);
-
-                        this.submit();
-                    } else {
-                        alert('Please select at least one file to archive.');
+             document.getElementById('archive-all-form').addEventListener('submit', function(e) {
+                e.preventDefault(); 
+            
+                let selectedIds = [];
+                const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+                fileCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        selectedIds.push(checkbox.value);
                     }
                 });
+            
+                if (selectedIds.length > 0) {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You are about to archive the selected files.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, archive them!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            let input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'file_ids';
+                            input.value = JSON.stringify(selectedIds);
+                            this.appendChild(input);
+            
+                            this.submit();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No files selected',
+                        text: 'Please select at least one file to archive.'
+                    });
+                }
             });
+        });
         </script>
 </body>
 
