@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>View Accomplishment</title>
+    <title>View Uploaded Files</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="../../../../../asset/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="icon" href="{{ asset('assets/images/pup-logo.png') }}" type="image/x-icon">
@@ -34,17 +34,27 @@
                 <div class="row">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="page-header">
-                            <h2 class="pageheader-title">Accomplishment</h2>
+                            <h2 class="pageheader-title">View Uploaded Files</h2>
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Accomplishment</a></li>
-                                        <li class="breadcrumb-item"><a
-                                                href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
-                                                class="breadcrumb-link">{{ $folderName }}</a></li>
-                                        <li class="breadcrumb-item"><a href="#" class="breadcrumb-link">View
-                                                Accomplishment</a></li>
+                                            style="cursor: default; color: #3d405c;">Accomplishment</a></li>
+                                    <li class="breadcrumb-item"><a
+                                            href="{{ route('admin.accomplishment.accomplishment') }}"
+                                            class="breadcrumb-link">Department</a></li>
+                                    <li class="breadcrumb-item"><a
+                                            href="{{ route('admin.accomplishment.accomplishment') }}"
+                                            class="breadcrumb-link">Faculty</a></li>
+                                    <li class="breadcrumb-item"><a
+                                            href="{{ route('admin.accomplishment.accomplishment') }}"
+                                            class="breadcrumb-link">Main Requirements</a></li>
+                                    <li class="breadcrumb-item"><a
+                                            href="{{ route('admin.accomplishment.accomplishment') }}"
+                                            class="breadcrumb-link">Folders</a></li>
+                                    <li class="breadcrumb-item"><a
+                                            href="{{ route('admin.accomplishment.accomplishment') }}"
+                                            class="breadcrumb-link">View Uploaded Files</a></li>
 
                                     </ol>
                                 </nav>

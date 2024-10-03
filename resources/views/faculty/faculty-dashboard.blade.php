@@ -4,7 +4,7 @@
 <head>
     <!-- Required meta tags -->
     @include('partials.faculty-header')
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <title>Dashboard</title>
@@ -104,7 +104,7 @@
                                 <h5 class="card-header">Submitted Status per Folder</h5>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-center">
-                                        <canvas id="statusBarChart" style="width: 100%; "></canvas>
+                                        <canvas id="statusBarChart" style="width: 100%; height: 100px;"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -115,11 +115,23 @@
                                 <h5 class="card-header">Storage Usage</h5>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-center">
-                                        <canvas id="storageChart" style="width: 100%; height: 300px;"></canvas>
+                                        <canvas id="storageChart" style="width: 100%;  height: 20px;"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-sm-12 col-12">
+                            <div class="card">
+                                <h5 class="card-header">Passed Files Percentage per Main Requirements</h5>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-center">
+                                        <canvas id="folderBarChart" style="width: 100%; "></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -134,8 +146,13 @@
 
         @include('partials.faculty-footer')
         <script>
-            function initializeChart() {
-                const ctx = document.getElementById('statusBarChart').getContext('2d');
+            //status per folder
+            function initializeStatusBarChart() {
+                const ctx = document.getElementById('statusBarChart');
+                if (!ctx) {
+                    console.error('statusBarChart canvas not found');
+                    return;
+                }
                 const chartData = @json($chartData);
 
                 new Chart(ctx, {
@@ -160,6 +177,8 @@
                         ]
                     },
                     options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
                         scales: {
                             x: {
                                 stacked: true,
@@ -171,47 +190,144 @@
                     }
                 });
             }
-
-            document.addEventListener('DOMContentLoaded', initializeChart);
-
-            function formatBytes(bytes) {
-                if (bytes >= 1073741824) {
-                    return (bytes / 1073741824).toFixed(2) + ' GB';
-                } else if (bytes >= 1048576) {
-                    return (bytes / 1048576).toFixed(2) + ' MB';
-                } else if (bytes >= 1024) {
-                    return (bytes / 1024).toFixed(2) + ' KB';
-                } else {
-                    return bytes + ' bytes';
+            //storage
+            function initializeStorageChart() {
+                var ctx = document.getElementById('storageChart');
+                if (!ctx) {
+                    console.error('storageChart canvas not found');
+                    return;
                 }
+                var storageChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [
+                            'Used Storage ({{ $formattedTotalStorageUsed }})',
+                            'Available Storage ({{ $formattedStorageAvailable }})'
+                        ],
+                        datasets: [{
+                            data: [{{ $totalStorageUsed }}, {{ $storageAvailable }}],
+                            backgroundColor: ['#FF6384', '#36A2EB'],
+                            hoverBackgroundColor: ['#FF6384', '#36A2EB']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '50%',
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Storage Usage'
+                            }
+                        }
+                    }
+                });
             }
 
-            var ctx = document.getElementById('storageChart').getContext('2d');
-            var storageChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: [
-                        'Used Storage (' + formatBytes({{ $totalStorageUsed }}) + ')',
-                        'Available Storage (' + formatBytes({{ $storageAvailable }}) + ')'
-                    ],
-                    datasets: [{
-                        data: [{{ $totalStorageUsed }}, {{ $storageAvailable }}],
-                        backgroundColor: ['#FF6384', '#36A2EB'],
-                        hoverBackgroundColor: ['#FF6384', '#36A2EB']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutoutPercentage: 50,
-                    title: {
-                        display: true,
-                        text: 'Storage Usage'
-                    }
+            //generate random color
+            function generateRandomLightColor() {
+                const hue = Math.floor(Math.random() * 360);
+                const saturation = 60 + Math.floor(Math.random() * 20);
+                const lightness = 75 + Math.floor(Math.random() * 10);
+
+                return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            }
+
+            //percentage per main requirements
+            function initializeFolderChart() {
+                const folderCtx = document.getElementById('folderBarChart');
+                if (!folderCtx) {
+                    console.error('folderBarChart canvas not found');
+                    return;
                 }
+
+                const folderChartData = @json($folderChartData);
+                const datasets = [];
+                const labels = folderChartData.map(folder => folder.name);
+
+                const subfolderColors = {};
+
+                folderChartData.forEach((mainFolder, folderIndex) => {
+                    mainFolder.subfolders.forEach((subfolder, subfolderIndex) => {
+                        if (!subfolderColors[subfolder.name]) {
+                            subfolderColors[subfolder.name] = generateRandomLightColor();
+                        }
+
+                        datasets.push({
+                            label: `${mainFolder.name} - ${subfolder.name}`,
+                            data: folderChartData.map(folder => {
+                                const subfolderData = folder.subfolders.find(sub => sub.name ===
+                                    subfolder.name);
+                                return subfolderData ? subfolderData.percentage : 0;
+                            }),
+                            backgroundColor: subfolderColors[subfolder.name],
+                            borderColor: 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1
+                        });
+                    });
+                });
+
+                new Chart(folderCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                stacked: false,
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Percentage (%)'
+                                }
+                            },
+                            y: {
+                                stacked: false,
+                                title: {
+                                    display: true,
+                                    text: 'Main Folders'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const mainFolder = folderChartData[context.dataIndex];
+                                        const subfolder = mainFolder.subfolders.find(sub => sub.name === context
+                                            .dataset.label.split(' - ')[1]);
+                                        if (subfolder) {
+                                            return `${subfolder.name}: ${subfolder.percentage.toFixed(2)}% (${subfolder.user_files_count}/${subfolder.total_files_count}) - ${subfolder.academic_year}`;
+                                        }
+                                        return `${context.dataset.label}: 0%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function initializeAllCharts() {
+                initializeStatusBarChart();
+                initializeStorageChart();
+                initializeFolderChart();
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initializeAllCharts, 100);
             });
         </script>
-
 </body>
 
 </html>

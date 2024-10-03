@@ -9,6 +9,7 @@ use App\Models\UserLogin;
 use App\Models\Announcement;
 use App\Models\FolderName;
 use App\Models\LogoutLog;
+use App\Models\LoginLog;
 
 class RoleController extends Controller
 {
@@ -55,8 +56,6 @@ class RoleController extends Controller
                 return redirect()->back()->with('error', 'Invalid role.');
         }
     }
-    
-
     
     //landing page
    public function showLandingPage()

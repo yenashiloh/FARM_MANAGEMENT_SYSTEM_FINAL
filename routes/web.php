@@ -16,6 +16,7 @@ use App\Http\Controllers\MarkAsReadController;
 use App\Http\Controllers\FolderInputController;
 use App\Http\Controllers\UploadScheduleController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\AccomplishmentController;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RoleAuthenticate;
 use App\Http\Middleware\DirectorAuthenticate;
@@ -54,11 +55,9 @@ Route::middleware(['auth', 'role:faculty', 'prevent-back-history'])->group(funct
     Route::get('/view-archive', [CoursesFileController::class, 'showArchive'])->name('faculty.view-archive');
     Route::post('/files/unarchive/{courses_files_id}', [CoursesFileController::class, 'unarchive'])->name('files.unarchive');
 
-
     Route::post('/files/archiveAll', [CoursesFileController::class, 'archiveAll'])->name('files.archiveAll');
     Route::post('/files/bulk-unarchive', [CoursesFileController::class, 'bulkUnarchive'])->name('files.bulkUnarchive');
-Route::post('/log-logout', [AuditController::class, 'logLogout'])->name('log-logout');
-
+    Route::post('/log-logout', [AuditController::class, 'logLogout'])->name('log-logout');
 
 
 
@@ -96,7 +95,6 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/announcement/add-announcement', [AnnouncementController::class, 'showAddAnnouncementPage'])->name('admin.announcement.add-announcement');
     Route::post('/announcement/add-announcement', [AnnouncementController::class, 'saveAnnouncement'])->name('admin.announcement.save-announcement');
 
-    
     //Announcement
     Route::get('admin/announcement/edit/{id_announcement}', [AnnouncementController::class, 'editAnnouncement'])->name('admin.announcement.edit-announcement');
     Route::post('admin/announcement/update/{id_announcement}', [AnnouncementController::class, 'updateAnnouncement'])->name('admin.announcement.update-announcement');
@@ -132,6 +130,13 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/admin/accomplishment/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.show');
 
     Route::get('/audit-trail', [AdminController::class, 'showAuditTrail'])->name('admin.maintenance.audit-trail');
+
+    Route::get('/admin/accomplishment', [AccomplishmentController::class, 'showAccomplishmentPage'])->name('admin.accomplishment.accomplishment');
+    Route::get('/accomplishment/department/{department}', [AccomplishmentController::class, 'showAccomplishmentDepartment'])->name('viewAccomplishmentDepartment');
+    Route::get('/faculty-accomplishments/{user_login_id}', [AccomplishmentController::class, 'viewFacultyAccomplishments'])->name('faculty.accomplishments');
+    Route::get('/admin/accomplishment/view-folder-names/{user_login_id}/{main_folder_name}', [AccomplishmentController::class, 'viewFolderNames'])->name('admin.accomplishment.viewFolderNames');
+    Route::get('/accomplishment/view-academic-year/{user_login_id}/{folder_name_id}', [AccomplishmentController::class, 'viewAcademicYear'])->name('admin.accomplishment.viewAcademicYear');
+
 
     });
 

@@ -63,14 +63,25 @@
                                                 <select id="recipientEmails" class="js-example-basic-multiple"
                                                     name="recipient_emails[]" multiple="multiple" required>
                                                     <option value="all-faculty">All Faculty</option>
-                                                    @foreach ($facultyEmails as $email)
-                                                        <option value="{{ $email }}">{{ $email }}</option>
-                                                    @endforeach
+                                                    
+                                                    <!-- Departments Group -->
+                                                    <optgroup label="Departments">
+                                                        @foreach ($departments as $department)
+                                                            <option value="department-{{ $department }}">{{ $department }}</option>
+                                                        @endforeach
+                                                    </optgroup>
+                                    
+                                                    <!-- Faculty Emails Group -->
+                                                    <optgroup label="Faculty Emails">
+                                                        @foreach ($facultyEmails as $email)
+                                                            <option value="{{ $email }}">{{ $email }}</option>
+                                                        @endforeach
+                                                    </optgroup>
                                                 </select>
                                             </div>
-
                                         </div>
                                     </div>
+                                    
 
 
                                     <div class="subject">

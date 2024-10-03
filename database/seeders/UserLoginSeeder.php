@@ -13,13 +13,13 @@ class UserLoginSeeder extends Seeder
     {
         // Seed for admin
         UserLogin::create([
-            'email' => 'jamesnabayra@gmail.com',
+            'email' => 'pupt_admin@gmail.com',
             'password' => Hash::make('adminpassword'),
             'role' => 'admin',
             'Fcode' => 'A001',
-            'surname' => 'Nabayra',
-            'first_name' => 'James',
-            'middle_name' => 'Smith',
+            'surname' => 'Admin',
+            'first_name' => 'PUPT',
+            'middle_name' => 'Taguig',
             'name_extension' => null,
             'employment_type' => 'fulltime',
             'department' => null,
@@ -27,44 +27,44 @@ class UserLoginSeeder extends Seeder
 
         // Seed for faculty 1
         UserLogin::create([
-            'email' => 'dianrosefidel@gmail.com',
+            'email' => 'faculty01@gmail.com',
             'password' => Hash::make('facultypassword'),
             'role' => 'faculty',
             'Fcode' => 'F001',
-            'surname' => 'Fidel',
-            'first_name' => 'Dian Rose',
-            'middle_name' => 'Rose',
+            'surname' => '1',
+            'first_name' => 'Faculty',
+            'middle_name' => 'Faculty',
             'name_extension' => null,
             'employment_type' => 'parttime',
-            'department' => 'math',
+            'department' => 'College of Information Technology',
         ]);
 
         // Seed for director
         UserLogin::create([
-            'email' => 'edjudahmingo@gmail.com',
+            'email' => 'pupt_director@gmail.com',
             'password' => Hash::make('directorpassword'),
             'role' => 'director',
             'Fcode' => 'D001',
-            'surname' => 'Mingo',
-            'first_name' => 'Edjudah',
-            'middle_name' => 'John',
-            'name_extension' => 'Jr',
+            'surname' => '1',
+            'first_name' => 'Director',
+            'middle_name' => 'Director',
+            'name_extension' => null,
             'employment_type' => 'fulltime',
             'department' => null,
         ]);
 
         // Seed for faculty 2
         UserLogin::create([
-            'email' => 'kazelvillamarzo@gmail.com',
-            'password' => Hash::make('faculty2024'),
+            'email' => 'faculty02@gmail.com',
+            'password' => Hash::make('facultypassword'),
             'role' => 'faculty',
             'Fcode' => 'F002',
-            'surname' => 'Villamarzo',
-            'first_name' => 'Kazel',
-            'middle_name' => 'Jane',
+            'surname' => '2',
+            'first_name' => 'Faculty',
+            'middle_name' => 'Faculty',
             'name_extension' => null,
             'employment_type' => 'fulltime',
-            'department' => 'IT',
+            'department' => 'College of Engineering',
         ]);
     }
 }

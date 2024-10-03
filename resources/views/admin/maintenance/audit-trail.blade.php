@@ -68,8 +68,8 @@
                                                 <tr>
                                                     <td>{{ $log['email'] }}</td>
                                                     <td>{{ $log['message'] }}</td>
-                                                    <td>{{ \Carbon\Carbon::parse($log['time'])->format('F j, Y') }}</td>
-                                                    <td>{{ \Carbon\Carbon::parse($log['time'])->format('h:iA') }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($log['time'])->timezone('Asia/Manila')->format('F j, Y') }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($log['time'])->timezone('Asia/Manila')->format('h:iA') }}</td>                                                    
                                                 </tr>
                                             @endforeach
                                         </tbody>

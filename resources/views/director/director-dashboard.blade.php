@@ -13,14 +13,14 @@
             font-size: 30px;
             color: #800000;
         }
+
         .small-chart {
-            width: 50vw; 
+            width: 50vw;
             height: 50vw;
             max-width: 400px;
-            max-height: 400px; 
-            display: block; 
+            max-height: 400px;
+            display: block;
         }
-
     </style>
 </head>
 
@@ -41,24 +41,25 @@
                             <div class="col d-flex justify-content-between align-items-center">
                                 <h2 class="pageheader-title mb-0">Director Dashboard</h2>
                             </div>
-                            
-                                 <div class="ml-auto text-right">
-                                    <div class="dropdown">
-                                        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            Generate Reports
-                                        </button>
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                            @foreach($semesters as $semester)
-                                                <a class="dropdown-item" href="{{ route('generate.all.reports.director', ['semester' => $semester->semester]) }}">
-                                                    {{ $semester->semester }}
-                                                </a>
-                                            @endforeach
-                                        </div>
+
+                            <div class="ml-auto text-right">
+                                <div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" type="button"
+                                        id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false">
+                                        Generate Reports
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        @foreach ($semesters as $semester)
+                                            <a class="dropdown-item"
+                                                href="{{ route('generate.all.reports.director', ['semester' => $semester->semester]) }}">
+                                                {{ $semester->semester }}
+                                            </a>
+                                        @endforeach
                                     </div>
                                 </div>
-                                
-                  
-                            
+                            </div>
+
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
@@ -143,33 +144,30 @@
                         <!-- ============================================================== -->
                         <!-- total earned   -->
                         <!-- ============================================================== -->
-                        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
-                        </div>
-                        <div class="row">
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12 col-12">
+                     
+                       
+                              <div class="col-12">
                                 <div class="card">
                                     <h5 class="card-header">Status Rates</h5>
                                     <div class="card-body">
                                         <div class="d-flex justify-content-center">
-                                            <canvas id="statusPieChart" class="small-chart" style="width: 50%; height: 200px;"></canvas>
+                                            <canvas id="statusPieChart" class="small-chart"
+                                                style="width: 50%; height: 200px;"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-12 col-12">
+                              <div class="col-12">
                                 <div class="card">
                                     <h5 class="card-header">Submitted Files per Requirement</h5>
                                     <div class="card-body">
                                         <div class="d-flex justify-content-center">
-                                            <canvas id="filesBarChart"
-                                                style="width: 100%;  height:428px;"></canvas>
+                                            <canvas id="filesBarChart" style="width: 100%;  height:428px;"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-12 col-12">
+                              <div class="col-12">
                                 <div class="card">
                                     <h5 class="card-header">Submitted Status per Requirement</h5>
                                     <div class="card-body">
@@ -179,8 +177,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                        </div>
                     </div>
                 </div>
                 <!-- ============================================================== -->
@@ -207,13 +203,13 @@
                                 {{ $declinedCount }}
                             ],
                             backgroundColor: [
-                                'rgba(54, 162, 235, 0.5)', 
+                                'rgba(54, 162, 235, 0.5)',
                                 'rgba(144, 238, 144, 0.5)',
-                                'rgba(255, 99, 132, 0.5)' 
+                                'rgba(255, 99, 132, 0.5)'
                             ],
                             borderColor: [
-                                'rgba(41, 121, 255, 1)', 
-                                'rgba(100, 200, 100, 1)', 
+                                'rgba(41, 121, 255, 1)',
+                                'rgba(100, 200, 100, 1)',
                                 'rgba(255, 77, 77, 1)'
                             ],
                             borderWidth: 1

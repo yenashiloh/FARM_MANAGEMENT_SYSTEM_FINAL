@@ -1,5 +1,5 @@
 @include('partials.tables-header')
-<title>{{ $folderName }} </title>
+<title>Accomplishment</title>
 </head>
 <style>
     .form-group {
@@ -25,15 +25,6 @@
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
-    }
-
-    .fas.fa-chevron-down {
-        position: absolute;
-        top: 50%;
-        right: 25px;
-        transform: translateY(-50%);
-        pointer-events: none;
-        z-index: 1;
     }
 
     @media (max-width: 576px) {
@@ -66,15 +57,27 @@
                 <div class="row">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="page-header">
-                            <h2 class="pageheader-title">{{ $folderName }} </h2>
+                            <h2 class="pageheader-title">Main Requirements </h2>
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
                                                 style="cursor: default; color: #3d405c;">Accomplishment</a></li>
                                         <li class="breadcrumb-item"><a
-                                                href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
-                                                class="breadcrumb-link">{{ $folderName }}</a></li>
+                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                class="breadcrumb-link">Department</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                class="breadcrumb-link">Faculty</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                class="breadcrumb-link">Main Requirements</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                class="breadcrumb-link">Folders</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                class="breadcrumb-link">Academic Year</a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -86,60 +89,33 @@
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="mb-0">{{ $folderName }} (an academic document that communicates
-                                    information about a specific course and explains the rules, responsibilities, and
-                                    expectations associated with it.)</h5>
-                                <form method="GET"
-                                    action="{{ route('admin.accomplishment.show', ['folder_name_id' => $folder_name_id]) }}">
-                                    <div class="form-group">
-                                        <label for="semester" class="col-form-label">Select Semester:</label>
-                                        <div class="col-sm-3">
-                                            <select name="semester" id="semester" class="form-control"
-                                                onchange="this.form.submit()">
-                                                <option value="">All Semesters</option>
-                                                @foreach ($allSemesters as $semester)
-                                                    <option value="{{ $semester }}"
-                                                        {{ request('semester') == $semester ? 'selected' : '' }}>
-                                                        {{ $semester }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            <i class="fas fa-chevron-down"></i>
-                                        </div>
-                                    </div>
-                                </form>
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered first">
                                         <thead>
                                             <tr>
                                                 <th>No.</th>
-                                                <th>Date & Time</th>
-                                                <th>Employee Name</th>
-                                                <th>Semester</th>
+                                                <th>Academic Year</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @php $rowNumber = 1; @endphp
-                                            @foreach ($groupedFiles as $file)
+                                            @forelse ($allAcademicYears as $index => $academicYear)
                                                 <tr>
-                                                    <td>{{ $rowNumber++ }}</td>
-                                                    <td>{{ $file['created_at']->timezone('Asia/Manila')->format('F j, Y, g:i A') }}
-                                                    </td>
-                                                    <td>{{ $file['user_name'] }}</td>
-                                                    <td>{{ $file['semester'] }}</td>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{ $academicYear }}</td>
                                                     <td>
-                                                        <a href="{{ route('admin.accomplishment.view-accomplishment', ['user_login_id' => $file['user_login_id'], 'folder_name_id' => $folder->folder_name_id, 'semester' => $file['semester']]) }}"
+                                                        <a href="{{ route('admin.accomplishment.view-accomplishment', ['user_login_id' => $user_login_id, 'folder_name_id' => $folder_name_id, 'semester' => $academicYear]) }}"
                                                             class="btn btn-info text-white">
                                                             View Files
                                                         </a>
                                                     </td>
                                                 </tr>
-                                            @endforeach
+                                            @empty
+                                               
+                                            @endforelse
                                         </tbody>
                                     </table>
                                 </div>
-
                             </div>
                         </div>
                     </div>

@@ -9,7 +9,7 @@
     <div class="email-container">
         <div class="email-body">
             <p>{!! $announcement->message !!}</p>
-            <p>Visit this link: <a href="https://pupt-farm.com/announcement">https://pupt-farm.com/announcement</a></p>
+   
         </div>
         
     </div>

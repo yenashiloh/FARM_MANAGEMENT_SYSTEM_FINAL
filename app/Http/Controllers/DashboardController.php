@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\UserLogin;
 use App\Models\FolderName;
 use App\Models\CoursesFile;
+use App\Models\CourseSchedule;
 use App\Models\UserDetails;
 use App\Models\Notification;
 
@@ -110,48 +111,47 @@ class DashboardController extends Controller
         $folders = FolderName::all();
         $folder = FolderName::first();
     
+        // Get notifications
         $notifications = \App\Models\Notification::where('user_login_id', $userId)
-                            ->orderBy('created_at', 'desc')
-                            ->get();
-    
+            ->orderBy('created_at', 'desc')
+            ->get();
         $notificationCount = $notifications->count();
     
+        // Get file counts
         $totalFilesSubmitted = \App\Models\CoursesFile::where('user_login_id', $userId)->count();
-    
         $toReviewCount = \App\Models\CoursesFile::where('user_login_id', $userId)
-                            ->where('status', 'To Review')
-                            ->count();
-    
+            ->where('status', 'To Review')
+            ->count();
         $approvedCount = \App\Models\CoursesFile::where('user_login_id', $userId)
-                            ->where('status', 'Approved')
-                            ->count();
-    
+            ->where('status', 'Approved')
+            ->count();
         $declinedCount = \App\Models\CoursesFile::where('user_login_id', $userId)
-                            ->where('status', 'Declined')
-                            ->count();
+            ->where('status', 'Declined')
+            ->count();
     
+        // Calculate storage
         $totalStorageUsed = \App\Models\CoursesFile::where('user_login_id', $userId)
-                            ->where('is_archived', false)
-                            ->sum('file_size');
+            ->where('is_archived', false)
+            ->sum('file_size');
         $formattedTotalStorageUsed = $this->formatBytes($totalStorageUsed);
-    
         $totalStorageLimit = 30 * 1024 * 1024 * 1024;
         $storageAvailable = $totalStorageLimit - $totalStorageUsed;
         $formattedStorageAvailable = $this->formatBytes($storageAvailable);
     
-         $folderStatusCounts = FolderName::withCount([
-        'coursesFiles as approved_count' => function ($query) use ($userId) {
-            $query->where('status', 'Approved')->where('user_login_id', $userId);
-        },
-        'coursesFiles as declined_count' => function ($query) use ($userId) {
-            $query->where('status', 'Declined')->where('user_login_id', $userId);
-        },
-        'coursesFiles as to_review_count' => function ($query) use ($userId) {
-            $query->where('status', 'To Review')->where('user_login_id', $userId);
-        }
-    ])->get();
-
+        // Get folder status counts
+        $folderStatusCounts = FolderName::withCount([
+            'coursesFiles as approved_count' => function ($query) use ($userId) {
+                $query->where('status', 'Approved')->where('user_login_id', $userId);
+            },
+            'coursesFiles as declined_count' => function ($query) use ($userId) {
+                $query->where('status', 'Declined')->where('user_login_id', $userId);
+            },
+            'coursesFiles as to_review_count' => function ($query) use ($userId) {
+                $query->where('status', 'To Review')->where('user_login_id', $userId);
+            }
+        ])->get();
     
+        // Create chart data
         $chartData = $folderStatusCounts->map(function ($folder) {
             return [
                 'folder_name' => $folder->folder_name,
@@ -160,6 +160,63 @@ class DashboardController extends Controller
                 'to_review' => $folder->to_review_count,
             ];
         });
+    
+        // Get current academic year
+        $currentAcademicYear = CourseSchedule::where('user_login_id', $userId)
+            ->distinct()
+            ->pluck('sem_academic_year')
+            ->first();
+    
+        if (!$currentAcademicYear) {
+            return redirect()->back()->with('error', 'No courses found for the current user.');
+        }
+    
+        // Get faculty course count
+        $facultyCourseCount = CourseSchedule::where('user_login_id', $userId)
+            ->where('sem_academic_year', $currentAcademicYear)
+            ->count();
+    
+        // Generate folder chart data
+        $mainFolders = ['Classroom Management', 'Test Administration', 'Syllabus Preparation'];
+        $folderChartData = [];
+    
+        foreach ($mainFolders as $mainFolder) {
+            $folderNames = FolderName::where('main_folder_name', $mainFolder)->get();
+            $mainFolderData = [
+                'name' => $mainFolder,
+                'subfolders' => []
+            ];
+    
+            foreach ($folderNames as $folder) {
+                $userFilesCount = $folder->coursesFiles()
+                    ->where('user_login_id', $userId)
+                    ->where('status', 'Approved')
+                    ->whereHas('courseSchedule', function($query) use ($userId, $currentAcademicYear) {
+                        $query->where('user_login_id', $userId)
+                              ->where('sem_academic_year', $currentAcademicYear);
+                    })
+                    ->count();
+    
+                $percentage = $facultyCourseCount > 0 ? ($userFilesCount / $facultyCourseCount) * 100 : 0;
+    
+                $mainFolderData['subfolders'][] = [
+                    'name' => $folder->folder_name,
+                    'percentage' => round($percentage, 2),
+                    'user_files_count' => $userFilesCount,
+                    'total_files_count' => $facultyCourseCount,
+                    'academic_year' => $currentAcademicYear
+                ];
+            }
+    
+            $folderChartData[] = $mainFolderData;
+        }
+    
+        \Log::info('Faculty Course Count:', [
+            'user_id' => $userId,
+            'academic_year' => $currentAcademicYear,
+            'course_count' => $facultyCourseCount
+        ]);
+        \Log::info('Folder Chart Data:', $folderChartData);
     
         return view('faculty.faculty-dashboard', [
             'folders' => $folders,
@@ -178,6 +235,8 @@ class DashboardController extends Controller
             'formattedStorageAvailable' => $formattedStorageAvailable,
             'firstName' => $firstName,
             'surname' => $surname,
+            'folderChartData' => $folderChartData,
+            'currentAcademicYear' => $currentAcademicYear
         ]);
     }
 

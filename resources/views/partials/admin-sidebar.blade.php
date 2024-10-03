@@ -1,104 +1,133 @@
-
- <style>
-  .nav-link {
-  display: flex;
-  align-items: center;
-}
-
-.nav-text {
-  display: inline-block;
-  line-height: 1.2;
-  margin-left: 0.5em; 
-}
-
-.uploading-manage {
-  margin-right: 0.5em; 
-  margin-top: -0.9em;
-}
-    .navbar {
-    padding: 0.5rem;
-  }
-  
-  .navbar-brand {
-    display: flex;
-    align-items: center;
-    padding: 0;
+<style>
+    @media (max-width: 992px) {
+  .navbar {
+    padding: 0.75rem 1.5rem;
   }
   
   .logo {
     width: 40px;
     height: 40px;
-    margin-right: 0.5rem;
-  }
-  
-  .brand-info {
-    display: flex;
-    flex-direction: column;
   }
   
   .main-title {
-    font-size: 1rem;
-    font-weight: bold;
-    line-height: 1.2;
+    font-size: 1.2rem;
   }
   
   .sub-title {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.5rem 1rem;
+  }
+
+  .logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .main-title {
+    font-size: 1rem;
+  }
+
+  .sub-title {
     font-size: 0.7rem;
-    line-height: 1.2;
   }
-  
-  @media (max-width: 768px) {
-    .navbar {
-      padding: 0.25rem 0.5rem;
-    }
-  
-    .logo {
-      width: 30px;
-      height: 30px;
-    }
-  
-    .main-title {
-      font-size: 0.9rem;
-    }
-  
-    .sub-title {
-      font-size: 0.6rem;
-    }
+}
+
+@media (max-width: 576px) {
+  .navbar {
+    padding: 0.25rem 0.75rem;
   }
+
+  .logo {
+    width: 25px;
+    height: 25px;
+  }
+
+  .main-title {
+    font-size: 0.9rem;
+  }
+
+  .sub-title {
+    font-size: 0.6rem;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.2rem 0.5rem;
+  }
+
+  .logo {
+    width: 22px;
+    height: 22px;
+  }
+
+  .main-title {
+    font-size: 0.8rem;
+  }
+
+  .sub-title {
+    font-size: 0.5rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar {
+    padding: 0.15rem 0.4rem;
+  }
+
+  .logo {
+    width: 20px;
+    height: 20px;
+  }
+
+  .main-title {
+    font-size: 0.7rem;
+  }
+
+  .sub-title {
+    font-size: 0.45rem;
+  }
+}
 </style>
 
- <!-- ============================================================== -->
- <!-- main wrapper -->
- <!-- ============================================================== -->
- <div class="dashboard-main-wrapper">
-     <!-- ============================================================== -->
-     <!-- navbar -->
-     <!-- ============================================================== -->
-     <div class="dashboard-header">
-         <nav class="navbar navbar-expand-lg bg-white fixed-top">
-             <a class="navbar-brand" href="{{ route('admin.admin-dashboard') }}">
-                 <img src="{{ asset('assets/images/pup-logo.png') }}" width="50" height="50" alt="Logo">
-                 <div class="brand-info">
-                     <div class="main-title">PUP-T FARM</div>
-                     <div class="sub-title">Faculty Academic Requirements Management</div>
-                 </div>
-             </a>
+<!-- ============================================================== -->
+<!-- main wrapper -->
+<!-- ============================================================== -->
+<div class="dashboard-main-wrapper">
+    <!-- ============================================================== -->
+    <!-- navbar -->
+    <!-- ============================================================== -->
+    <div class="dashboard-header">
+        <nav class="navbar navbar-expand-lg bg-white fixed-top">
+            <a class="navbar-brand" href="{{ route('admin.admin-dashboard') }}">
+                <img src="{{ asset('assets/images/pup-logo.png') }}" width="50" height="50" alt="Logo">
+                <div class="brand-info">
+                    <div class="main-title">PUP-T FARM</div>
+                    <div class="sub-title">Faculty Academic Requirements Management</div>
+                </div>
+            </a>
 
-             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                 <span class="navbar-toggler-icon"></span>
-             </button>
-             <div class="collapse navbar-collapse " id="navbarSupportedContent">
-                 <ul class="navbar-nav ml-auto navbar-right-top">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse " id="navbarSupportedContent">
+                <ul class="navbar-nav ml-auto navbar-right-top">
 
-                     <li class="nav-item dropdown notification">
-                         <a class="nav-link nav-icons" href="#" id="navbarDropdownMenuLink1"
-                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                             <i class="fas fa-fw fa-bell"></i>
-                             <span class="indicator" id="notification-count-admin" style="display: none;">0</span>
-                         </a>
+                    <li class="nav-item dropdown notification">
+                        <a class="nav-link nav-icons" href="#" id="navbarDropdownMenuLink1" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-fw fa-bell"></i>
+                            <span class="indicator" id="notification-count-admin" style="display: none;">0</span>
+                        </a>
 
-                         <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
+                        <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
                             <li>
                                 <div class="notification-title">Notification</div>
                                 <div class="notification-list">
@@ -112,21 +141,23 @@
                                                 @php
                                                     $coursesFile = $notification->coursesFile;
                                                     $facultyUserLoginId = $coursesFile->user_login_id;
-                                                    $semester = $coursesFile->semester; 
+                                                    $semester = $coursesFile->semester;
                                                 @endphp
                                                 <a href="{{ route('admin.accomplishment.view-accomplishment', [
-                                                    'user_login_id' => $facultyUserLoginId, 
+                                                    'user_login_id' => $facultyUserLoginId,
                                                     'folder_name_id' => $notification->folder_name_id,
-                                                    'semester' => $semester 
-                                                ]) }}" 
-                                                class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
-                                                data-notification-id="{{ $notification->id }}">
+                                                    'semester' => $semester,
+                                                ]) }}"
+                                                    class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
+                                                    data-notification-id="{{ $notification->id }}">
                                                     <div class="notification-info">
                                                         <div class="notification-list-user-img">
-                                                            <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
+                                                            <i class="fas fa-user-circle user-avatar-md"
+                                                                style="font-size:30px;"></i>
                                                         </div>
                                                         <div class="notification-list-user-block">
-                                                            <span class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
+                                                            <span
+                                                                class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
                                                             <span>{{ $notification->notification_message }}</span>
                                                             <div class="notification-date">
                                                                 {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
@@ -140,105 +171,114 @@
                                 </div>
                             </li>
                         </ul>
-                        
-                        
-                        
-                        
-                     </li>
 
-                     <li class="nav-item dropdown nav-user">
-                         <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
-                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                             <i class="fas fa-user-circle user-avatar-md rounded-circle" style="font-size:25px;"></i>
-                         </a>
-                         <div class="dropdown-menu dropdown-menu-right nav-user-dropdown"
-                             aria-labelledby="navbarDropdownMenuLink2">
-                             <div class="nav-user-info text-center">
-                                 <h5 class="mb-0 text-white nav-user-name">
+
+
+
+                    </li>
+
+                    <li class="nav-item dropdown nav-user">
+                        <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user-circle user-avatar-md rounded-circle" style="font-size:25px;"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right nav-user-dropdown"
+                            aria-labelledby="navbarDropdownMenuLink2">
+                            <div class="nav-user-info text-center">
+                                <h5 class="mb-0 text-white nav-user-name">
                                     {{ $firstName }} {{ $surname }}
-                                 </h5>
-                                 <span style="font-size:12px;">Admin</span>
-                             </div>
-                             <a class="dropdown-item" href="{{route ('admin.admin-account')}}"><i class="fas fa-user mr-2"></i>Account</a>
+                                </h5>
+                                <span style="font-size:12px;">Admin</span>
+                            </div>
+                            <a class="dropdown-item" href="{{ route('admin.admin-account') }}"><i
+                                    class="fas fa-user mr-2"></i>Account</a>
 
-                             <a class="dropdown-item" href="#" id="logout-link">
-                                 <i class="fas fa-power-off mr-2"></i>Logout
-                             </a>
-                         </div>
-                     </li>
-                 </ul>
-             </div>
-         </nav>
-     </div>
-     <!-- ============================================================== -->
-     <!-- end navbar -->
-     <!-- ============================================================== -->
-     <!-- ============================================================== -->
-     <!-- left sidebar -->
-     <!-- ============================================================== -->
-     <div class="nav-left-sidebar sidebar-dark">
-         <div class="menu-list">
-             <nav class="navbar navbar-expand-lg navbar-light">
-                 <a class="d-xl-none d-lg-none" href="#">Dashboard</a>
-                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                     <span class="navbar-toggler-icon"></span>
-                 </button>
-                 <div class="collapse navbar-collapse" id="navbarNav">
-                     <ul class="navbar-nav flex-column">
-                         <li class="nav-divider">
-                             MENU
-                         </li>
-                         <li class="nav-item ">
-                             <a class="nav-link {{ Request::routeIs('admin.admin-dashboard') ? 'active' : '' }}"
-                                 href="{{ route('admin.admin-dashboard') }}" aria-expanded="false"
-                                 data-target="#submenu-1" aria-controls="submenu-1"><i
-                                     class="fas fa-tachometer-alt"></i>
-                                 Dashboard </a>
-                         </li>
-                         <li class="nav-item ">
+                            <a class="dropdown-item" href="#" id="logout-link">
+                                <i class="fas fa-power-off mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+    <!-- ============================================================== -->
+    <!-- end navbar -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- left sidebar -->
+    <!-- ============================================================== -->
+    <div class="nav-left-sidebar sidebar-dark">
+        <div class="menu-list">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <a class="d-xl-none d-lg-none" href="#">Dashboard</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav flex-column">
+                        <li class="nav-divider">
+                            MENU
+                        </li>
+                        <li class="nav-item ">
                             <a class="nav-link {{ Request::routeIs('admin.admin-dashboard') ? 'active' : '' }}"
+                                href="{{ route('admin.admin-dashboard') }}" aria-expanded="false"
+                                data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-tachometer-alt"></i>
+                                Dashboard </a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link {{ Request::routeIs('admin.maintenance.audit-trail') ? 'active' : '' }}"
                                 href="{{ route('admin.maintenance.audit-trail') }}" aria-expanded="false"
-                                data-target="#submenu-1" aria-controls="submenu-1"><i
-                                    class="fas fa-history"></i>
+                                data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-history"></i>
                                 Audit Trail </a>
                         </li>
-                         <li class="nav-divider">
-                             Maintenance
-                         </li>
-                         <li class="nav-item">
+                        <li class="nav-divider">
+                            Maintenance
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{ Request::routeIs('admin.maintenance.create-folder') ? 'active' : '' }}"
                                 href="{{ route('admin.maintenance.create-folder') }}" aria-expanded="false"
                                 data-target="#submenu-3" aria-controls="submenu-3">
-                                <i class="fas fa-folder"></i> Manage Main Requirements
+                                <i class="fas fa-folder"></i>Main Requirements
                             </a>
                         </li>
-                       <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.announcement.admin-announcement', 'admin.announcement.edit-announcement', 'admin.announcement.add-announcement') ? 'active' : '' }}"
-                            href="{{ route('admin.announcement.admin-announcement') }}" aria-expanded="false"
-                            data-target="#submenu-4" aria-controls="submenu-4">
-                            <i class="fas fa-bullhorn"></i> Manage Announcements
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.announcement.admin-announcement', 'admin.announcement.edit-announcement', 'admin.announcement.add-announcement') ? 'active' : '' }}"
+                                href="{{ route('admin.announcement.admin-announcement') }}" aria-expanded="false"
+                                data-target="#submenu-4" aria-controls="submenu-4">
+                                <i class="fas fa-bullhorn"></i>Announcements
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link {{ Request::routeIs('admin.maintenance.upload-schedule') ? 'active' : '' }}" 
-                           href="{{ route('admin.maintenance.upload-schedule') }}" 
-                           aria-expanded="false" 
-                           data-target="#submenu-4" 
-                           aria-controls="submenu-4">
-                          <i class="fas fa-calendar-alt uploading-manage"></i>
-                          <span class="nav-text">
-                            Manage Schedule of<br>
-                            Uploading
-                          </span>
-                        </a>
-                      </li>
-                        
-                         <li class="nav-divider">
-                             Accomplishment
-                         </li>
-                         <li class="nav-item">
+                        <li class="nav-item">
+                            <a class="nav-link {{ Request::routeIs('admin.maintenance.upload-schedule') ? 'active' : '' }}"
+                                href="{{ route('admin.maintenance.upload-schedule') }}" aria-expanded="false"
+                                data-target="#submenu-4" aria-controls="submenu-4">
+                                <i class="fas fa-calendar-alt uploading-manage"></i>
+                                <span class="nav-text">
+                                    Schedule of Uploading
+                                </span>
+                            </a>
+                        </li>
+
+                        <li class="nav-divider">
+                            Accomplishment
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ str_contains(request()->path(), 'accomplishment') ? 'active' : '' }}"
+                                href="{{ route('admin.accomplishment.accomplishment') }}" 
+                                aria-expanded="false"
+                                data-target="#submenu-4" 
+                                aria-controls="submenu-4">
+                                <i class="fas fa-calendar-alt uploading-manage"></i>
+                                <span class="nav-text">
+                                    All Accomplishment
+                                </span>
+                            </a>
+                        </li>
+                        {{-- <li class="nav-item">
                              <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Classroom Management')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
                                  href="#" data-toggle="collapse" aria-expanded="false"
                                  data-target="#submenu-6" aria-controls="submenu-6">
@@ -302,20 +342,20 @@
                                      @endforeach
                                  </ul>
                              </div>
-                         </li>
-                     </ul>
-                 </div>
-                 </li>
+                         </li> --}}
+                    </ul>
+                </div>
+                </li>
 
-                 </ul>
-         </div>
-         </nav>
-     </div>
- </div>
- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
- <script>
-     //logout
-     document.getElementById('logout-link').addEventListener('click', function(e) {
+                </ul>
+        </div>
+        </nav>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    //logout
+    document.getElementById('logout-link').addEventListener('click', function(e) {
         e.preventDefault();
 
         Swal.fire({
@@ -329,41 +369,41 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch('{{ route('admin-logout') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({
-                        '_token': '{{ csrf_token() }}'
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            '_token': '{{ csrf_token() }}'
+                        })
                     })
-                })
-                .then(response => response.json()) 
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = '{{ route('login') }}';
-                    } else {
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '{{ route('login') }}';
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                'Logout failed.',
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
                         Swal.fire(
                             'Error!',
-                            'Logout failed.',
+                            'An unexpected error occurred.',
                             'error'
                         );
-                    }
-                })
-                .catch(error => {
-                    Swal.fire(
-                        'Error!',
-                        'An unexpected error occurred.',
-                        'error'
-                    );
-                    console.error('Error:', error);
-                });
+                        console.error('Error:', error);
+                    });
             }
         });
     });
 
-      // notification
+    // notification
     $(document).ready(function() {
         $.ajaxSetup({
             headers: {
@@ -402,46 +442,47 @@
         });
 
         $(document).click(function(e) {
-             if (!$(e.target).closest('.nav-user').length) {
-                 $('.nav-user-dropdown').removeClass('show');
-             }
-         });
+            if (!$(e.target).closest('.nav-user').length) {
+                $('.nav-user-dropdown').removeClass('show');
+            }
+        });
 
 
-         $('.nav-user-dropdown').click(function(e) {
-             e.stopPropagation();
-         });
+        $('.nav-user-dropdown').click(function(e) {
+            e.stopPropagation();
+        });
 
         $(document).on('click', '.list-group-item', function(e) {
-             e.preventDefault();
-             var $this = $(this);
-             var notificationId = $this.data('notification-id');
+            e.preventDefault();
+            var $this = $(this);
+            var notificationId = $this.data('notification-id');
 
-             $.post('{{ route('notifications.markAsRead') }}', {
-                 notification_id: notificationId
-             }, function() {
-                 $this.removeClass('new-notification');
-                 updateNotificationCount();
-             }).fail(function() {
-                 console.error('Failed to mark notification as read.');
-             });
+            $.post('{{ route('notifications.markAsRead') }}', {
+                notification_id: notificationId
+            }, function() {
+                $this.removeClass('new-notification');
+                updateNotificationCount();
+            }).fail(function() {
+                console.error('Failed to mark notification as read.');
+            });
 
-             window.location.href = $this.attr('href');
-         });
+            window.location.href = $this.attr('href');
+        });
 
 
-    function updateNotifications() {
-        $.get('{{ route('admin.notifications.get') }}', function(data) {
-            var $notificationList = $('.notification-list .list-group');
-            $notificationList.empty();
+        function updateNotifications() {
+            $.get('{{ route('admin.notifications.get') }}', function(data) {
+                var $notificationList = $('.notification-list .list-group');
+                $notificationList.empty();
 
-            if (data.notifications && Array.isArray(data.notifications) && data.notifications.length > 0) {
-                data.notifications.forEach(function(notification) {
-                    var $notification = $('<a>')
-                        .attr('href', notification.url)
-                        .attr('data-notification-id', notification.id)
-                        .addClass('list-group-item list-group-item-action')
-                        .html(`
+                if (data.notifications && Array.isArray(data.notifications) && data.notifications
+                    .length > 0) {
+                    data.notifications.forEach(function(notification) {
+                        var $notification = $('<a>')
+                            .attr('href', notification.url)
+                            .attr('data-notification-id', notification.id)
+                            .addClass('list-group-item list-group-item-action')
+                            .html(`
                             <div class="notification-info">
                                 <div class="notification-list-user-img">
                                     <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
@@ -456,21 +497,22 @@
                             </div>
                         `);
 
-                    if (!notification.is_read) {
-                        $notification.addClass('new-notification');
-                    }
+                        if (!notification.is_read) {
+                            $notification.addClass('new-notification');
+                        }
 
-                    $notificationList.append($notification);
-                });
-            } else {
-                $notificationList.html('<div class="text-center p-3">No notifications available</div>');
-            }
-        }).fail(function() {
-            console.error('Failed to fetch notifications.');
-        });
-    }
+                        $notificationList.append($notification);
+                    });
+                } else {
+                    $notificationList.html(
+                        '<div class="text-center p-3">No notifications available</div>');
+                }
+            }).fail(function() {
+                console.error('Failed to fetch notifications.');
+            });
+        }
 
-    setInterval(updateNotifications, 30000);
-    updateNotifications();
-});
- </script>
+        setInterval(updateNotifications, 30000);
+        updateNotifications();
+    });
+</script>

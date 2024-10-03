@@ -71,71 +71,80 @@
                                 </div>
                             @endif
 
-                           <div class="container mb-4">
-                            <input type="text" id="search" class="form-control" placeholder="Search announcements..." />
-                        </div>
-
-                        <div id="announcements-list">
-                            @if ($announcements->isEmpty())
-                                <div class="alert alert-info" role="alert">
-                                    No announcements available.
-                                </div>
-                            @else
-                                @foreach ($announcements as $announcement)
-                                    <div class="main-content container-fluid p-0 mb-4 announcement-item">
-                                        <div class="email-head d-flex justify-content-between align-items-center">
-                                            <div class="email-head-subject d-flex align-items-center">
-                                                <div class="title">
-                                                    <a class="active" href="#"></a>
-                                                    <span style="font-size: 20px; mt-0">{{ $announcement->subject }}</span>
-                                                    <div class="date" style="font-size:12px;">
-                                                        {{ \Carbon\Carbon::parse($announcement->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:i a') }}
-                                                    </div>
-                                                    <div class="date mt-2" style="font-size:12px;">
-                                                        To: @foreach ($announcement->displayEmails as $email)
-                                                            {{ $email }}@if (!$loop->last),@endif
-                                                        @endforeach
-                                                        @if ($announcement->moreEmailsCount > 0)
-                                                            and {{ $announcement->moreEmailsCount }} more
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex align-items-center">
-                                                <span class="me-3">
-                                                    @if ($announcement->published)
-                                                        <span class="badge badge-success">Published</span>
-                                                    @else
-                                                        <span class="badge badge-warning">Unpublished</span>
-                                                    @endif
-                                                </span>
-                                                <div class="dropdown">
-                                                    <i class="fas fa-ellipsis-h dropdown-trigger mr-4 ml-3"
-                                                        onclick="toggleDropdown({{ $announcement->id_announcement }})"></i>
-                                                    <div class="dropdown-menu toggle-dropdown"
-                                                        id="dropdownMenu{{ $announcement->id_announcement }}">
-                                                        <a href="{{ route('admin.announcement.edit-announcement', $announcement->id_announcement) }}"
-                                                            class="dropdown-item">Edit</a>
-                                                        <button type="button" class="dropdown-item delete-btn"
-                                                            data-id="{{ $announcement->id_announcement }}">Delete</button>
-                                                        @if ($announcement->published)
-                                                            <a href="{{ route('admin.announcement.unpublish-announcement', $announcement->id_announcement) }}"
-                                                                class="dropdown-item">Unpublish</a>
-                                                        @else
-                                                            <a href="{{ route('admin.announcement.publish-announcement', $announcement->id_announcement) }}"
-                                                                class="dropdown-item">Publish</a>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="email-body" style="margin-bottom:20px;">
-                                            <p style="font-size: 18px;">{!! $announcement->message !!}</p>
-                                        </div>
+                            <div class="container">
+                                <div class="row justify-content-end">
+                                    <div class="col-md-4 col-sm-6 col-auto mb-3">
+                                        <input type="text" id="search" class="form-control" placeholder="Search announcements..." />
                                     </div>
-                                @endforeach
-                            @endif
-</div>
+                                </div>
+                            </div>
+                            
+                            
+
+                            <div id="announcements-list">
+                                @if ($announcements->isEmpty())
+                                    <div class="alert alert-info" role="alert">
+                                        No announcements available.
+                                    </div>
+                                @else
+                                    @foreach ($announcements as $announcement)
+                                        <div class="main-content container-fluid p-0 mb-4 announcement-item">
+                                            <div class="email-head d-flex justify-content-between align-items-center">
+                                                <div class="email-head-subject d-flex align-items-center">
+                                                    <div class="title">
+                                                        <a class="active" href="#"></a>
+                                                        <span
+                                                            style="font-size: 20px; mt-0">{{ $announcement->subject }}</span>
+                                                        <div class="date" style="font-size:12px;">
+                                                            {{ \Carbon\Carbon::parse($announcement->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:i a') }}
+                                                        </div>
+                                                        <div class="date mt-2" style="font-size:12px;">
+                                                            To: @foreach ($announcement->displayEmails as $email)
+                                                                {{ $email }}@if (!$loop->last)
+                                                                    ,
+                                                                @endif
+                                                            @endforeach
+                                                            @if ($announcement->moreEmailsCount > 0)
+                                                                and {{ $announcement->moreEmailsCount }} more
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="me-3">
+                                                        @if ($announcement->published)
+                                                            <span class="badge badge-success">Published</span>
+                                                        @else
+                                                            <span class="badge badge-warning">Unpublished</span>
+                                                        @endif
+                                                    </span>
+                                                    <div class="dropdown">
+                                                        <i class="fas fa-ellipsis-h dropdown-trigger mr-4 ml-3"
+                                                            onclick="toggleDropdown({{ $announcement->id_announcement }})"></i>
+                                                        <div class="dropdown-menu toggle-dropdown"
+                                                            id="dropdownMenu{{ $announcement->id_announcement }}">
+                                                            <a href="{{ route('admin.announcement.edit-announcement', $announcement->id_announcement) }}"
+                                                                class="dropdown-item">Edit</a>
+                                                            <button type="button" class="dropdown-item delete-btn"
+                                                                data-id="{{ $announcement->id_announcement }}">Delete</button>
+                                                            @if ($announcement->published)
+                                                                <a href="{{ route('admin.announcement.unpublish-announcement', $announcement->id_announcement) }}"
+                                                                    class="dropdown-item">Unpublish</a>
+                                                            @else
+                                                                <a href="{{ route('admin.announcement.publish-announcement', $announcement->id_announcement) }}"
+                                                                    class="dropdown-item">Publish</a>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="email-body" style="margin-bottom:20px;">
+                                                <p style="font-size: 18px;">{!! $announcement->message !!}</p>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
 
 
 
@@ -231,23 +240,26 @@
                                     }, 8000);
                                 }
                             });
-                            
-                  $(document).ready(function() {
-        $('#search').on('input', function() {
-            var query = $(this).val();
-            $.ajax({
-                url: "{{ route('admin.announcement.admin-announcement') }}",
-                method: 'GET',
-                data: { query: query },
-                success: function(response) {
-                    $('#announcements-list').html($(response).find('#announcements-list').html());
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error: ' + status + error);
-                }
-            });
-        });
-    });
+
+                            $(document).ready(function() {
+                                $('#search').on('input', function() {
+                                    var query = $(this).val();
+                                    $.ajax({
+                                        url: "{{ route('admin.announcement.admin-announcement') }}",
+                                        method: 'GET',
+                                        data: {
+                                            query: query
+                                        },
+                                        success: function(response) {
+                                            $('#announcements-list').html($(response).find('#announcements-list')
+                                                .html());
+                                        },
+                                        error: function(xhr, status, error) {
+                                            console.error('AJAX Error: ' + status + error);
+                                        }
+                                    });
+                                });
+                            });
                         </script>
 </body>
 

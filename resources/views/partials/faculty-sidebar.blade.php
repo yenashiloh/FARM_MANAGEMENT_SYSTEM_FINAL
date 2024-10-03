@@ -1,54 +1,99 @@
 <style>
-    .navbar {
-        padding: 0.5rem;
-    }
+    @media (max-width: 992px) {
+  .navbar {
+    padding: 0.75rem 1.5rem;
+  }
+  
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .main-title {
+    font-size: 1.2rem;
+  }
+  
+  .sub-title {
+    font-size: 0.8rem;
+  }
+}
 
-    .navbar-brand {
-        display: flex;
-        align-items: center;
-        padding: 0;
-    }
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.5rem 1rem;
+  }
 
-    .logo {
-        width: 40px;
-        height: 40px;
-        margin-right: 0.5rem;
-    }
+  .logo {
+    width: 30px;
+    height: 30px;
+  }
 
-    .brand-info {
-        display: flex;
-        flex-direction: column;
-    }
+  .main-title {
+    font-size: 1rem;
+  }
 
-    .main-title {
-        font-size: 1rem;
-        font-weight: bold;
-        line-height: 1.2;
-    }
+  .sub-title {
+    font-size: 0.7rem;
+  }
+}
 
-    .sub-title {
-        font-size: 0.7rem;
-        line-height: 1.2;
-    }
+@media (max-width: 576px) {
+  .navbar {
+    padding: 0.25rem 0.75rem;
+  }
 
-    @media (max-width: 768px) {
-        .navbar {
-            padding: 0.25rem 0.5rem;
-        }
+  .logo {
+    width: 25px;
+    height: 25px;
+  }
 
-        .logo {
-            width: 30px;
-            height: 30px;
-        }
+  .main-title {
+    font-size: 0.9rem;
+  }
 
-        .main-title {
-            font-size: 0.9rem;
-        }
+  .sub-title {
+    font-size: 0.6rem;
+  }
+}
 
-        .sub-title {
-            font-size: 0.6rem;
-        }
-    }
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.2rem 0.5rem;
+  }
+
+  .logo {
+    width: 22px;
+    height: 22px;
+  }
+
+  .main-title {
+    font-size: 0.8rem;
+  }
+
+  .sub-title {
+    font-size: 0.5rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar {
+    padding: 0.15rem 0.4rem;
+  }
+
+  .logo {
+    width: 20px;
+    height: 20px;
+  }
+
+  .main-title {
+    font-size: 0.7rem;
+  }
+
+  .sub-title {
+    font-size: 0.45rem;
+  }
+}
 </style>
 <!-- ============================================================== -->
 <!-- main wrapper -->
@@ -155,7 +200,7 @@
     <!-- ============================================================== -->
     <!-- left sidebar -->
     <!-- ============================================================== -->
-    <div class="nav-left-sidebar sidebar-dark">
+    <div class="nav-left-sidebar sidebar-dark" >
         <div class="menu-list">
             <nav class="navbar navbar-expand-lg navbar-light">
                 <a class="d-xl-none d-lg-none" href="#">Dashboard</a>

@@ -241,7 +241,7 @@
                                                             <input type="file"
                                                                 id="fileInput{{ $schedule->course_schedule_id }}"
                                                                 name="files[{{ $schedule->course_schedule_id }}][]"
-                                                                multiple accept=".pdf" required>
+                                                                multiple  accept=".pdf, .doc, .docx, .xls, .xlsx" required>
                                                             <small class="text-danger"
                                                                 id="error{{ $schedule->course_schedule_id }}"></small>
                                                         </div>
@@ -259,8 +259,7 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-success" id="uploadButton">Upload
-                                                Files</button>
+                                            <button type="submit" class="btn btn-success" id="uploadButton">Submit</button>
                                         </div>
                                     </form>
                                 </div>
@@ -341,7 +340,7 @@
 
                             const formData = new FormData(form);
 
-                            uploadButton.textContent = 'Uploading...';
+                            uploadButton.textContent = 'Submitting...';
                             uploadButton.disabled = true;
                             uploadButton.classList.remove('btn-success');
                             uploadButton.classList.add('btn-secondary');
