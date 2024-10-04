@@ -35,7 +35,7 @@
                 <div class="row">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="page-header">
-                            <div class="col d-flex justify-content-between align-items-center">
+                            <div class="col d-flex justify-content-between align-items-center" style="padding: 0">
                                 <h2 class="pageheader-title mb-0">Admin Dashboard</h2>
                                 <div class="ml-auto text-right">
                                     <div class="dropdown">

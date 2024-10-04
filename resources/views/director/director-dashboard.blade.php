@@ -38,11 +38,9 @@
                 <div class="row">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="page-header">
-                            <div class="col d-flex justify-content-between align-items-center">
+                            <div class="col d-flex justify-content-between align-items-center" style="padding: 0">
                                 <h2 class="pageheader-title mb-0">Director Dashboard</h2>
-                            </div>
-
-                            <div class="ml-auto text-right">
+                                <div class="ml-auto text-right">
                                 <div class="dropdown">
                                     <button class="btn btn-primary dropdown-toggle" type="button"
                                         id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
@@ -59,7 +57,7 @@
                                     </div>
                                 </div>
                             </div>
-
+                            </div>
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
