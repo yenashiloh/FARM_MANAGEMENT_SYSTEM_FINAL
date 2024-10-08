@@ -105,7 +105,7 @@
     <div class="dashboard-header">
         <nav class="navbar navbar-expand-lg bg-white fixed-top">
             <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" href="{{ route('faculty.faculty-dashboard') }}">
+                <a class="navbar-brand d-flex align-items-center" href="{{ route('admin.admin-dashboard') }}">
                     <img src="{{ asset('assets/images/pup-logo.png') }}" width="50" height="50" alt="Logo">
                     <div class="brand-info ms-2">
                         <div class="main-title">PUP-T FARM</div>
