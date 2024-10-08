@@ -9,6 +9,7 @@ use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Announcement;
 use App\Models\Notification;
+use App\Models\Department;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 
@@ -98,15 +99,18 @@ class AnnouncementController extends Controller
       
           $notificationCount = $notifications->where('is_read', 0)->count();
       
-          // Fetch faculty emails
-          $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
+          $facultyUsers = UserLogin::where('role', 'faculty')
+              ->orWhere('role', 'faculty-coordinator')
+              ->get(['user_login_id', 'email', 'department_id']);
           
-          // Fetch unique departments
-          $departments = UserLogin::where('role', 'faculty')->distinct()->pluck('department');
+          $facultyEmails = $facultyUsers->pluck('email')->toArray();
+      
+          $departments = Department::whereNotNull('department_id')->whereNotNull('name')->get();
       
           return view('admin.announcement.add-announcement', [
               'folders' => $folders,
               'folder' => $folder,
+              'facultyUsers' => $facultyUsers,
               'facultyEmails' => $facultyEmails,
               'firstName' => $firstName,
               'surname' => $surname,
@@ -115,7 +119,6 @@ class AnnouncementController extends Controller
               'departments' => $departments, 
           ]);
       }
-      
       
       //save the Announcement
       public function saveAnnouncement(Request $request)
@@ -131,36 +134,57 @@ class AnnouncementController extends Controller
           }
       
           $recipientEmails = $request->input('recipient_emails', []);
-      
+          
           $facultyEmails = [];
+          $recipientIds = [];
+          $recipientEmailsString = '';
       
           if (in_array('all-faculty', $recipientEmails)) {
               $recipientEmailsString = 'All Faculty';
-              $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
+              $facultyUsers = UserLogin::where('role', 'faculty')
+                  ->orWhere('role', 'faculty-coordinator')
+                  ->get();
+              $facultyEmails = $facultyUsers->pluck('email')->toArray();
+              $recipientIds = $facultyUsers->pluck('user_login_id')->toArray();
           } else {
               $recipientEmails = array_diff($recipientEmails, ['all-faculty']);
-              
+      
               foreach ($recipientEmails as $key => $recipient) {
                   if (strpos($recipient, 'department-') === 0) {
                       $departmentId = str_replace('department-', '', $recipient);
-                      $departmentFacultyEmails = UserLogin::where('role', 'faculty')
-                          ->where('department', $departmentId)
-                          ->pluck('email')
-                          ->toArray();
-                      $facultyEmails = array_merge($facultyEmails, $departmentFacultyEmails);
-                      unset($recipientEmails[$key]); 
+                      $department = Department::find($departmentId); 
+                      if ($department) {
+                          $recipientEmailsString = $department->name; 
+      
+                          $departmentFaculty = UserLogin::where(function($query) {
+                                  $query->where('role', 'faculty')
+                                        ->orWhere('role', 'faculty-coordinator');
+                              })
+                              ->where('department_id', $departmentId)
+                              ->get();
+                          
+                          $facultyEmails = array_merge($facultyEmails, $departmentFaculty->pluck('email')->toArray());
+                          $recipientIds = array_merge($recipientIds, $departmentFaculty->pluck('user_login_id')->toArray());
+                      }
+                  } else {
+                      $user = UserLogin::find($recipient);
+                      if ($user) {
+                          $facultyEmails[] = $user->email;
+                          $recipientIds[] = $user->user_login_id;
+                      }
                   }
               }
-      
-              $recipientEmailsString = !empty($recipientEmails) ? implode(', ', $recipientEmails) : 'No Recipients Selected';
-              $facultyEmails = array_merge($facultyEmails, $recipientEmails);
+
+              if (empty($recipientEmailsString)) {
+                  $recipientEmailsString = 'No Recipients Selected';
+              }
           }
       
           $announcement = new Announcement();
           $announcement->subject = $request->input('announcement_subject');
           $announcement->message = $request->input('announcement_message');
           $announcement->published = false;
-          $announcement->type_of_recepient = $recipientEmailsString;
+          $announcement->type_of_recepient = $recipientEmailsString; 
           $announcement->user_login_id = auth()->user()->user_login_id;
           $announcement->save();
       
@@ -169,7 +193,6 @@ class AnnouncementController extends Controller
           $request->session()->flash('success', 'Announcement Added Successfully!');
           return redirect()->route('admin.announcement.admin-announcement');
       }
-      
       
     //send announcement
     protected function sendAnnouncementEmails($announcement, $recipients)

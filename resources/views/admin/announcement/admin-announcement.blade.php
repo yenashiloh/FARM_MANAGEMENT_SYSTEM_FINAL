@@ -73,7 +73,7 @@
 
                             <div class="container">
                                 <div class="row justify-content-end">
-                                    <div class="col-md-4 col-sm-6 col-auto mb-3">
+                                    <div class="col-md-4 col-sm-6 col-auto p-0 mb-3">
                                         <input type="text" id="search" class="form-control" placeholder="Search announcements..." />
                                     </div>
                                 </div>

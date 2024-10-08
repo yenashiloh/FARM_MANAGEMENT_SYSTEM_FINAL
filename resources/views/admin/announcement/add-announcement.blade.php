@@ -67,10 +67,10 @@
                                                     <!-- Departments Group -->
                                                     <optgroup label="Departments">
                                                         @foreach ($departments as $department)
-                                                            <option value="department-{{ $department }}">{{ $department }}</option>
+                                                            <option value="department-{{ $department->department_id }}">{{ $department->name }}</option>
                                                         @endforeach
                                                     </optgroup>
-                                    
+                                                   
                                                     <!-- Faculty Emails Group -->
                                                     <optgroup label="Faculty Emails">
                                                         @foreach ($facultyEmails as $email)

@@ -31,10 +31,11 @@ class FacultyController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-    
+        
+        $userId = auth()->id();
         $user = auth()->user();
-    
-        if ($user->role !== 'faculty') {
+        
+        if (!in_array($user->role, ['faculty', 'faculty-coordinator'])) {
             return redirect()->route('login');
         }
     
@@ -117,6 +118,50 @@ class FacultyController extends Controller
                 return $file;
             });
             
+        //progress
+        $files = CoursesFile::where('user_login_id', auth()->id())
+        ->where('status', 'approved')
+        ->get();
+    
+        $approvedCounts = [];
+        foreach ($files as $file) {
+            $mainFolderName = $file->folderName->main_folder_name;
+            if (!isset($approvedCounts[$mainFolderName])) {
+                $approvedCounts[$mainFolderName] = 0;
+            }
+            $approvedCounts[$mainFolderName]++;
+        }
+        
+        $folders = ['Classroom Management', 'Test Administration', 'Syllabus Preparation'];
+        
+        $totalCounts = [];
+        foreach ($folders as $folderName) {
+            $totalSubfolders = FolderName::where('main_folder_name', $folderName)
+                ->count();
+            
+            $totalCounts[$folderName] = $totalSubfolders;
+        }
+        
+        $progress = [];
+        foreach ($folders as $folderName) {
+            $approvedCount = $approvedCounts[$folderName] ?? 0;
+            $requiredCount = $totalCounts[$folderName] ?? 0;
+            
+            if ($requiredCount > 0) {
+                $percentage = min(($approvedCount / $requiredCount) * 100, 100);
+                $progress[$folderName] = round($percentage, 2); 
+            } else {
+                $progress[$folderName] = 0;
+            }
+        }
+        
+        Log::info('Progress Calculation Debug', [
+            'approvedCounts' => $approvedCounts,
+            'totalCounts' => $totalCounts,
+            'progress' => $progress
+        ]);
+
+
         $groupedFiles = $filesWithSubjects->groupBy('semester');
     
         $subjects = $courseSchedules->pluck('course_subjects')->unique();
@@ -151,21 +196,22 @@ class FacultyController extends Controller
             'formattedStartDate' => $formattedStartDate,
             'formattedEndDate' => $formattedEndDate,
             'courseSchedules' => $courseSchedules,
-             'hasUploaded' => $hasUploaded,
+            'hasUploaded' => $hasUploaded,
+            'progress' => $progress,
         ]);
     }
     
     //show uploaded files page
     public function viewUploadedFiles($user_login_id, $folder_name_id, $semester = null)
     {
-         if (!auth()->check()) {
+        if (!auth()->check()) {
             return redirect()->route('login');
         }
-    
+        
         $userId = auth()->id();
         $user = auth()->user();
-    
-        if ($user->role !== 'faculty') {
+        
+        if (!in_array($user->role, ['faculty', 'faculty-coordinator'])) {
             return redirect()->route('login');
         }
     

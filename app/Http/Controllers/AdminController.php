@@ -11,6 +11,8 @@ use App\Models\Announcement;
 use App\Models\Notification;
 use App\Models\LogoutLog;
 use App\Models\LoginLog;
+use App\Models\Department;
+use App\Models\CourseSchedule;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -120,7 +122,7 @@ class AdminController extends Controller
             ->select('course_schedules.sem_academic_year')
             ->distinct()
             ->pluck('course_schedules.sem_academic_year');
-
+    
         if (!$semester) {
             $semester = $allSemesters->first();
         }
@@ -137,6 +139,23 @@ class AdminController extends Controller
     
         $folders = FolderName::all();
         $viewedUser = UserLogin::find($user_login_id);
+        $faculty = UserLogin::findOrFail($user_login_id);
+        $department = Department::find($faculty->department_id);
+        $departmentName = $department ? $department->name : '';
+    
+        $currentFolder = $folders->firstWhere('main_folder_name', $folder->main_folder_name);
+    
+        // Get academic years with files for the given user and folder
+        $academicYearsWithFiles = CourseSchedule::select('course_schedules.sem_academic_year')
+            ->join('courses_files', 'course_schedules.course_schedule_id', '=', 'courses_files.course_schedule_id')
+            ->where('course_schedules.user_login_id', $user_login_id)
+            ->where('courses_files.folder_name_id', $folder_name_id)
+            ->distinct()
+            ->orderBy('course_schedules.sem_academic_year', 'desc')
+            ->pluck('sem_academic_year');
+    
+        // Set the academicYear variable to the current semester or any logic you require
+        $academicYear = $semester; // You can adjust this logic if needed
     
         return view('admin.accomplishment.view-accomplishment', [
             'folder' => $folder,
@@ -151,6 +170,12 @@ class AdminController extends Controller
             'viewedUser' => $viewedUser,
             'currentSemester' => $semester,
             'allSemesters' => $allSemesters,
+            'department' => $departmentName,
+            'faculty' => $faculty,
+            'currentFolder' => $currentFolder,
+            'user_login_id' => $user_login_id,
+            'folder_name_id' => $folder_name_id,
+            'academicYear' => $academicYear, // Pass the academic year to the view
         ]);
     }
     

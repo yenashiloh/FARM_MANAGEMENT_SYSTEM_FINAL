@@ -1,79 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-<title> Login</title>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{ asset('assets/images/pup-logo.png') }}" type="image/x-icon"> 
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/role.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awes+ome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- [Tabler Icons] https://tablericons.com -->
-    <link rel="stylesheet" href="{{ asset('assets/fonts/tabler-icons.min.css') }}" >
-    <!-- [Feather Icons] https://feathericons.com -->
-    <link rel="stylesheet" href=" {{ asset('assets/fonts/feather.css') }}" >
-    <!-- [Font Awesome Icons] https://fontawesome.com/icons -->
-    <link rel="stylesheet" href="{{ asset('assets/fonts/fontawesome.css') }}" >
-    <!-- [Material Icons] https://fonts.google.com/icons -->
-    <link rel="stylesheet" href="{{ asset('assets/fonts/material.css') }}" >
-
+    <link rel="icon" href="{{ asset('assets/images/pup-logo.png') }}" type="image/x-icon">
+    <title>Admin Login</title>
+    <!-- plugins:css -->
+    <link rel="stylesheet" href="../../assets-admin/vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="../../assets-admin/vendors/ti-icons/css/themify-icons.css">
+    <link rel="stylesheet" href="../../assets-admin/vendors/css/vendor.bundle.base.css">
+    <link rel="stylesheet" href="../../assets-admin/vendors/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../assets-admin/css/style.css">
+    <link rel="stylesheet" href="../../assets-admin/css/login.css">
+    <!-- End layout styles -->
     <style>
-    .custom-button {
-        background-color: #800000; 
-        color: white;
-        border: none; 
-        padding: 10px 20px;
-        border-radius: 5px; 
-        cursor: pointer; 
-        transition: background-color 0.3s; 
-        width: 100px;
-    }
-
-    .custom-button:hover {
-        background-color: #440606; 
-    }
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('assets/images/PUP_1.jpeg');
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
     </style>
 </head>
 
 <body>
-    <div class="bg-container d-flex justify-content-center align-items-center vh-100">
-        <div class="bg-image">
-            <img class="bg-image" src="assets/images/PUP_1.jpeg" alt="Background Image">
-        </div>
-        <div class="overlay"></div>
-        <div class="card-login text-center mx-auto p-4">
-            <img class="logo-login mb-4 mt-4" src="../assets/images/pup-logo.png" alt="PUP Logo">
-            <h2 class="text-role mb-4">PUP-T FARM SYSTEM</h2>
-            <div class="btn-container">
-                <form action="{{ route('login.post') }}" method="POST">
-                    @csrf
-                    @if (session('error'))
-                        <div class="text-center" id="errorMessage" style="color: red; font-size: 12px;">
-                            {{ session('error') }}
+    <div class="container-scroller">
+        <div class="container-fluid page-body-wrapper full-page-wrapper bg-container d-flex justify-content-center">
+            <!-- Background image div -->
+            <div class="bg-image"></div>
+
+            <!-- Overlay div -->
+            <div class="overlay"></div>
+
+            <div class="content-wrapper d-flex align-items-center auth">
+                <div class="row flex-grow">
+                    <div class="col-lg-4 mx-auto">
+                        <div class="auth-form-light text-left p-5">
+                            <div class="brand-logo">
+                                <img class="logo-login mb-3 mt-0" src="../assets/images/pup-logo.png" alt="PUP Logo">
+                            </div>
+                            <h3 class="text-center" style="color: #800000">PUP-T FARM SYSTEM</h3>
+                            <h6 class="font-weight-light mb-4 text-center single-line-text" style="font-weight: bold;">
+                                Faculty Academic Requirements Management</h6>
+
+                            <form id="loginForm" action="{{ route('login.post') }}" method="POST">
+                                @csrf
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input name="email" class="form-control form-control-lg" placeholder="Email"
+                                        required>
+                                    <div class="invalid-feedback" style="display: none;">Email is invalid</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" name="password" class="form-control form-control-lg"
+                                        placeholder="Password" required>
+                                    <div class="invalid-feedback" style="display: none;">Password must be at least 6
+                                        characters long.</div>
+                                </div>
+                                <div class="mt-3 d-grid gap-2">
+                                    <button type="submit"
+                                        class="btn btn-block btn-lg font-weight-medium auth-form-btn">Login</button>
+                                </div>
+                            </form>
                         </div>
-                    @endif
-                    @if (session('success'))
-                        <div class="alert text-center" style="color: green; font-size: 12px;">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-                    <div class="form-floating d-flex justify-content-center mb-3">
-                        <input type="email" name="email" class="form-control custom-width mt-3" id="floatingInput" placeholder="name@example.com" required style="width: 300px;">
-                        <label for="floatingInput">Email address</label>
                     </div>
-                    <div class="form-floating d-flex justify-content-center mb-3">
-                        <input type="password" name="password" class="form-control custom-width" id="floatingPassword" placeholder="Password" required>
-                        <label for="floatingPassword">Password</label>
-                    </div>
-                    <button type="submit" value="login" class=" mb-3 custom-button">Login</button>
-                </form>
+                </div>
             </div>
+
+            <div id="toast"
+                style="display: none; position: fixed; top: 20px; right: 20px; z-index: 9999; background-color: #dd1212; color: white; padding: 15px; border-radius: 5px; justify-content: space-between; align-items: center; min-width: 250px; max-width: 80%;">
+                <span id="toastMessage"></span>
+                <button id="toastClose"
+                    style="background: transparent; border: none; color: white; cursor: pointer; margin-left: 10px; font-size: 18px;">×</button>
+            </div>
+
+            <!-- content-wrapper ends -->
         </div>
+        <!-- page-body-wrapper ends -->
     </div>
-@include('partials.faculty-footer')
+    <script src="../../assets-admin/vendors/js/vendor.bundle.base.js"></script>
+
+    <script src="../../assets-admin/js/jquery.cookie.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastClose = document.getElementById('toastClose');
+
+            const flashError = "{{ session('error') }}";
+            if (flashError) {
+                showToast(flashError);
+            }
+
+            loginForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const emailInput = loginForm.email;
+                const passwordInput = loginForm.password;
+
+                hideValidationMessages();
+
+                let errors = false;
+
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(emailInput.value)) {
+                    emailInput.classList.add('input-error');
+                    document.querySelector('.invalid-feedback').style.display = 'block';
+                    errors = true;
+                } else {
+                    emailInput.classList.remove('input-error');
+                    emailInput.classList.add('input-success');
+                    document.querySelector('.invalid-feedback').style.display = 'none';
+                }
+
+                if (passwordInput.value.length < 6) {
+                    passwordInput.classList.add('input-error');
+                    passwordInput.nextElementSibling.style.display = 'block';
+                    errors = true;
+                } else {
+                    passwordInput.classList.remove('input-error');
+                    passwordInput.classList.add('input-success');
+                    passwordInput.nextElementSibling.style.display = 'none';
+                }
+
+                if (!errors) {
+                    loginForm.submit();
+                }
+            });
+
+            const emailInput = document.querySelector('input[name="email"]');
+            emailInput.addEventListener('input', function() {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(emailInput.value)) {
+                    emailInput.classList.remove('input-success');
+                    emailInput.classList.add('input-error');
+                    document.querySelector('.invalid-feedback').style.display = 'block';
+                } else {
+                    emailInput.classList.remove('input-error');
+                    emailInput.classList.add('input-success');
+                    document.querySelector('.invalid-feedback').style.display = 'none';
+                }
+            });
+
+            const passwordInput = document.querySelector('input[name="password"]');
+            passwordInput.addEventListener('input', function() {
+                if (passwordInput.value.length < 6) {
+                    passwordInput.classList.remove('input-success');
+                    passwordInput.classList.add('input-error');
+                    passwordInput.nextElementSibling.style.display = 'block';
+                } else {
+                    passwordInput.classList.remove('input-error');
+                    passwordInput.classList.add('input-success');
+                    passwordInput.nextElementSibling.style.display = 'none';
+                }
+            });
+
+            function hideValidationMessages() {
+                document.querySelectorAll('.invalid-feedback').forEach(element => {
+                    element.style.display = 'none';
+                });
+            }
+
+            function showToast(message) {
+                if (message && message.trim() !== '') {
+                    toastMessage.innerHTML = message;
+                    toast.style.display = 'flex';
+                }
+            }
+
+            function hideToast() {
+                toast.style.display = 'none';
+                toastMessage.innerHTML = '';
+            }
+
+            toastClose.onclick = hideToast;
+        });
+    </script>
+</body>
+
+</html>

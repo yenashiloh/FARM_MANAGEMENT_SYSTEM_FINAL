@@ -35,7 +35,7 @@ class RoleController extends Controller
     
         Auth::login($user);
     
-        if ($user->role === 'faculty') {
+        if (in_array($user->role, ['faculty', 'faculty-coordinator'])) {
             \App\Models\LoginLog::create([
                 'user_login_id' => $user->user_login_id,
                 'login_time' => now(),
@@ -50,6 +50,8 @@ class RoleController extends Controller
                 return redirect()->route('admin.admin-dashboard');
             case 'faculty':
                 return redirect()->route('faculty.faculty-dashboard');
+            case 'faculty-coordinator':
+                return redirect()->route('faculty.faculty-dashboard'); 
             case 'director':
                 return redirect()->route('director.director-dashboard');
             default:
@@ -68,6 +70,8 @@ class RoleController extends Controller
                     return redirect()->route('admin.admin-dashboard');
                 case 'faculty':
                     return redirect()->route('faculty.faculty-dashboard');
+                case 'faculty-coordinator':
+                    return redirect()->route('faculty.faculty-dashboard'); 
                 case 'director':
                     return redirect()->route('director.director-dashboard');
                 default:

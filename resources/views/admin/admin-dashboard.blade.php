@@ -160,7 +160,7 @@
                     <!-- Submitted Status per Requirement -->
                     <div class="col-12">
                         <div class="card">
-                            <h5 class="card-header">Submitted Status per Requirement</h5>
+                            <h5 class="card-header">Status Status per Requirement</h5>
                             <div class="card-body">
                                 <div class="d-flex justify-content-center">
                                     <canvas id="statusChart" width="400" height="200"></canvas>

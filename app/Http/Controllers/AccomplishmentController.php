@@ -12,12 +12,13 @@ use App\Models\Announcement;
 use App\Models\Notification;
 use App\Models\LogoutLog;
 use App\Models\LoginLog;
+use App\Models\Department;
 use Carbon\Carbon;
 use App\Models\CourseSchedule;
 
 class AccomplishmentController extends Controller
 {
-    
+    //show the accomplishtment department
     public function showAccomplishmentPage()
     {
         if (!auth()->check()) {
@@ -27,7 +28,7 @@ class AccomplishmentController extends Controller
         $user = auth()->user();
         $firstName = $user->first_name;
         $surname = $user->surname;
-        $department = $user->department;
+ 
     
         $notifications = Notification::where('user_login_id', $user->user_login_id)
             ->orderBy('created_at', 'desc')
@@ -37,15 +38,7 @@ class AccomplishmentController extends Controller
     
         $folders = FolderName::all();
     
-        $departments = [
-            'College of Engineering',
-            'College of Education',
-            'College of Accountant',
-            'College of Business Administration',
-            'College of Information Technology',
-            'College of Office Administration',
-            'College of Psychology',
-        ];
+        $departments = Department::all();
     
         return view('admin.accomplishment.accomplishment', [
             'folders' => $folders,
@@ -54,34 +47,39 @@ class AccomplishmentController extends Controller
             'firstName' => $firstName,
             'surname' => $surname,
             'user' => $user, 
-            'department' => $department,
             'departments' => $departments,
         ]);
     }
     
+    //show the faculty members per department
     public function showAccomplishmentDepartment($department)
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
+    
         $user = auth()->user();
         $firstName = $user->first_name;
         $surname = $user->surname;
-
+    
         $notifications = Notification::where('user_login_id', $user->user_login_id)
             ->orderBy('created_at', 'desc')
             ->get();
-
+    
         $notificationCount = $notifications->where('is_read', 0)->count();
-
+    
         $folders = FolderName::all();
-
+    
         $decodedDepartment = urldecode($department);
-
-        $facultyUsers = UserLogin::where('role', 'faculty')
-            ->where('department', 'LIKE', trim($decodedDepartment)) 
-            ->get();
+    
+        $departmentRecord = Department::where('name', $decodedDepartment)->first();
+    
+        $facultyUsers = $departmentRecord 
+            ? UserLogin::whereIn('role', ['faculty', 'faculty-coordinator']) 
+                ->where('department_id', $departmentRecord->department_id) 
+                ->get() 
+            : collect(); 
+    
 
         return view('admin.accomplishment.view-accomplishment-faculty', [
             'folders' => $folders,
@@ -95,26 +93,34 @@ class AccomplishmentController extends Controller
         ]);
     }
 
+    //show main requirements
     public function viewFacultyAccomplishments($user_login_id)
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
+    
         $user = auth()->user();
         $firstName = $user->first_name;
         $surname = $user->surname;
-
+    
         $notifications = Notification::where('user_login_id', $user->user_login_id)
             ->orderBy('created_at', 'desc')
             ->get();
-
+    
         $notificationCount = $notifications->where('is_read', 0)->count();
-
+    
         $faculty = UserLogin::findOrFail($user_login_id);
-
+    
         $folders = FolderName::select('main_folder_name')->distinct()->get(); 
-
+    
+        $department = Department::find($faculty->department_id);
+        $departmentName = $department ? $department->name : '';
+    
+        $facultyUsers = UserLogin::whereIn('role', ['faculty', 'faculty-coordinator']) 
+            ->where('department_id', $faculty->department_id) 
+            ->get();
+    
         return view('admin.accomplishment.main-folder', [
             'faculty' => $faculty,
             'folders' => $folders,
@@ -122,10 +128,11 @@ class AccomplishmentController extends Controller
             'notificationCount' => $notificationCount,
             'firstName' => $firstName,
             'surname' => $surname,
+            'department' => $departmentName,
         ]);
     }
-
-
+    
+    //show folder names 
     public function viewFolderNames($user_login_id, $main_folder_name)
     {
         if (!auth()->check()) {
@@ -144,8 +151,15 @@ class AccomplishmentController extends Controller
     
         $faculty = UserLogin::findOrFail($user_login_id);
     
+        $folders = FolderName::select('main_folder_name')->distinct()->get(); 
+    
         $folderNames = FolderName::where('main_folder_name', $main_folder_name)
             ->get();
+    
+        $department = Department::find($faculty->department_id);
+        $departmentName = $department ? $department->name : '';
+        
+        $currentFolder = $folders->firstWhere('main_folder_name', $main_folder_name);
     
         return view('admin.accomplishment.view-folder-names', [
             'faculty' => $faculty,
@@ -155,9 +169,13 @@ class AccomplishmentController extends Controller
             'notificationCount' => $notificationCount,
             'firstName' => $firstName,
             'surname' => $surname,
+            'department' => $departmentName,
+            'folders' => $folders,
+            'currentFolder' => $currentFolder, 
         ]);
     }
-    
+
+    //view academic year
     public function viewAcademicYear($user_login_id, $folder_name_id)
     {
         if (!auth()->check()) {
@@ -182,18 +200,31 @@ class AccomplishmentController extends Controller
             ->orderBy('course_schedules.sem_academic_year', 'desc')
             ->pluck('sem_academic_year');
     
-        $folderName = FolderName::findOrFail($folder_name_id);
+        $folder = FolderName::findOrFail($folder_name_id);
+    
+        $faculty = UserLogin::findOrFail($user_login_id);
+    
+        $department = Department::find($faculty->department_id);
+        $departmentName = $department ? $department->name : '';
+    
+        $folders = FolderName::select('main_folder_name')->distinct()->get();
+        
+        $currentFolder = $folders->firstWhere('main_folder_name', $folder->main_folder_name);
     
         return view('admin.accomplishment.view-academic-year', [
             'allAcademicYears' => $academicYearsWithFiles,
             'user_login_id' => $user_login_id,
             'folder_name_id' => $folder_name_id,
-            'folder_name' => $folderName->folder_name,
-            'faculty' => $user,
+            'folder_name' => $folder->folder_name,
+            'faculty' => $faculty,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
             'firstName' => $firstName,
-            'surname' => $surname
+            'surname' => $surname,
+            'department' => $departmentName,
+            'currentFolder' => $currentFolder,
+            'folders' => $folders,
+            'folder' => $folder, 
         ]);
     }
 

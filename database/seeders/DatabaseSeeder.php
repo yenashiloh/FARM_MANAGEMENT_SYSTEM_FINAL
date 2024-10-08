@@ -21,4 +21,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(UserDetailsSeeder::class);
     }    
+
+    public function runDepartment()
+    {
+        $this->call(DepartmentSeeder::class);
+    }    
 }

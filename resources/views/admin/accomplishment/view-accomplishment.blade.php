@@ -39,23 +39,27 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                            style="cursor: default; color: #3d405c;">Accomplishment</a></li>
-                                    <li class="breadcrumb-item"><a
-                                            href="{{ route('admin.accomplishment.accomplishment') }}"
-                                            class="breadcrumb-link">Department</a></li>
-                                    <li class="breadcrumb-item"><a
-                                            href="{{ route('admin.accomplishment.accomplishment') }}"
-                                            class="breadcrumb-link">Faculty</a></li>
-                                    <li class="breadcrumb-item"><a
-                                            href="{{ route('admin.accomplishment.accomplishment') }}"
-                                            class="breadcrumb-link">Main Requirements</a></li>
-                                    <li class="breadcrumb-item"><a
-                                            href="{{ route('admin.accomplishment.accomplishment') }}"
-                                            class="breadcrumb-link">Folders</a></li>
-                                    <li class="breadcrumb-item"><a
-                                            href="{{ route('admin.accomplishment.accomplishment') }}"
-                                            class="breadcrumb-link">View Uploaded Files</a></li>
-
+                                                style="cursor: default; color: #3d405c;">Accomplishment</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                class="breadcrumb-link">Department</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('viewAccomplishmentDepartment', ['department' => urlencode($department)]) }}"
+                                                class="breadcrumb-link">Faculty</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('faculty.accomplishments', ['user_login_id' => $faculty->user_login_id]) }}"
+                                                class="breadcrumb-link">Main Requirements</a></li>
+                                        <li class="breadcrumb-item"> <a
+                                                href="{{ route('admin.accomplishment.viewFolderNames', ['user_login_id' => $faculty->user_login_id, 'main_folder_name' => $currentFolder->main_folder_name]) }}"
+                                                class="breadcrumb-link">
+                                                Folders
+                                            </a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('admin.accomplishment.viewAcademicYear', ['user_login_id' => $faculty->user_login_id, 'folder_name_id' => $folder->folder_name_id]) }}"
+                                                class="breadcrumb-link">Academic Year</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('admin.accomplishment.view-accomplishment', ['user_login_id' => $user_login_id, 'folder_name_id' => $folder_name_id, 'semester' => $academicYear]) }}"
+                                                class="breadcrumb-link">Uploaded Files</a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -82,37 +86,43 @@
                                 <div class="form-group row">
                                     <label for="semesterSelect" class="col-form-label ml-3">Semester:</label>
                                     <div class="col-md-10">
-                                        <select id="semesterSelect" class="form-control" onchange="this.form.submit()" disabled style="width: 250px;">
-                                            @foreach($allSemesters as $sem)
-                                                <option value="{{ $sem }}" {{ $sem == $currentSemester ? 'selected' : '' }}>
+                                        <select id="semesterSelect" class="form-control" onchange="this.form.submit()"
+                                            disabled style="width: 250px;">
+                                            @foreach ($allSemesters as $sem)
+                                                <option value="{{ $sem }}"
+                                                    {{ $sem == $currentSemester ? 'selected' : '' }}>
                                                     {{ $sem }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                        
+
                                     </div>
                                 </div>
-                                
+
                                 <div class="table-responsive">
-                                    <table id="example" class="table table-striped table-bordered second" style="width:100%">
+                                    <table id="example" class="table table-striped table-bordered second"
+                                        style="width:100%">
                                         <thead>
                                             <div id="alertContainer">
                                                 @if (session('success'))
-                                                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert" id="successAlert">
+                                                    <div class="alert alert-success alert-dismissible fade show text-center"
+                                                        role="alert" id="successAlert">
                                                         {{ session('success') }}
                                                     </div>
                                                 @endif
-                            
+
                                                 @if (session('error'))
-                                                    <div class="alert alert-danger alert-dismissible fade show text-center" role="alert" id="errorAlert">
+                                                    <div class="alert alert-danger alert-dismissible fade show text-center"
+                                                        role="alert" id="errorAlert">
                                                         {{ session('error') }}
-                                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                        <button type="button" class="close" data-dismiss="alert"
+                                                            aria-label="Close">
                                                             <span aria-hidden="true">&times;</span>
                                                         </button>
                                                     </div>
                                                 @endif
                                             </div>
-                            
+
                                             <tr>
                                                 <th>No.</th>
                                                 <th>Date & Time</th>
@@ -129,12 +139,16 @@
                                             @foreach ($groupedFiles[$currentSemester] ?? [] as $file)
                                                 <tr>
                                                     <td>{{ $index++ }}</td>
-                                                    <td>{{ $file->created_at->timezone('Asia/Manila')->format('F j, Y, g:i A') }}</td>
-                                                    <td>{{ $file->userLogin->first_name }} {{ $file->userLogin->surname }}</td>
+                                                    <td>{{ $file->created_at->timezone('Asia/Manila')->format('F j, Y, g:i A') }}
+                                                    </td>
+                                                    <td>{{ $file->userLogin->first_name }}
+                                                        {{ $file->userLogin->surname }}</td>
                                                     <td>
-                                                        <div style="display: flex; flex-direction: column; margin-bottom: 20px;">
+                                                        <div
+                                                            style="display: flex; flex-direction: column; margin-bottom: 20px;">
                                                             {{ $file->courseSchedule->course_code ?? 'N/A' }}
-                                                            <span style="margin-top: 5px;">{{ $file->subject ?? 'N/A' }}</span>
+                                                            <span
+                                                                style="margin-top: 5px;">{{ $file->subject ?? 'N/A' }}</span>
                                                         </div>
                                                     </td>
                                                     <td>
@@ -143,36 +157,41 @@
                                                     </td>
                                                     <td>
                                                         <a href="{{ Storage::url($file->files) }}" target="_blank"
-                                                           style="color: rgb(65, 65, 231); text-decoration: underline;">
+                                                            style="color: rgb(65, 65, 231); text-decoration: underline;">
                                                             {{ $file->original_file_name }}
                                                         </a>
                                                     </td>
                                                     <td>
                                                         @if ($file->status === 'To Review')
-                                                            <span class="badge badge-primary">{{ $file->status }}</span>
+                                                            <span
+                                                                class="badge badge-primary">{{ $file->status }}</span>
                                                         @elseif ($file->status === 'Declined')
-                                                            <span class="badge badge-danger">{{ $file->status }}</span>
+                                                            <span
+                                                                class="badge badge-danger">{{ $file->status }}</span>
                                                             <br>
                                                             <span>Declined Reason: {{ $file->declined_reason }}</span>
                                                         @elseif ($file->status === 'Approved')
-                                                            <span class="badge badge-success">{{ $file->status }}</span>
+                                                            <span
+                                                                class="badge badge-success">{{ $file->status }}</span>
                                                         @endif
                                                     </td>
                                                     <td>
                                                         <div class="d-flex flex-column">
                                                             @if ($file->status === 'To Review')
                                                                 <a href="{{ route('approveFile', ['courses_files_id' => $file->courses_files_id]) }}"
-                                                                   class="btn btn-success btn-sm mb-2">
+                                                                    class="btn btn-success btn-sm mb-2">
                                                                     Approve
                                                                 </a>
-                                                                <button type="button" class="btn btn-warning btn-sm mb-2"
-                                                                        data-toggle="modal" data-target="#declineModal"
-                                                                        data-id="{{ $file->courses_files_id }}">
+                                                                <button type="button"
+                                                                    class="btn btn-warning btn-sm mb-2"
+                                                                    data-toggle="modal" data-target="#declineModal"
+                                                                    data-id="{{ $file->courses_files_id }}">
                                                                     Decline
                                                                 </button>
                                                             @endif
-                                                            <button type="button" class="btn btn-danger btn-sm delete-button"
-                                                                    data-id="{{ $file->courses_files_id }}">
+                                                            <button type="button"
+                                                                class="btn btn-danger btn-sm delete-button"
+                                                                data-id="{{ $file->courses_files_id }}">
                                                                 Delete
                                                             </button>
                                                         </div>

@@ -16,7 +16,6 @@ class FolderInput extends Model
         'folder_name_id',
         'input_label',
         'input_type',
-
     ];
 
     public function folderName()

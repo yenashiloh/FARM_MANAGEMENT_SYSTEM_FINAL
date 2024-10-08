@@ -25,6 +25,7 @@ class UserLogin extends Authenticatable
         'email',
         'password',
         'role',
+        'department_id',
     ];
 
     protected $hidden = [
@@ -46,4 +47,8 @@ class UserLogin extends Authenticatable
         return $this->hasMany(CourseSchedule::class, 'user_login_id');
     }
 
+    public function scopeByDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
 }

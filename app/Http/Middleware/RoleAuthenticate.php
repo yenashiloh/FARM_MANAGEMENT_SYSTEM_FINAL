@@ -17,16 +17,17 @@ class RoleAuthenticate
      * @param  string  $role
      * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\Response
      */
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$roles)
     {
         if (!Auth::check()) {
             return redirect()->route('login');
         }
-
-        if (Auth::user()->role !== $role) {
+    
+        if (!in_array(Auth::user()->role, $roles)) {
             return redirect()->route('login')->with('error', 'Access denied');
         }
-
+    
         return $next($request);
     }
+    
 }

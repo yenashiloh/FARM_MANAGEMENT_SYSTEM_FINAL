@@ -101,6 +101,51 @@
                 <!-- ============================================================== -->
                 <div class="ecommerce-widget">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <!-- progress  -->
+                        {{-- @php
+                            $currentFolderId = request()->route('folder_name_id');
+                            $currentMainFolder = null;
+
+                            if ($currentFolderId) {
+                                $currentFolder = $folders->where('folder_name_id', $currentFolderId)->first();
+                                if ($currentFolder) {
+                                    $currentMainFolder = $currentFolder->main_folder_name;
+                                }
+                            }
+                        @endphp
+
+@foreach ($progress as $folderName => $progressData)
+@if (!$currentMainFolder || $currentMainFolder === $folderName)
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">{{ $folderName }} Progress</h5>
+
+            <div class="progress mb-1">
+                <div class="progress-bar" role="progressbar"
+                    style="width: {{ $progressData['percentage'] }}%;" 
+                    aria-valuenow="{{ $progressData['percentage'] }}"
+                    aria-valuemin="0" 
+                    aria-valuemax="100">
+                    {{ number_format($progressData['percentage'], 2) }}%
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    Progress breakdown for {{ $folderName }}:
+                    <ul class="list-unstyled mt-1">
+                        <li>✓ {{ $progressData['approved'] }} Approved</li>
+                        <li>⏳ {{ $progressData['pending'] }} Pending Approval</li>
+                        <li>❌ {{ $progressData['not_uploaded'] }} Not Uploaded</li>
+                        <li>📊 {{ $progressData['total'] }} Total Required Files</li>
+                    </ul>
+                </small>
+            </div>
+        </div>
+    </div>
+@endif
+@endforeach --}}
                         <div class="card">
                             <div class="card-header">
                                 <h5 class="mb-0"> {{ $folderName }} (an academic document that communicates
@@ -137,7 +182,6 @@
                                         @endif
                                     </p>
                                 @endif
-
                                 @if (session('success'))
                                     <div class="alert alert-success alert-dismissible fade show text-center"
                                         role="alert">
@@ -176,7 +220,6 @@
                                                                 class="btn btn-info text-white">
                                                                 View
                                                             </a>
-
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -201,7 +244,8 @@
                                         <h5 class="m-0">
                                             <strong>Instructions:</strong>
                                             Please upload the files related to your teaching courses. All input fields
-                                            with the symbol (<span style="color: red;">*</span>) are required. Only <strong>PDF</strong> file is accepted.
+                                            with the symbol (<span style="color: red;">*</span>) are required. Only
+                                            <strong>PDF</strong> file is accepted.
                                         </h5>
                                     </div>
                                     <div class="mb-3">
@@ -241,7 +285,8 @@
                                                             <input type="file"
                                                                 id="fileInput{{ $schedule->course_schedule_id }}"
                                                                 name="files[{{ $schedule->course_schedule_id }}][]"
-                                                                multiple  accept=".pdf, .doc, .docx, .xls, .xlsx" required>
+                                                                multiple accept=".pdf, .doc, .docx, .xls, .xlsx"
+                                                                required>
                                                             <small class="text-danger"
                                                                 id="error{{ $schedule->course_schedule_id }}"></small>
                                                         </div>
@@ -259,7 +304,8 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-success" id="uploadButton">Submit</button>
+                                            <button type="submit" class="btn btn-success"
+                                                id="uploadButton">Submit</button>
                                         </div>
                                     </form>
                                 </div>

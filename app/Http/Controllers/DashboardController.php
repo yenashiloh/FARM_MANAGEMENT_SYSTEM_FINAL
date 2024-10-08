@@ -97,13 +97,15 @@ class DashboardController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-    
+        
         $userId = auth()->id();
         $user = auth()->user();
-    
-        if ($user->role !== 'faculty') {
+        
+
+        if (!in_array($user->role, ['faculty', 'faculty-coordinator'])) {
             return redirect()->route('login');
         }
+        
     
         $firstName = $user->first_name;
         $surname = $user->surname;

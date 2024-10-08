@@ -10,10 +10,10 @@ class CourseScheduleSeeder extends Seeder
 {
     public function run()
     {
-        $userIds = UserLogin::whereIn('user_login_id', [2, 4])->pluck('user_login_id')->toArray();
+        $userIds = UserLogin::whereIn('user_login_id', [2, 4, 5, 6])->pluck('user_login_id')->toArray();
 
-        if (count($userIds) < 2) {
-            $this->command->error('User IDs 2 and 4 are not present in the database.');
+        if (count($userIds) < 4) {
+            $this->command->error('User IDs 2, 4, 5, 6 are not present in the database.');
             return;
         }
 
@@ -123,6 +123,82 @@ class CourseScheduleSeeder extends Seeder
             ],
         ]);
 
+        DB::table('course_schedules')->insert([
+            [
+                'course_schedule_id' => 11,
+                'user_login_id' => $userIds[2],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Bachelor of Science in Entrepreneurship (BSENTREP)',
+                'course_code' => 'ENT301',
+                'course_subjects' => 'Technopreneurship',
+                'year_section' => '1-1',
+                'schedule' => 'Mon 09:00 - 11:00, Wed 09:00 - 11:00',
+            ],
+            [
+                'course_schedule_id' => 12,
+                'user_login_id' => $userIds[2],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Bachelor of Science in Applied Mathematics (BSAM)',
+                'course_code' => 'MGT101',
+                'course_subjects' => 'Principles of Management and Organization',
+                'year_section' => '3-1',
+                'schedule' => 'Tues 13:00 - 15:00, Fri 13:00 - 15:00',
+            ],
+            [
+                'course_schedule_id' => 13,
+                'user_login_id' => $userIds[2],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Bachelor of Science in Applied Mathematics (BSAM)',
+                'course_code' => 'MTH203',
+                'course_subjects' => 'Statistics',
+                'year_section' => '3-2',
+                'schedule' => 'Wed 11:00 - 13:00, Fri 11:00 - 13:00',
+            ],
+            [
+                'course_schedule_id' => 14,
+                'user_login_id' => $userIds[2],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Bachelor of Science in Information Technology (BSIT)',
+                'course_code' => 'DB301',
+                'course_subjects' => 'Discrete Mathematics',
+                'year_section' => '2-2',
+                'schedule' => 'Mon 12:00 - 14:00, Thurs 12:00 - 14:00',
+            ],
+        ]);
+
+
+        DB::table('course_schedules')->insert([
+            [
+                'course_schedule_id' => 15,
+                'user_login_id' => $userIds[3],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Diploma in Information Communication Technology (DICT)',
+                'course_code' => 'DS202',
+                'course_subjects' => 'Database Systems',
+                'year_section' => '2-2',
+                'schedule' => 'Wed 14:00 - 16:00, Fri 10:00 - 12:00',
+            ],
+            [
+                'course_schedule_id' => 16,
+                'user_login_id' => $userIds[3],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Diploma in Information Communication Technology (DICT)',
+                'course_code' => 'OS102',
+                'course_subjects' => 'Operating Systems',
+                'year_section' => '2-1',
+                'schedule' => 'Mon 09:00 - 11:00, Thurs 09:00 - 11:00',
+            ],
+            [
+                'course_schedule_id' => 17,
+                'user_login_id' => $userIds[3],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Bachelor of Science in Applied Mathematics (BSAM)',
+                'course_code' => 'MGT101',
+                'course_subjects' => 'Principles of Management and Organization',
+                'year_section' => '3-1',
+                'schedule' => 'Tues 13:00 - 15:00, Fri 13:00 - 15:00',
+            ],
+        ]);
        
     }
 }

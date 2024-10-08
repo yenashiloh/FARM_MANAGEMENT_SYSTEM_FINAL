@@ -1,5 +1,5 @@
 @include('partials.tables-header')
-<title>Accomplishment</title>
+<title>Faculty</title>
 </head>
 <style>
     .form-group {
@@ -67,7 +67,7 @@
                                                 href="{{ route('admin.accomplishment.accomplishment') }}"
                                                 class="breadcrumb-link">Department</a></li>
                                         <li class="breadcrumb-item"><a
-                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                href="{{ route('viewAccomplishmentDepartment', ['department' => urlencode($department)]) }}"
                                                 class="breadcrumb-link">Faculty</a></li>
                                     </ol>
                                 </nav>
@@ -95,9 +95,10 @@
                                                     <td>{{ $index + 1 }}</td>
                                                     <td>{{ $faculty->first_name }} {{ $faculty->surname }}</td>
                                                     <td>
-                                                        <a href="{{ route('faculty.accomplishments', ['user_login_id' => $faculty->user_login_id]) }}" class="btn btn-info text-white">
+                                                        <a href="{{ route('faculty.accomplishments', ['user_login_id' => $faculty->user_login_id]) }}"
+                                                            class="btn btn-info text-white">
                                                             View
-                                                        </a>                                                        
+                                                        </a>
                                                     </td>
                                                 </tr>
                                             @endforeach

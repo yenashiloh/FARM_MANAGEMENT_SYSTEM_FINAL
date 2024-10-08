@@ -1,5 +1,5 @@
 @include('partials.tables-header')
-<title>Accomplishment</title>
+<title>Department</title>
 </head>
 <style>
     .form-group {
@@ -77,9 +77,6 @@
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="card">
                             <div class="card-body">
-                                {{-- <h5 class="mb-0">{{ $folderName }} (an academic document that communicates
-                                    information about a specific course and explains the rules, responsibilities, and
-                                    expectations associated with it.)</h5> --}}
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered first">
                                         <thead>
@@ -93,10 +90,10 @@
                                             @foreach ($departments as $department)
                                                 <tr>
                                                     <td>{{ $loop->iteration }}</td>
-                                                    <td>{{ $department }}</td>
+                                                    <td>{{ $department->name }}</td>
                                                     <td>
-                                                        <a href="{{ route('viewAccomplishmentDepartment', ['department' => urlencode($department)]) }}"
-                                                            class="btn btn-info text-white">
+                                                        <a href="{{ route('viewAccomplishmentDepartment', ['department' => urlencode($department->name)]) }}"
+                                                           class="btn btn-info text-white">
                                                             View
                                                         </a>
                                                     </td>

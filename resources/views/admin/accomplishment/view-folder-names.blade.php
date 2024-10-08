@@ -1,5 +1,5 @@
 @include('partials.tables-header')
-<title>Accomplishment</title>
+<title>Main Requirements</title>
 </head>
 <style>
     .form-group {
@@ -67,14 +67,16 @@
                                                 href="{{ route('admin.accomplishment.accomplishment') }}"
                                                 class="breadcrumb-link">Department</a></li>
                                         <li class="breadcrumb-item"><a
-                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                href="{{ route('viewAccomplishmentDepartment', ['department' => urlencode($department)]) }}"
                                                 class="breadcrumb-link">Faculty</a></li>
                                         <li class="breadcrumb-item"><a
-                                                href="{{ route('admin.accomplishment.accomplishment') }}"
+                                                href="{{ route('faculty.accomplishments', ['user_login_id' => $faculty->user_login_id]) }}"
                                                 class="breadcrumb-link">Main Requirements</a></li>
-                                        <li class="breadcrumb-item"><a
-                                                href="{{ route('admin.accomplishment.accomplishment') }}"
-                                                class="breadcrumb-link">Folders</a></li>
+                                        <li class="breadcrumb-item"> <a
+                                                href="{{ route('admin.accomplishment.viewFolderNames', ['user_login_id' => $faculty->user_login_id, 'main_folder_name' => $currentFolder->main_folder_name]) }}"
+                                                class="breadcrumb-link">
+                                                Folders
+                                            </a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -103,7 +105,7 @@
                                                     <td>
                                                         <a href="{{ route('admin.accomplishment.viewAcademicYear', ['user_login_id' => $faculty->user_login_id, 'folder_name_id' => $folder->folder_name_id]) }}"
                                                             class="btn btn-info text-white">
-                                                            View 
+                                                            View
                                                         </a>
                                                     </td>
                                                 </tr>
