@@ -1,99 +1,109 @@
 <style>
     @media (max-width: 992px) {
-  .navbar {
-    padding: 0.75rem 1.5rem;
-  }
-  
-  .logo {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .main-title {
-    font-size: 1.2rem;
-  }
-  
-  .sub-title {
-    font-size: 0.8rem;
-  }
-}
+        .navbar {
+            padding: 0.75rem 1.5rem;
+        }
 
-@media (max-width: 768px) {
-  .navbar {
-    padding: 0.5rem 1rem;
-  }
+        .logo {
+            width: 40px;
+            height: 40px;
+        }
 
-  .logo {
-    width: 30px;
-    height: 30px;
-  }
+        .main-title {
+            font-size: 1.2rem;
+        }
 
-  .main-title {
-    font-size: 1rem;
-  }
+        .sub-title {
+            font-size: 0.8rem;
+        }
+    }
 
-  .sub-title {
-    font-size: 0.7rem;
-  }
-}
+    @media (max-width: 768px) {
+        .navbar {
+            padding: 0.5rem 1rem;
+        }
 
-@media (max-width: 576px) {
-  .navbar {
-    padding: 0.25rem 0.75rem;
-  }
+        .logo {
+            width: 30px;
+            height: 30px;
+        }
 
-  .logo {
-    width: 25px;
-    height: 25px;
-  }
+        .main-title {
+            font-size: 1rem;
+        }
 
-  .main-title {
-    font-size: 0.9rem;
-  }
+        .sub-title {
+            font-size: 0.7rem;
+        }
+    }
 
-  .sub-title {
-    font-size: 0.6rem;
-  }
-}
+    @media (max-width: 576px) {
+        .navbar {
+            padding: 0.25rem 0.75rem;
+        }
+
+        .logo {
+            width: 25px;
+            height: 25px;
+        }
+
+        .main-title {
+            font-size: 0.9rem;
+        }
+
+        .sub-title {
+            font-size: 0.6rem;
+        }
+    }
 
 
-@media (max-width: 480px) {
-  .navbar {
-    padding: 0.2rem 0.5rem;
-  }
+    @media (max-width: 480px) {
+        .navbar {
+            padding: 0.2rem 0.5rem;
+        }
 
-  .logo {
-    width: 22px;
-    height: 22px;
-  }
+        .logo {
+            width: 22px;
+            height: 22px;
+        }
 
-  .main-title {
-    font-size: 0.8rem;
-  }
+        .main-title {
+            font-size: 0.8rem;
+        }
 
-  .sub-title {
-    font-size: 0.5rem;
-  }
-}
+        .sub-title {
+            font-size: 0.5rem;
+        }
+    }
 
-@media (max-width: 360px) {
-  .navbar {
-    padding: 0.15rem 0.4rem;
-  }
+    @media (max-width: 360px) {
+        .navbar {
+            padding: 0.15rem 0.4rem;
+        }
 
-  .logo {
-    width: 20px;
-    height: 20px;
-  }
+        .logo {
+            width: 20px;
+            height: 20px;
+        }
 
-  .main-title {
-    font-size: 0.7rem;
-  }
+        .main-title {
+            font-size: 0.7rem;
+        }
 
-  .sub-title {
-    font-size: 0.45rem;
-  }
-}
+        .sub-title {
+            font-size: 0.45rem;
+        }
+    }
+
+    .unread-notification {
+        background-color: #f0f7ff !important;
+        border-left: 3px solid #0d6efd !important;
+    }
+
+    .notification-visited {
+        background-color: #f0f7ff !important;
+        border-left: 3px solid #0d6efd !important;
+    }
 </style>
 <!-- ============================================================== -->
 <!-- main wrapper -->
@@ -121,12 +131,8 @@
                 <div class="collapse navbar-collapse " id="navbarSupportedContent">
                     <ul class="navbar-nav ml-auto navbar-right-top">
                         <li class="nav-item dropdown notification">
-                            <a class="nav-link nav-icons"
-                                @if ($folder) href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}"
-                           @else
-                               href="#" @endif
-                                id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true"
-                                aria-expanded="false">
+                            <a class="nav-link nav-icons" href="#" id="navbarDropdownMenuLink1"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-fw fa-bell"></i>
                                 <span class="indicator" id="notification-count" style="display: none;">0</span>
                             </a>
@@ -134,7 +140,7 @@
                                 <li>
                                     <div class="notification-title">Notification</div>
                                     <div class="notification-list">
-                                        <div class="list-group">
+                                        <div class="list-group" id="notification-items">
                                             @foreach ($notifications as $notification)
                                                 @php
                                                     $coursesFile = $notification->coursesFile;
@@ -146,7 +152,9 @@
                                                     'folder_name_id' => $notification->folder_name_id,
                                                     'semester' => $semester,
                                                 ]) }}"
-                                                    class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}">
+                                                    class="list-group-item list-group-item-action {{ !$notification->is_read ? 'unread-notification' : '' }}"
+                                                    data-notification-id="{{ $notification->id }}"
+                                                    data-read-status="{{ $notification->is_read ? 'read' : 'unread' }}">
                                                     <div class="notification-info">
                                                         <div class="notification-list-user-img">
                                                             <i class="fas fa-user-circle user-avatar-md"
@@ -168,7 +176,7 @@
                                 </li>
                             </ul>
                         </li>
-                        </li>
+
 
                         <li class="nav-item dropdown nav-user">
                             <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
@@ -200,7 +208,7 @@
     <!-- ============================================================== -->
     <!-- left sidebar -->
     <!-- ============================================================== -->
-    <div class="nav-left-sidebar sidebar-dark" >
+    <div class="nav-left-sidebar sidebar-dark">
         <div class="menu-list">
             <nav class="navbar navbar-expand-lg navbar-light">
                 <a class="d-xl-none d-lg-none" href="#">Dashboard</a>
@@ -321,7 +329,7 @@
                 </div>
                 </li>
                 </ul>
-            </div>
+        </div>
         </nav>
     </div>
 </div>
@@ -397,67 +405,63 @@
             }
         });
 
-        function updateNotificationCount() {
-            $.get('{{ route('notifications.count') }}', function(data) {
-                console.log('Notification count:', data.count);
-                if (data.count > 0) {
-                    $('#notification-count').text(data.count).show();
-                } else {
-                    $('#notification-count').hide();
-                }
-            }).fail(function(xhr, status, error) {
-                console.error('Failed to fetch notification count:', status, error);
-            });
-        }
+        $(document).ready(function() {
+            const visitedNotifications = new Set(
+                JSON.parse(sessionStorage.getItem('visitedNotifications') || '[]')
+            );
 
-        setInterval(updateNotificationCount, 30000);
-        updateNotificationCount();
-
-        $('#navbarDropdownMenuLink2').click(function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $('.nav-user-dropdown').toggleClass('show');
-        });
-
-        $(document).click(function(e) {
-            if (!$(e.target).closest('.nav-user').length) {
-                $('.nav-user-dropdown').removeClass('show');
+            function updateNotificationCount() {
+                $.get('{{ route('notifications.count') }}', function(data) {
+                    if (data.count > 0) {
+                        $('#notification-count').text(data.count).show();
+                    } else {
+                        $('#notification-count').hide();
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.error('Failed to fetch notification count:', status, error);
+                });
             }
-        });
 
-        $('.nav-user-dropdown').click(function(e) {
-            e.stopPropagation();
-        });
+            $('#navbarDropdownMenuLink1').click(function(e) {
+                $.post('{{ route('notifications.mark-read') }}', function() {
+                    $('#notification-count').hide();
 
-        $(document).on('click', '.list-group-item', function(e) {
-            e.preventDefault();
-            var $this = $(this);
-            var notificationId = $this.data('notification-id');
+                    $('.list-group-item').each(function() {
+                        const notificationId = $(this).data('notification-id');
+                        if ($(this).data('read-status') === 'unread') {
+                            $(this).addClass('notification-visited');
+                            visitedNotifications.add(notificationId);
+                        }
+                    });
 
-            $.post('{{ route('notifications.mark-read') }}', {
-                notification_id: notificationId
-            }, function() {
-                $this.removeClass('new-notification');
-                updateNotificationCount();
-            }).fail(function() {
-                console.error('Failed to mark notification as read.');
+                    sessionStorage.setItem('visitedNotifications',
+                        JSON.stringify(Array.from(visitedNotifications)));
+
+                }).fail(function() {
+                    console.error('Failed to mark notifications as read.');
+                });
             });
 
-            window.location.href = $this.attr('href');
-        });
+            function updateNotifications() {
+                $.get('{{ route('notifications.get') }}', function(data) {
+                    var $notificationList = $('#notification-items');
+                    $notificationList.empty();
 
-        function updateNotifications() {
-            $.get('{{ route('notifications.get') }}', function(data) {
-                var $notificationList = $('.notification-list .list-group');
-                $notificationList.empty();
+                    if (data.notifications.length > 0) {
+                        data.notifications.forEach(function(notification) {
+                            const wasVisited = visitedNotifications.has(notification
+                                .id);
 
-                if (data.notifications.length > 0) {
-                    data.notifications.forEach(function(notification) {
-                        var $notification = $('<a>')
-                            .attr('href', notification.url)
-                            .attr('data-notification-id', notification.id)
-                            .addClass('list-group-item list-group-item-action')
-                            .html(`
+                            var $notification = $('<a>')
+                                .attr('href', notification.url)
+                                .attr('data-notification-id', notification.id)
+                                .attr('data-read-status', notification.is_read ?
+                                    'read' : 'unread')
+                                .addClass('list-group-item list-group-item-action')
+                                .addClass(!notification.is_read ?
+                                    'unread-notification' : '')
+                                .addClass(wasVisited ? 'notification-visited' : '')
+                                .html(`
                             <div class="notification-info">
                                 <div class="notification-list-user-img">
                                     <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
@@ -466,28 +470,36 @@
                                     <span class="notification-list-user-name mr-0">${notification.sender}</span>
                                     <span>${notification.message}</span>
                                     <div class="notification-date">
-                                        ${notification.created_at}
+                                        ${notification.created_at_formatted}
                                     </div>
                                 </div>
                             </div>
                         `);
 
-                        if (!notification.is_read) {
-                            $notification.addClass('new-notification');
-                        }
+                            $notificationList.append($notification);
+                        });
+                    } else {
+                        $notificationList.html(
+                            '<div class="text-center p-3">No notifications available</div>');
+                    }
+                }).fail(function() {
+                    console.error('Failed to fetch notifications.');
+                });
+            }
 
-                        $notificationList.append($notification);
-                    });
-                } else {
-                    $notificationList.html(
-                        '<div class="text-center p-3">No notifications available</div>');
+            $(document).on('click', '.list-group-item', function(e) {
+                const notificationId = $(this).data('notification-id');
+                if ($(this).data('read-status') === 'unread') {
+                    visitedNotifications.add(notificationId);
+                    sessionStorage.setItem('visitedNotifications',
+                        JSON.stringify(Array.from(visitedNotifications)));
                 }
-            }).fail(function() {
-                console.error('Failed to fetch notifications.');
             });
-        }
 
-        setInterval(updateNotifications, 30000);
-        updateNotifications();
+            setInterval(updateNotificationCount, 30000);
+            setInterval(updateNotifications, 30000);
+            updateNotificationCount();
+            updateNotifications();
+        });
     });
 </script>

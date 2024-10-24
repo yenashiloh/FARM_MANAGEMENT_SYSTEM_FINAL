@@ -9,7 +9,6 @@
     <div class="email-container">
         <div class="email-body">
             <p>{!! $announcement->message !!}</p>
-   
         </div>
         
     </div>

@@ -1,99 +1,109 @@
 <style>
     @media (max-width: 992px) {
-  .navbar {
-    padding: 0.75rem 1.5rem;
-  }
-  
-  .logo {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .main-title {
-    font-size: 1.2rem;
-  }
-  
-  .sub-title {
-    font-size: 0.8rem;
-  }
-}
+        .navbar {
+            padding: 0.75rem 1.5rem;
+        }
 
-@media (max-width: 768px) {
-  .navbar {
-    padding: 0.5rem 1rem;
-  }
+        .logo {
+            width: 40px;
+            height: 40px;
+        }
 
-  .logo {
-    width: 30px;
-    height: 30px;
-  }
+        .main-title {
+            font-size: 1.2rem;
+        }
 
-  .main-title {
-    font-size: 1rem;
-  }
+        .sub-title {
+            font-size: 0.8rem;
+        }
+    }
 
-  .sub-title {
-    font-size: 0.7rem;
-  }
-}
+    @media (max-width: 768px) {
+        .navbar {
+            padding: 0.5rem 1rem;
+        }
 
-@media (max-width: 576px) {
-  .navbar {
-    padding: 0.25rem 0.75rem;
-  }
+        .logo {
+            width: 30px;
+            height: 30px;
+        }
 
-  .logo {
-    width: 25px;
-    height: 25px;
-  }
+        .main-title {
+            font-size: 1rem;
+        }
 
-  .main-title {
-    font-size: 0.9rem;
-  }
+        .sub-title {
+            font-size: 0.7rem;
+        }
+    }
 
-  .sub-title {
-    font-size: 0.6rem;
-  }
-}
+    @media (max-width: 576px) {
+        .navbar {
+            padding: 0.25rem 0.75rem;
+        }
+
+        .logo {
+            width: 25px;
+            height: 25px;
+        }
+
+        .main-title {
+            font-size: 0.9rem;
+        }
+
+        .sub-title {
+            font-size: 0.6rem;
+        }
+    }
 
 
-@media (max-width: 480px) {
-  .navbar {
-    padding: 0.2rem 0.5rem;
-  }
+    @media (max-width: 480px) {
+        .navbar {
+            padding: 0.2rem 0.5rem;
+        }
 
-  .logo {
-    width: 22px;
-    height: 22px;
-  }
+        .logo {
+            width: 22px;
+            height: 22px;
+        }
 
-  .main-title {
-    font-size: 0.8rem;
-  }
+        .main-title {
+            font-size: 0.8rem;
+        }
 
-  .sub-title {
-    font-size: 0.5rem;
-  }
-}
+        .sub-title {
+            font-size: 0.5rem;
+        }
+    }
 
-@media (max-width: 360px) {
-  .navbar {
-    padding: 0.15rem 0.4rem;
-  }
+    @media (max-width: 360px) {
+        .navbar {
+            padding: 0.15rem 0.4rem;
+        }
 
-  .logo {
-    width: 20px;
-    height: 20px;
-  }
+        .logo {
+            width: 20px;
+            height: 20px;
+        }
 
-  .main-title {
-    font-size: 0.7rem;
-  }
+        .main-title {
+            font-size: 0.7rem;
+        }
 
-  .sub-title {
-    font-size: 0.45rem;
-  }
-}
+        .sub-title {
+            font-size: 0.45rem;
+        }
+    }
+
+    .unread-notification {
+        background-color: #f0f7ff !important;
+        border-left: 3px solid #0d6efd !important;
+    }
+
+    .notification-visited {
+        background-color: #f0f7ff !important;
+        border-left: 3px solid #0d6efd !important;
+    }
 </style>
 
 <!-- ============================================================== -->
@@ -119,7 +129,6 @@
             </button>
             <div class="collapse navbar-collapse " id="navbarSupportedContent">
                 <ul class="navbar-nav ml-auto navbar-right-top">
-
                     <li class="nav-item dropdown notification">
                         <a class="nav-link nav-icons" href="#" id="navbarDropdownMenuLink1" data-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">
@@ -131,7 +140,7 @@
                             <li>
                                 <div class="notification-title">Notification</div>
                                 <div class="notification-list">
-                                    <div class="list-group">
+                                    <div class="list-group" id="notification-items">
                                         @if ($notifications->isEmpty())
                                             <div class="text-center p-3">
                                                 <span>No notifications available</span>
@@ -148,8 +157,9 @@
                                                     'folder_name_id' => $notification->folder_name_id,
                                                     'semester' => $semester,
                                                 ]) }}"
-                                                    class="list-group-item list-group-item-action {{ $loop->first ? 'active' : '' }}"
-                                                    data-notification-id="{{ $notification->id }}">
+                                                    class="list-group-item list-group-item-action {{ !$notification->is_read ? 'unread-notification' : '' }}"
+                                                    data-notification-id="{{ $notification->id }}"
+                                                    data-read-status="{{ $notification->is_read ? 'read' : 'unread' }}">
                                                     <div class="notification-info">
                                                         <div class="notification-list-user-img">
                                                             <i class="fas fa-user-circle user-avatar-md"
@@ -171,11 +181,8 @@
                                 </div>
                             </li>
                         </ul>
-
-
-
-
                     </li>
+
 
                     <li class="nav-item dropdown nav-user">
                         <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
@@ -233,6 +240,20 @@
                                 data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-history"></i>
                                 Audit Trail </a>
                         </li>
+                        <li class="nav-item" style="position: relative !important;">
+                            <a id="request-upload-access"
+                                class="nav-link {{ Request::routeIs('admin.request-upload-access') ? 'active' : '' }}"
+                                href="{{ route('admin.request-upload-access') }}"
+                                style="padding-right: 40px !important;">
+                                <i class="fas fa-folder-open"></i>
+                                Request Upload Access
+                            </a>
+                            <span id="request-badge"
+                                style="position: absolute !important; right: 10px !important; top: 50% !important; transform: translateY(-50%) !important; background-color: #ff0000 !important; color: #fff !important; border-radius: 9999px !important; padding: 2px 8px !important; font-size: 0.75rem !important; z-index: 10 !important; display: none;">
+                                <span id="request-count">0</span>
+                            </span>
+                        </li>
+
                         <li class="nav-divider">
                             Maintenance
                         </li>
@@ -268,10 +289,8 @@
 
                         <li class="nav-item">
                             <a class="nav-link {{ str_contains(request()->path(), 'accomplishment') ? 'active' : '' }}"
-                                href="{{ route('admin.accomplishment.accomplishment') }}" 
-                                aria-expanded="false"
-                                data-target="#submenu-4" 
-                                aria-controls="submenu-4">
+                                href="{{ route('admin.accomplishment.accomplishment') }}" aria-expanded="false"
+                                data-target="#submenu-4" aria-controls="submenu-4">
                                 <i class="fas fa-calendar-alt uploading-manage"></i>
                                 <span class="nav-text">
                                     All Accomplishment
@@ -411,8 +430,9 @@
             }
         });
 
-        var initialCount = {{ $notificationCount }};
-        updateNotificationCountDisplay(initialCount);
+        const visitedNotifications = new Set(
+            JSON.parse(sessionStorage.getItem('adminVisitedNotifications') || '[]')
+        );
 
         function updateNotificationCountDisplay(count) {
             var $countElement = $('#notification-count-admin');
@@ -431,36 +451,45 @@
             });
         }
 
-        setInterval(updateNotificationCount, 30000);
-
-        updateNotificationCount();
-
         $('#navbarDropdownMenuLink1').click(function(e) {
             e.preventDefault();
             e.stopPropagation();
+
+            $.post('{{ route('admin.notifications.markAllAsRead') }}', function() {
+                $('#notification-count-admin').hide();
+
+                $('.list-group-item').each(function() {
+                    const notificationId = $(this).data('notification-id');
+                    if ($(this).data('read-status') === 'unread') {
+                        $(this).addClass('notification-visited');
+                        visitedNotifications.add(notificationId);
+                    }
+                });
+
+                sessionStorage.setItem('adminVisitedNotifications',
+                    JSON.stringify(Array.from(visitedNotifications)));
+
+            }).fail(function() {
+                console.error('Failed to mark notifications as read.');
+            });
+
             $('.notification-dropdown').toggleClass('show');
-        });
-
-        $(document).click(function(e) {
-            if (!$(e.target).closest('.nav-user').length) {
-                $('.nav-user-dropdown').removeClass('show');
-            }
-        });
-
-
-        $('.nav-user-dropdown').click(function(e) {
-            e.stopPropagation();
         });
 
         $(document).on('click', '.list-group-item', function(e) {
             e.preventDefault();
-            var $this = $(this);
-            var notificationId = $this.data('notification-id');
+            const $this = $(this);
+            const notificationId = $this.data('notification-id');
 
-            $.post('{{ route('notifications.markAsRead') }}', {
+            $.post('{{ route('admin.notifications.markAsRead') }}', {
                 notification_id: notificationId
             }, function() {
-                $this.removeClass('new-notification');
+                if ($this.data('read-status') === 'unread') {
+                    $this.addClass('notification-visited');
+                    visitedNotifications.add(notificationId);
+                    sessionStorage.setItem('adminVisitedNotifications',
+                        JSON.stringify(Array.from(visitedNotifications)));
+                }
                 updateNotificationCount();
             }).fail(function() {
                 console.error('Failed to mark notification as read.');
@@ -469,19 +498,22 @@
             window.location.href = $this.attr('href');
         });
 
-
         function updateNotifications() {
             $.get('{{ route('admin.notifications.get') }}', function(data) {
-                var $notificationList = $('.notification-list .list-group');
+                var $notificationList = $('#admin-notification-items');
                 $notificationList.empty();
 
-                if (data.notifications && Array.isArray(data.notifications) && data.notifications
-                    .length > 0) {
+                if (data.notifications && data.notifications.length > 0) {
                     data.notifications.forEach(function(notification) {
+                        const wasVisited = visitedNotifications.has(notification.id);
+
                         var $notification = $('<a>')
                             .attr('href', notification.url)
                             .attr('data-notification-id', notification.id)
+                            .attr('data-read-status', notification.is_read ? 'read' : 'unread')
                             .addClass('list-group-item list-group-item-action')
+                            .addClass(!notification.is_read ? 'unread-notification' : '')
+                            .addClass(wasVisited ? 'notification-visited' : '')
                             .html(`
                             <div class="notification-info">
                                 <div class="notification-list-user-img">
@@ -497,10 +529,6 @@
                             </div>
                         `);
 
-                        if (!notification.is_read) {
-                            $notification.addClass('new-notification');
-                        }
-
                         $notificationList.append($notification);
                     });
                 } else {
@@ -512,7 +540,67 @@
             });
         }
 
+        setInterval(updateNotificationCount, 30000);
         setInterval(updateNotifications, 30000);
+        updateNotificationCount();
         updateNotifications();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const badge = document.getElementById('request-badge');
+        const countDisplay = document.getElementById('request-count');
+        const requestLink = document.getElementById('request-upload-access');
+
+        function checkNewRequests() {
+            fetch('/admin/check-new-requests')
+                .then(response => response.json())
+                .then(data => {
+                    const requestCount = data.new_requests_count;
+                    countDisplay.textContent = requestCount;
+
+                    if (requestCount > 0) {
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching new requests:', error));
+        }
+
+        function markRequestsAsRead() {
+            fetch('/admin/mark-requests-as-read', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        badge.style.display = 'none';
+                        countDisplay.textContent = '0';
+                    }
+                })
+                .catch(error => console.error('Error marking requests as read:', error));
+        }
+
+        if (window.location.pathname.includes('request-upload-access')) {
+            markRequestsAsRead();
+        }
+
+        requestLink.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            markRequestsAsRead();
+
+            setTimeout(() => {
+                window.location.href = requestLink.href;
+            }, 100);
+        });
+
+        setInterval(checkNewRequests, 5000);
+
+        checkNewRequests();
     });
 </script>

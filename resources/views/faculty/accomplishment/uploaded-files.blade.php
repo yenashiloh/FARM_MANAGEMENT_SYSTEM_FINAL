@@ -86,8 +86,8 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Accomplishment</a></li>
-                                        <li class="breadcrumb-item"><a href="" class="breadcrumb-link">
+                                               >Accomplishment</a></li>
+                                        <li class="breadcrumb-item"><a href="" class="breadcrumb-link"  style="cursor: default; color: #3d405c;">
                                                 {{ $folderName }} </a></li>
                                     </ol>
                                 </nav>
@@ -100,52 +100,147 @@
                 <!-- end pageheader  -->
                 <!-- ============================================================== -->
                 <div class="ecommerce-widget">
+                    @if (auth()->user()->role == 'faculty-coordinator')
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 mb-4">
+                            <div class="simple-card">
+                                <ul class="nav nav-tabs" id="myTab5" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active border-left-0" id="home-tab-simple" data-toggle="tab"
+                                            href="#home-simple" role="tab" aria-controls="home"
+                                            aria-selected="true">My Document Upload Progress</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="department-tab" data-toggle="tab" href="#department"
+                                            role="tab" aria-controls="department" aria-selected="false">All
+                                            Departments</a>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="myTabContent5">
+                                    <div class="tab-pane fade show active" id="home-simple" role="tabpanel"
+                                        aria-labelledby="home-tab-simple">
+                                        <div class="card-body">
+                                            <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                                <p class="mb-0">This progress includes all documents that have been
+                                                    approved by the admin.</p>
+                                            </div>
+                                            <h5 class="mb-3">Overall Progress</h5>
+                                            <div class="progress mb-4">
+                                                <div class="progress-bar" role="progressbar"
+                                                    style="width: {{ $overallProgress }}%;"
+                                                    aria-valuenow="{{ $overallProgress }}" aria-valuemin="0"
+                                                    aria-valuemax="100">
+                                                    {{ number_format($overallProgress, 2) }}%
+                                                </div>
+                                            </div>
+                                            <hr>
+
+                                            @php
+                                                $currentMainFolder = null;
+                                                $currentFolderId = request()->route('folder_name_id');
+                                                $currentFolder = $folders->firstWhere(
+                                                    'folder_name_id',
+                                                    $currentFolderId,
+                                                );
+                                                if ($currentFolder) {
+                                                    $currentMainFolder = $currentFolder->main_folder_name;
+                                                }
+                                            @endphp
+
+                                            @if ($currentMainFolder && isset($folderProgress[$currentMainFolder]))
+                                                <h5 class="mb-3">{{ $currentMainFolder }} Progress</h5>
+                                                <div class="progress mb-4">
+                                                    <div class="progress-bar" role="progressbar"
+                                                        style="width: {{ $folderProgress[$currentMainFolder] }}%;"
+                                                        aria-valuenow="{{ $folderProgress[$currentMainFolder] }}"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                        {{ number_format($folderProgress[$currentMainFolder], 2) }}%
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="department" role="tabpanel"
+                                        aria-labelledby="department-tab" style="padding: 20px;">
+                                        <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                                            <i class="fas fa-info-circle mr-2"></i>
+                                            <p class="mb-0">This progress shows the overall progress for each
+                                                department.</p>
+                                        </div>
+                                        @foreach ($departmentProgress as $departmentName => $progress)
+                                            <h5 class="mb-3">{{ $departmentName }}</h5>
+                                            <div class="progress mb-4">
+                                                <div class="progress-bar" role="progressbar"
+                                                    style="width: {{ $progress }}%;"
+                                                    aria-valuenow="{{ $progress }}" aria-valuemin="0"
+                                                    aria-valuemax="100">
+                                                    {{ number_format($progress, 2) }}%
+                                                </div>
+                                            </div>
+                                            <hr>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @elseif(auth()->user()->role == 'faculty')
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 mb-4">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <p class="mb-0">This progress includes all documents that have been approved
+                                            by the admin.</p>
+                                    </div>
+                                    <h6>Overall Progress</h6>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar" role="progressbar"
+                                            style="width: {{ $overallProgress }}%;"
+                                            aria-valuenow="{{ $overallProgress }}" aria-valuemin="0"
+                                            aria-valuemax="100">
+                                            {{ number_format($overallProgress, 2) }}%
+                                        </div>
+                                    </div>
+
+                                    @php
+                                        $currentMainFolder = null;
+                                        $currentFolderId = request()->route('folder_name_id');
+                                        $currentFolder = $folders->firstWhere('folder_name_id', $currentFolderId);
+                                        if ($currentFolder) {
+                                            $currentMainFolder = $currentFolder->main_folder_name;
+                                        }
+                                    @endphp
+
+                                    @if ($currentMainFolder && isset($folderProgress[$currentMainFolder]))
+                                        <h6>{{ $currentMainFolder }} Progress</h6>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar"
+                                                style="width: {{ $folderProgress[$currentMainFolder] }}%;"
+                                                aria-valuenow="{{ $folderProgress[$currentMainFolder] }}"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                {{ number_format($folderProgress[$currentMainFolder], 2) }}%
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 mb-4">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <div class="alert alert-warning" role="alert">
+                                        You do not have permission to view this content.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                        <!-- progress  -->
-                        {{-- @php
-                            $currentFolderId = request()->route('folder_name_id');
-                            $currentMainFolder = null;
-
-                            if ($currentFolderId) {
-                                $currentFolder = $folders->where('folder_name_id', $currentFolderId)->first();
-                                if ($currentFolder) {
-                                    $currentMainFolder = $currentFolder->main_folder_name;
-                                }
-                            }
-                        @endphp
-
-@foreach ($progress as $folderName => $progressData)
-@if (!$currentMainFolder || $currentMainFolder === $folderName)
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title mb-3">{{ $folderName }} Progress</h5>
-
-            <div class="progress mb-1">
-                <div class="progress-bar" role="progressbar"
-                    style="width: {{ $progressData['percentage'] }}%;" 
-                    aria-valuenow="{{ $progressData['percentage'] }}"
-                    aria-valuemin="0" 
-                    aria-valuemax="100">
-                    {{ number_format($progressData['percentage'], 2) }}%
-                </div>
-            </div>
-
-            <div class="mt-2">
-                <small class="text-muted">
-                    <i class="fas fa-info-circle"></i>
-                    Progress breakdown for {{ $folderName }}:
-                    <ul class="list-unstyled mt-1">
-                        <li>✓ {{ $progressData['approved'] }} Approved</li>
-                        <li>⏳ {{ $progressData['pending'] }} Pending Approval</li>
-                        <li>❌ {{ $progressData['not_uploaded'] }} Not Uploaded</li>
-                        <li>📊 {{ $progressData['total'] }} Total Required Files</li>
-                    </ul>
-                </small>
-            </div>
-        </div>
-    </div>
-@endif
-@endforeach --}}
                         <div class="card">
                             <div class="card-header">
                                 <h5 class="mb-0"> {{ $folderName }} (an academic document that communicates
@@ -182,6 +277,47 @@
                                         @endif
                                     </p>
                                 @endif
+
+                                @if (!$isUploadOpen)
+                                    <button type="button" class="btn btn-warning mb-2" data-toggle="modal"
+                                        data-target="#requestModal">
+                                        Request Upload Access
+                                    </button>
+                                @endif
+
+                                <!-- Modal for Request to Open -->
+                                <div class="modal fade" id="requestModal" tabindex="-1" role="dialog"
+                                    aria-labelledby="requestModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="requestModalLabel">Request Upload Access
+                                                </h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="{{ route('request.upload.access') }}" method="POST">
+                                                @csrf
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="reason" class="form-label">Reason for
+                                                            Request</label>
+                                                        <textarea class="form-control" id="reason" name="reason" rows="6" required></textarea>
+                                                    </div>
+                                                    <input type="hidden" name="user_login_id"
+                                                        value="{{ auth()->id() }}">
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-warning">Submit
+                                                        Request</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 @if (session('success'))
                                     <div class="alert alert-success alert-dismissible fade show text-center"
                                         role="alert">
@@ -199,231 +335,555 @@
                                         </ul>
                                     </div>
                                 @endif
+
+                                <div class="d-flex align-items-center mb-3">
+                                    @if ($filesWithSubjects->contains('status', 'Approved'))
+                                        <form id="archive-all-form" action="{{ route('files.archiveAll') }}" method="POST" class="mr-3">
+                                            @csrf
+                                            <button type="submit" class="btn btn-danger btn-sm">Archive</button>
+                                        </form>
+                                    @endif
+                                
+                                    <div class="form-group mb-0 position-relative">
+                                        <select id="semester-filter" class="form-control pe-4" style=" width: auto; height: calc(1.5em + .75rem + 2px);">
+                                            <option value="">All Semesters</option>
+                                            @php
+                                                $semesters = $filesWithSubjects
+                                                    ->pluck('sem_academic_year')
+                                                    ->unique()
+                                                    ->sort();
+                                            @endphp
+                                            @foreach ($semesters as $sem)
+                                                <option value="{{ $sem }}">{{ $sem }}</option>
+                                            @endforeach
+                                        </select>
+                                        <i class="fas fa-chevron-down position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
+                                    </div>
+                                    
+                                </div>
+                                
+                                
+
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered first">
                                         <thead>
                                             <tr>
+                                                <th>
+                                                    @if ($filesWithSubjects->contains('status', 'Approved'))
+                                                        <input type="checkbox" id="select-all">
+                                                    @else
+                                                        &nbsp;
+                                                    @endif
+                                                </th>
                                                 <th>No.</th>
+                                                <th>Date & Time</th>
                                                 <th>Semester</th>
-                                                <th>Actions</th>
+                                                <th>Program</th>
+                                                <th>Course & Course Code</th>
+                                                <th>Year & Section</th>
+                                                <th>File Name</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($groupedFiles as $semester => $files)
-                                                @if ($files->contains('user_login_id', auth()->id()))
-                                                    <tr>
-                                                        <td>{{ $loop->iteration }}</td>
-                                                        </td>
-                                                        <td>{{ $semester }}</td>
-                                                        <td>
-                                                            <a href="{{ route('faculty.accomplishment.view-uploaded-files', ['user_login_id' => auth()->id(), 'folder_name_id' => $folder->folder_name_id, 'semester' => $semester]) }}"
-                                                                class="btn btn-info text-white">
-                                                                View
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                @endif
+                                            @foreach ($filesWithSubjects as $file)
+                                                <tr class="file-row" data-semester="{{ $file->sem_academic_year }}">
+                                                    <td>
+                                                        @if ($file->status === 'Approved')
+                                                            <input type="checkbox" class="file-checkbox"
+                                                                value="{{ $file->courses_files_id }}">
+                                                        @else
+                                                            &nbsp;
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $loop->iteration }}</td>
+                                                    <td>{{ $file->created_at }}</td>
+                                                    <td>{{ $file->sem_academic_year }}</td>
+                                                    <td>{{ $file->program }}</td>
+                                                    <td>{{ $file->subject_name }} ({{ $file->code }})</td>
+                                                    <td>{{ $file->year }}</td>
+                                                    <td>
+                                                        <a href="{{ Storage::url($file->files) }}" target="_blank"
+                                                            style="color: rgb(65, 65, 231); text-decoration: underline;">
+                                                            {{ $file->original_file_name }}
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        @if ($file->status === 'To Review')
+                                                            <span
+                                                                class="badge badge-primary">{{ $file->status }}</span>
+                                                        @elseif($file->status === 'Approved')
+                                                            <span
+                                                                class="badge badge-success">{{ $file->status }}</span>
+                                                        @elseif($file->status === 'Declined')
+                                                            <span
+                                                                class="badge badge-danger">{{ $file->status }}</span>
+                                                            @if ($file->declined_reason)
+                                                                <div class="mt-2">Declined Reason:
+                                                                    {{ $file->declined_reason }}</div>
+                                                            @endif
+                                                        @else
+                                                            <span
+                                                                class="badge bg-secondary">{{ $file->status }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($file->status === 'Declined' || $file->status === 'To Review')
+                                                            <button class="btn btn-warning btn-sm edit-file-btn"
+                                                                data-file-id="{{ $file->courses_files_id }}"
+                                                                data-semester="{{ $file->sem_academic_year }}"
+                                                                data-program="{{ $file->program }}"
+                                                                data-course-subject-code="{{ $file->subject_name }} - {{ $file->code }}"
+                                                                data-year-section="{{ $file->year }}"
+                                                                data-original-file-name="{{ $file->original_file_name }}">
+                                                                Edit
+                                                            </button>
+                                                        @endif
+                                                    </td>
+                                                </tr>
                                             @endforeach
                                         </tbody>
                                     </table>
                                 </div>
+
                             </div>
                         </div>
                     </div>
-
-                    <!-- Upload Files Modal -->
-                    <div class="modal fade" id="addFolderModal" tabindex="-1" aria-labelledby="addFolderModalLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="addFolderModalLabel">Upload Files</h5>
-                                </div>
-                                <div class="modal-body body-modal">
-                                    <div class="d-flex justify-content-center mb-4">
-                                        <h5 class="m-0">
-                                            <strong>Instructions:</strong>
-                                            Please upload the files related to your teaching courses. All input fields
-                                            with the symbol (<span style="color: red;">*</span>) are required. Only
-                                            <strong>PDF</strong> file is accepted.
-                                        </h5>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="">
-                                            <h5 class="mb-3">Current Semester: {{ $semester }}</h5>
-                                        </div>
-                                    </div>
-                                    <form id="uploadForm" action="{{ route('files.store') }}" method="POST"
-                                        enctype="multipart/form-data">
-                                        @csrf
-                                        <input type="hidden" name="folder_name_id"
-                                            value="{{ $folder->folder_name_id }}">
-                                        @foreach ($courseSchedules as $index => $schedule)
-                                            <input type="hidden" name="course_schedule_ids[]"
-                                                value="{{ $schedule->course_schedule_id }}">
-                                            <div class="card mb-3">
-                                                <div class="card-body">
-                                                    <div class="form-group">
-                                                        <label for="file{{ $index + 1 }}"
-                                                            style="display: inline-block; margin-bottom: 0;">
-                                                            <span>
-                                                                <strong>Subject:</strong>
-                                                                {{ $schedule->course_subjects }} <span
-                                                                    style="color: red;">*</span><br>
-                                                                <strong>Subject Code:</strong>
-                                                                {{ $schedule->course_code }}<br>
-                                                                <strong>Schedule:</strong> {{ $schedule->schedule }}
-                                                            </span>
-                                                        </label>
-                                                        <p>
-                                                            <span><strong>Year & Section:</strong>
-                                                                {{ $schedule->year_section }}</span><br>
-                                                            <span><strong>Program:</strong>
-                                                                {{ $schedule->program }}</span>
-                                                        </p>
-                                                        <div class="file-input-container">
-                                                            <input type="file"
-                                                                id="fileInput{{ $schedule->course_schedule_id }}"
-                                                                name="files[{{ $schedule->course_schedule_id }}][]"
-                                                                multiple accept=".pdf, .doc, .docx, .xls, .xlsx"
-                                                                required>
-                                                            <small class="text-danger"
-                                                                id="error{{ $schedule->course_schedule_id }}"></small>
-                                                        </div>
-                                                        <input type="hidden" name="course_schedule_ids[]"
-                                                            value="{{ $schedule->course_schedule_id }}">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                        <div class="progress mt-3 d-none" id="uploadProgress">
-                                            <div class="progress-bar" role="progressbar" style="width: 0%;"
-                                                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-                                        </div>
-
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-success"
-                                                id="uploadButton">Submit</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
-                <!-- ============================================================== -->
-                <!-- end wrapper  -->
-                <!-- ============================================================== -->
             </div>
-            <!-- ============================================================== -->
-            <!-- end main wrapper  -->
-            <!-- ============================================================== -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="../../../../asset/vendor/jquery/jquery-3.3.1.min.js"></script>
-            <script src="../../../../asset/vendor/bootstrap/js/bootstrap.bundle.js"></script>
-            <script src="../../../../asset/vendor/slimscroll/jquery.slimscroll.js"></script>
-            <script src="../../../../asset/vendor/multi-select/js/jquery.multi-select.js"></script>
-            <script src="../../../../asset/libs/js/main-js.js"></script>
-            <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-            <script src="../../../../asset/vendor/datatables/js/dataTables.bootstrap4.min.js"></script>
-            <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
-            <script src="../../../../asset/vendor/datatables/js/buttons.bootstrap4.min.js"></script>
-            <script src="../../../../asset/vendor/datatables/js/data-table.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-            <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js"></script>
-            <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.print.min.js"></script>
-            <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.colVis.min.js"></script>
-            <script src="https://cdn.datatables.net/rowgroup/1.0.4/js/dataTables.rowGroup.min.js"></script>
-            <script src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
-            <script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
-            <script src="../../../../asset/vendor/datatables/js/loading.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.querySelectorAll('input[type="file"]').forEach(input => {
-                        input.addEventListener('change', function() {
-                            const fileInput = this;
-                            const errorElement = document.getElementById('error' + fileInput.id.replace(
-                                'fileInput', ''));
 
-                            if (fileInput.files.length > 0) {
-                                const validTypes = ['application/pdf'];
-                                let valid = true;
+            <!-- Edit File Modal -->
+            <div class="modal fade" id="editFileModal" tabindex="-1" role="dialog"
+                aria-labelledby="editFileModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title" id="editFileModalLabel">Edit File</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Reminder:</strong> Files with an <strong>Approved</strong> status
+                                cannot be edited. You can only make changes to files with a status of
+                                <strong>Declined</strong> or <strong>To Review</strong>.
+                            </p>
+                            <form id="editFileForm" enctype="multipart/form-data">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" id="editFileId" name="id">
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="semester">Semester:</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control" id="semester" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="program">Program:</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control" id="program" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="courseSubjectCode">Course & Course
+                                                    Code:</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control" id="courseSubjectCode"
+                                                    readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="yearSection">Year & Section:</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control" id="yearSection" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="files">Upload New File:</label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <input type="file" class="form-control-file" id="files"
+                                                name="files" accept=".pdf">
+                                            <div class="mt-2 mt-0">
+                                                <span style="font-size: 12px;">Current File: <span
+                                                        id="currentFileName"></span></span>
+                                                <br>
+                                                <small class="text-danger" id="fileError"></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="saveChanges">Save
+                                changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                                for (let i = 0; i < fileInput.files.length; i++) {
-                                    if (!validTypes.includes(fileInput.files[i].type)) {
-                                        valid = false;
-                                        break;
-                                    }
-                                }
+            <!-- Upload Files Modal -->
+            <div class="modal fade" id="addFolderModal" tabindex="-1" aria-labelledby="addFolderModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addFolderModalLabel">Upload Files</h5>
+                        </div>
+                        <div class="modal-body body-modal">
+                            <div class="d-flex justify-content-center mb-4">
+                                <h5 class="m-0">
+                                    <strong>Instructions:</strong>
+                                    Please upload the files related to your teaching courses. All input fields
+                                    with the symbol (<span style="color: red;">*</span>) are required. Only
+                                    <strong>PDF</strong> file is accepted.
+                                </h5>
+                            </div>
+                            <div class="mb-3">
+                                <div class="">
+                                    <h5 class="mb-3">Current Semester: {{ $semester }}</h5>
+                                </div>
+                            </div>
+                            <form id="uploadForm" action="{{ route('files.store') }}" method="POST"
+                                enctype="multipart/form-data">
+                                @csrf
+                                <input type="hidden" name="folder_name_id" value="{{ $folderNameId }}">
+                                @foreach ($courseSchedules as $index => $schedule)
+                                    <input type="hidden" name="course_schedule_ids[]"
+                                        value="{{ $schedule->course_schedule_id }}">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <label for="file{{ $index + 1 }}"
+                                                    style="display: inline-block; margin-bottom: 0;">
+                                                    <span>
+                                                        <strong>Subject:</strong>
+                                                        {{ $schedule->course_subjects }} <span
+                                                            style="color: red;">*</span><br>
+                                                        <strong>Subject Code:</strong>
+                                                        {{ $schedule->course_code }}<br>
+                                                        <strong>Schedule:</strong> {{ $schedule->schedule }}
+                                                    </span>
+                                                </label>
+                                                <p>
+                                                    <span><strong>Year & Section:</strong>
+                                                        {{ $schedule->year_section }}</span><br>
+                                                    <span><strong>Program:</strong>
+                                                        {{ $schedule->program }}</span>
+                                                </p>
+                                                <div class="file-input-container">
+                                                    <input type="file"
+                                                        id="fileInput{{ $schedule->course_schedule_id }}"
+                                                        name="files[{{ $schedule->course_schedule_id }}][]" multiple
+                                                        accept=".pdf, .doc, .docx, .xls, .xlsx" required>
+                                                    <small class="text-danger"
+                                                        id="error{{ $schedule->course_schedule_id }}"></small>
+                                                </div>
+                                                <input type="hidden" name="course_schedule_ids[]"
+                                                    value="{{ $schedule->course_schedule_id }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                                <div class="progress mt-3 d-none" id="uploadProgress">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%;"
+                                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                </div>
 
-                                if (!valid) {
-                                    errorElement.textContent = 'Please upload only PDF files.';
-                                    fileInput.value = '';
-                                } else {
-                                    errorElement.textContent = '';
-                                }
-                            } else {
-                                errorElement.textContent = '';
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-success" id="uploadButton">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- ============================================================== -->
+        <!-- end wrapper  -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- end main wrapper  -->
+    <!-- ============================================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../../../asset/vendor/jquery/jquery-3.3.1.min.js"></script>
+    <script src="../../../../asset/vendor/bootstrap/js/bootstrap.bundle.js"></script>
+    <script src="../../../../asset/vendor/slimscroll/jquery.slimscroll.js"></script>
+    <script src="../../../../asset/vendor/multi-select/js/jquery.multi-select.js"></script>
+    <script src="../../../../asset/libs/js/main-js.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="../../../../asset/vendor/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
+    <script src="../../../../asset/vendor/datatables/js/buttons.bootstrap4.min.js"></script>
+    <script src="../../../../asset/vendor/datatables/js/data-table.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.datatables.net/rowgroup/1.0.4/js/dataTables.rowGroup.min.js"></script>
+    <script src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
+    <script src="../../../../asset/vendor/datatables/js/loading.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    const fileInput = this;
+                    const errorElement = document.getElementById('error' + fileInput.id.replace(
+                        'fileInput', ''));
+
+                    if (fileInput.files.length > 0) {
+                        const validTypes = ['application/pdf'];
+                        let valid = true;
+
+                        for (let i = 0; i < fileInput.files.length; i++) {
+                            if (!validTypes.includes(fileInput.files[i].type)) {
+                                valid = false;
+                                break;
                             }
-                        });
-                    });
+                        }
 
-                    const form = document.getElementById('uploadForm');
-                    const uploadButton = document.getElementById('uploadButton');
-                    const progressBar = document.querySelector('#uploadProgress .progress-bar');
-                    const progressContainer = document.getElementById('uploadProgress');
-
-                    if (form && uploadButton) {
-                        form.addEventListener('submit', function(e) {
-                            e.preventDefault();
-
-                            const formData = new FormData(form);
-
-                            uploadButton.textContent = 'Submitting...';
-                            uploadButton.disabled = true;
-                            uploadButton.classList.remove('btn-success');
-                            uploadButton.classList.add('btn-secondary');
-                            uploadButton.removeAttribute('data-bs-toggle');
-                            uploadButton.removeAttribute('data-bs-target');
-
-                            progressContainer.classList.remove('d-none');
-
-                            const xhr = new XMLHttpRequest();
-                            xhr.open('POST', form.action, true);
-                            xhr.upload.onprogress = function(e) {
-                                if (e.lengthComputable) {
-                                    const percentComplete = (e.loaded / e.total) * 100;
-                                    progressBar.style.width = percentComplete + '%';
-                                    progressBar.textContent = percentComplete.toFixed(0) + '%';
-                                    progressBar.setAttribute('aria-valuenow', percentComplete);
-                                }
-                            };
-                            xhr.onload = function() {
-                                if (xhr.status === 200) {
-                                    uploadButton.textContent = 'Successfully Uploaded';
-                                    window.location.reload();
-                                } else {
-                                    const errorMessage = xhr.responseText ? JSON.parse(xhr.responseText)
-                                        .message : 'An error occurred during upload.';
-                                    alert(errorMessage);
-                                    uploadButton.textContent = 'Upload Files';
-                                    uploadButton.disabled = false;
-                                    uploadButton.classList.remove('btn-secondary');
-                                    uploadButton.classList.add('btn-success');
-                                }
-                            };
-                            xhr.send(formData);
-                        });
+                        if (!valid) {
+                            errorElement.textContent = 'Please upload only PDF files.';
+                            fileInput.value = '';
+                        } else {
+                            errorElement.textContent = '';
+                        }
+                    } else {
+                        errorElement.textContent = '';
                     }
                 });
-            </script>
+            });
+
+            const form = document.getElementById('uploadForm');
+            const uploadButton = document.getElementById('uploadButton');
+            const progressBar = document.querySelector('#uploadProgress .progress-bar');
+            const progressContainer = document.getElementById('uploadProgress');
+
+            if (form && uploadButton) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(form);
+
+                    uploadButton.textContent = 'Submitting...';
+                    uploadButton.disabled = true;
+                    uploadButton.classList.remove('btn-success');
+                    uploadButton.classList.add('btn-secondary');
+                    uploadButton.removeAttribute('data-bs-toggle');
+                    uploadButton.removeAttribute('data-bs-target');
+
+                    progressContainer.classList.remove('d-none');
+
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', form.action, true);
+                    xhr.upload.onprogress = function(e) {
+                        if (e.lengthComputable) {
+                            const percentComplete = (e.loaded / e.total) * 100;
+                            progressBar.style.width = percentComplete + '%';
+                            progressBar.textContent = percentComplete.toFixed(0) + '%';
+                            progressBar.setAttribute('aria-valuenow', percentComplete);
+                        }
+                    };
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            uploadButton.textContent = 'Successfully Uploaded';
+                            window.location.reload();
+                        } else {
+                            const errorMessage = xhr.responseText ? JSON.parse(xhr.responseText)
+                                .message : 'An error occurred during upload.';
+                            alert(errorMessage);
+                            uploadButton.textContent = 'Upload Files';
+                            uploadButton.disabled = false;
+                            uploadButton.classList.remove('btn-secondary');
+                            uploadButton.classList.add('btn-success');
+                        }
+                    };
+                    xhr.send(formData);
+                });
+            }
+        });
+
+        $(document).ready(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $('.edit-file-btn').on('click', function() {
+                var fileId = $(this).data('file-id');
+                var semester = $(this).data('semester');
+                var program = $(this).data('program');
+                var courseSubjectCode = $(this).data('course-subject-code');
+                var yearSection = $(this).data('year-section');
+                var originalFileName = $(this).data('original-file-name');
+
+                $('#editFileId').val(fileId);
+                $('#semester').val(semester);
+                $('#program').val(program);
+                $('#courseSubjectCode').val(courseSubjectCode);
+                $('#yearSection').val(yearSection);
+                $('#currentFileName').text(originalFileName);
+
+                $('#editFileModal').modal('show');
+            });
+
+            $('#saveChanges').on('click', function() {
+                var formData = new FormData($('#editFileForm')[0]);
+                var fileId = $('#editFileId').val();
+
+                formData.append('_method', 'PUT');
+
+                $.ajax({
+                    url: '/update-file/' + fileId,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            window.location
+                                .reload();
+                        } else {
+                            alert('Error updating file');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert('' + (xhr.responseJSON ? xhr.responseJSON
+                            .message : error));
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function() {
+            $('.archive-file-btn').on('click', function() {
+                var fileId = $(this).data('file-id');
+
+                $.ajax({
+                    url: '/files/archive/' + fileId,
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        alert('An error occurred.');
+                    }
+                });
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('select-all');
+            const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+
+            selectAllCheckbox.addEventListener('change', function() {
+                fileCheckboxes.forEach(checkbox => {
+                    if (checkbox.offsetParent !== null) {
+                        checkbox.checked = this.checked;
+                    }
+                });
+            });
+
+            document.getElementById('archive-all-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                let selectedIds = [];
+                const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+                fileCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        selectedIds.push(checkbox.value);
+                    }
+                });
+
+                if (selectedIds.length > 0) {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You are about to archive the selected files.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, archive them!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            let input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'file_ids';
+                            input.value = JSON.stringify(selectedIds);
+                            this.appendChild(input);
+
+                            this.submit();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No files selected',
+                        text: 'Please select at least one file to archive.'
+                    });
+                }
+            });
+        });
+
+        //filter semester 
+        document.addEventListener('DOMContentLoaded', function() {
+            const semesterFilter = document.getElementById('semester-filter');
+            const fileRows = document.querySelectorAll('.file-row');
+
+            semesterFilter.addEventListener('change', function() {
+                const selectedSemester = this.value;
+
+                fileRows.forEach(row => {
+                    const rowSemester = row.getAttribute('data-semester');
+                    if (!selectedSemester || selectedSemester === rowSemester) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

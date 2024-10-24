@@ -53,53 +53,92 @@
                 <!-- ============================================================== -->
                 <!-- Page Header -->
                 <!-- ============================================================== -->
-                <div class="ecommerce-widget">
-                    <div class="container">
-                        @if ($announcements->isEmpty())
-                            <div class="alert alert-info" role="alert">
-                                No announcements available.
+                <div class="row">
+
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <div class="d-flex justify-content-end align-items-center">
+                            <div class="col-md-4 col-sm-6 d-none d-md-block">
+                                <input type="text" id="search" class="form-control ml-3 mb-3"
+                                    placeholder="Search announcements..." />
                             </div>
-                        @else
-                            <div class="row">
-                                @foreach ($announcements as $announcement)
-                                    <div class="col-md-12">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h5 class="card-title" style="font-size: 20px;">
-                                                    {{ $announcement->subject }}
-                                                </h5>
-                                                <h6 class="card-subtitle text-muted" style="font-size:12px;">
-                                                    {{ \Carbon\Carbon::parse($announcement->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:i a') }}
-                                                </h6>
-                                                <p class="card-subtitle text-muted mt-2" style="font-size:12px;">
-                                                    To: 
-                                                    @foreach ($announcement->displayEmails as $email)
-                                                        {{ $email }}@if (!$loop->last), @endif
-                                                    @endforeach
-                                                    @if ($announcement->moreEmailsCount > 0)
-                                                        and {{ $announcement->moreEmailsCount }} more
-                                                    @endif
-                                                </p>
-                                            </div>
-                                            <div class="card-body">
-                                                <p class="card-text">{!! $announcement->message !!}</p>
+                        </div>
+
+                        <!-- Mobile search input -->
+                        <div class="d-md-none mt-3">
+                            <input type="text" id="search-mobile" class="form-control mb-3"
+                                placeholder="Search announcements..." />
+                        </div>
+                        <div id="announcements-list">
+                            @if ($announcements->isEmpty())
+                                <div class="alert alert-info" role="alert">
+                                    No announcements available.
+                                </div>
+                            @else
+                                <div class="row">
+                                    @foreach ($announcements as $announcement)
+                                        <div class="col-md-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title" style="font-size: 20px;">
+                                                        {{ $announcement->subject }}
+                                                    </h5>
+                                                    <h6 class="card-subtitle text-muted" style="font-size:12px;">
+                                                        {{ \Carbon\Carbon::parse($announcement->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:i a') }}
+                                                    </h6>
+                                                    <p class="card-subtitle text-muted mt-2" style="font-size:12px;">
+                                                        To:
+                                                        @foreach ($announcement->displayEmails as $email)
+                                                            {{ $email }}@if (!$loop->last)
+                                                                ,
+                                                            @endif
+                                                        @endforeach
+                                                        @if ($announcement->moreEmailsCount > 0)
+                                                            and {{ $announcement->moreEmailsCount }} more
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="card-text">{!! $announcement->message !!}</p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
-                
-                <!-- ============================================================== -->
-                <!-- End Page Header -->
-                <!-- ============================================================== -->
+            </div>
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page Header -->
+        <!-- ============================================================== -->
 
 
-                @include('partials.faculty-footer')
-                <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+        @include('partials.faculty-footer')
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('#search, #search-mobile').on('keyup', function() {
+                    let query = $(this).val();
+
+                    $.ajax({
+                        url: '{{ route('faculty.announcement.search') }}',
+                        method: 'GET',
+                        data: {
+                            search: query
+                        },
+                        success: function(data) {
+                            $('#announcements-list').html(data);
+                        },
+                        error: function(xhr) {
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });
+            });
+        </script>
 
 
 </body>

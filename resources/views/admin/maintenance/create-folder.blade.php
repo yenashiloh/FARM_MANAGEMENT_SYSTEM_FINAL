@@ -61,12 +61,26 @@
                                     <i class="fas fa-plus"></i> Add Folder
                                 </button>
                                 </a>
-
                                 @if (session('success'))
                                     <div id="success-alert"
                                         class="alert alert-success alert-dismissible fade show text-center"
                                         role="alert">
                                         {{ session('success') }}
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                @endif
+
+                                @if ($errors->any())
+                                    <div class="alert alert-danger alert-dismissible fade show text-center"
+                                        role="alert">
+                                        @foreach ($errors->all() as $error)
+                                            <div>{{ $error }}</div>
+                                        @endforeach
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
                                     </div>
                                 @endif
 
@@ -105,7 +119,8 @@
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary"
                                                         data-dismiss="modal">Close</button>
-                                                    <button type="submit" class="btn btn-primary">Save Folder</button>
+                                                    <button type="submit" class="btn btn-primary">Save
+                                                        Folder</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -180,7 +195,7 @@
                                                             </option>
                                                             <option value="Test Administration">Test Administration
                                                             </option>
-                                                            <option value="Sybllabus Preparation">Sybllabus Preparation
+                                                            <option value="Syllabus Preparation">Syllabus Preparation
                                                             </option>
                                                         </select>
                                                     </div>

@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Audit Trail</title>
+    <title>Request Upload Access</title>
     <link rel="icon" href="{{ asset('assets/images/pup-logo.png') }}" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="../../../../asset/vendor/bootstrap/css/bootstrap.min.css">
@@ -33,15 +33,14 @@
                 <div class="row">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="page-header">
-                            <h2 class="pageheader-title">Audit Trail</h2>
+                            <h2 class="pageheader-title">Request Upload Access</h2>
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
                                                 style="cursor: default; color: #3d405c;">Menu</a></li>
-                                        <li class="breadcrumb-item"><a
-                                                href="{{ route('admin.maintenance.audit-trail') }}"
-                                                class="breadcrumb-link">Audit Trail</a></li>
+                                        <li class="breadcrumb-item"><a href="{{ route('admin.request-upload-access') }}"
+                                                class="breadcrumb-link">Request Upload Request</a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -52,26 +51,24 @@
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h4>Audit Trail</h4>
+                                <h5>This section displays all requests submitted by faculty members seeking access to upload documents.</h5>
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-bordered first">
+                                    <table id="uploadRequestsTable" class="table table-striped table-bordered first">
                                         <thead>
                                             <tr>
-                                                <th>Email</th>
-                                                <th>Action</th>
                                                 <th>Date</th>
                                                 <th>Time</th>
+                                                <th>Faculty Name</th>
+                                                <th>Reason</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($logs as $log)
+                                            @foreach ($uploadRequests as $request)
                                                 <tr>
-                                                    <td>{{ $log['email'] }}</td>
-                                                    <td>{{ $log['message'] }}</td>
-                                                    <td>{{ \Carbon\Carbon::parse($log['time'])->timezone('Asia/Manila')->format('F j, Y') }}
-                                                    </td>
-                                                    <td>{{ \Carbon\Carbon::parse($log['time'])->timezone('Asia/Manila')->format('h:iA') }}
-                                                    </td>
+                                                    <td>{{ $request->created_at->format('F j, Y') }}</td>
+                                                    <td>{{ $request->created_at->format('g:i A') }}</td>
+                                                    <td>{{ $request->user->first_name }} {{ $request->user->surname }}</td>
+                                                    <td>{{ $request->reason }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -81,9 +78,13 @@
                         </div>
                     </div>
                 </div>
+
+
                 <!-- ============================================================== -->
                 <!-- end pageheader  -->
                 <!-- ============================================================== -->
+
+
             </div>
             <!-- ============================================================== -->
             <!-- end wrapper  -->
@@ -114,5 +115,40 @@
         <script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
         <script src="../../../../asset/vendor/datatables/js/loading.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+          $(document).ready(function() {
+        var table = $('#uploadRequestsTable').DataTable();
+    
+        function fetchUploadRequests() {
+            $.ajax({
+                url: "{{ route('real.time.access') }}", 
+                method: 'GET',
+                success: function(data) {
+                    // Clear existing data
+                    table.clear();
+    
+                    // Populate table with new data
+                    $.each(data.uploadRequests, function(index, request) {
+                        table.row.add([
+                            request.created_at_date,
+                            request.created_at_time,
+                            request.user_name,
+                            request.reason
+                        ]).draw(false);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching upload requests:', error);
+                }
+            });
+        }
+    
+        // Fetch requests every 5 seconds
+        setInterval(fetchUploadRequests, 5000);
+    
+        // Initial fetch
+        fetchUploadRequests();
+    });
+        </script>
 </body>
 </html>

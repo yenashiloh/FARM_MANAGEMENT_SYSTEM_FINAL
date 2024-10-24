@@ -52,15 +52,25 @@ class SendAnnouncementEmails extends Command
         return 0;
     }
 
-    protected function sendAnnouncementEmails($announcement, $recipients)
+    protected function sendAnnouncementEmail($announcement, $email)
     {
-        foreach ($recipients as $email) {
-            Mail::send([], [], function ($message) use ($announcement, $email) {
-                $message->to($email)
-                    ->subject($announcement->subject)
-                    ->setBody($announcement->message, 'text/html');
-                $message->from(config('mail.from.address'), config('mail.from.name'));
-            });
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            \Log::warning("Invalid email address: {$email}");
+            return;
+        }
+
+        try {
+            Mail::send('admin.emails.announcement', 
+                ['announcement' => $announcement], 
+                function ($message) use ($announcement, $email) {
+                    $message->to($email)
+                        ->subject($announcement->subject)
+                        ->from(config('mail.from.address'), config('mail.from.name'));
+                }
+            );
+        } catch (\Exception $e) {
+            \Log::error("Failed to send email to {$email}: " . $e->getMessage());
         }
     }
+        
 }

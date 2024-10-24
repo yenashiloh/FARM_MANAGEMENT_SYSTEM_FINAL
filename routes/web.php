@@ -55,6 +55,10 @@ Route::middleware(['auth', 'role:faculty,faculty-coordinator', 'prevent-back-his
     Route::post('/files/bulk-unarchive', [CoursesFileController::class, 'bulkUnarchive'])->name('files.bulkUnarchive');
     Route::post('/log-logout', [AuditController::class, 'logLogout'])->name('log-logout');
 
+    Route::post('/request-upload-access', [FacultyController::class, 'requestUploadAccess'])->name('request.upload.access');
+
+    Route::get('/faculty/announcement/search', [AnnouncementController::class, 'searchFacultyAnnouncements'])->name('faculty.announcement.search');
+
 });
 
     /************************************ADMIN***************************************/
@@ -98,7 +102,8 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
      //Notification
     Route::get('/admin/notifications', [NotificationController::class, 'getAdminNotifications'])->name('admin.notifications.get');
     Route::get('/admin/notifications/count', [NotificationController::class, 'getAdminNotificationCount'])->name('admin.notifications.count');
-    Route::post('/notifications/mark-as-read', [MarkAsReadController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/admin/notifications/mark-read', [NotificationController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
+    Route::post('/admin/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
     Route::post('/admin/notifications/log-click', [NotificationController::class, 'logClick'])->name('admin.notifications.logClick');
      
      //View Admin Account
@@ -123,6 +128,11 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/admin/accomplishment/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.show');
 
     Route::get('/audit-trail', [AdminController::class, 'showAuditTrail'])->name('admin.maintenance.audit-trail');
+    Route::get('/request-upload-access', [AdminController::class, 'showRequestUploadAccess'])->name('admin.request-upload-access');
+    Route::post('/upload/request', [AdminController::class, 'requestAccess'])->name('upload.request');
+    Route::get('/admin/check-new-requests', [AdminController::class, 'checkNewRequests'])->name('check.new.requests');
+    Route::get('/admin/real-time-upload-access', [AdminController::class, 'realTimeUploadAccess'])->name('real.time.access');
+    Route::post('/admin/mark-requests-as-read', [AdminController::class, 'markRequestsAsRead']);
 
     //Accomplishment
     Route::get('/all-accomplishment', [AccomplishmentController::class, 'showAccomplishmentPage'])->name('admin.accomplishment.accomplishment');
@@ -131,6 +141,10 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/accomplishment/view-folder-names/{user_login_id}/{main_folder_name}', [AccomplishmentController::class, 'viewFolderNames'])->name('admin.accomplishment.viewFolderNames');
     Route::get('/accomplishment/view-academic-year/{user_login_id}/{folder_name_id}', [AccomplishmentController::class, 'viewAcademicYear'])->name('admin.accomplishment.viewAcademicYear');
     Route::get('/view-accomplishment/{user_login_id}/{folder_name_id}/{semester?}', [AdminController::class, 'viewAccomplishmentFaculty'])->name('admin.accomplishment.view-accomplishment');
+    Route::get('/admin/get-upload-requests', [AdminController::class, 'getUploadRequests'])->name('admin.get-upload-requests');
+
+    Route::get('/admin/announcement/search', [AnnouncementController::class, 'searchAnnouncements'])->name('admin.announcement.search');
+
     });
 
     /************************************DIRECTOR***************************************/

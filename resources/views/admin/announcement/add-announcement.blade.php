@@ -60,21 +60,18 @@
                                         <div class="form-group row pt-0">
                                             <label class="col-md-1 control-label">To:</label>
                                             <div class="col-md-11">
-                                                <select id="recipientEmails" class="js-example-basic-multiple"
-                                                    name="recipient_emails[]" multiple="multiple" required>
+                                                <select id="recipientEmails" class="js-example-basic-multiple" name="recipient_emails[]" multiple="multiple" required>
                                                     <option value="all-faculty">All Faculty</option>
                                                     
-                                                    <!-- Departments Group -->
                                                     <optgroup label="Departments">
                                                         @foreach ($departments as $department)
                                                             <option value="department-{{ $department->department_id }}">{{ $department->name }}</option>
                                                         @endforeach
                                                     </optgroup>
-                                                   
-                                                    <!-- Faculty Emails Group -->
+                                                    
                                                     <optgroup label="Faculty Emails">
-                                                        @foreach ($facultyEmails as $email)
-                                                            <option value="{{ $email }}">{{ $email }}</option>
+                                                        @foreach ($facultyUsers as $user)
+                                                            <option value="{{ $user->user_login_id }}">{{ $user->email }}</option>
                                                         @endforeach
                                                     </optgroup>
                                                 </select>

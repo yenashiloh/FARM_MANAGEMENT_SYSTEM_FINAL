@@ -13,6 +13,7 @@ use App\Models\LogoutLog;
 use App\Models\LoginLog;
 use App\Models\Department;
 use App\Models\CourseSchedule;
+use App\Models\RequestUploadAccess;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -203,7 +204,7 @@ class AdminController extends Controller
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
             'firstName' => $firstName,
-        'surname' => $surname,
+            'surname' => $surname,
             'user' => $user, 
         ]);
     }
@@ -242,58 +243,118 @@ class AdminController extends Controller
     }
 
     public function showAuditTrail()
-{
-    if (!auth()->check()) {
-        return redirect()->route('login');
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $user = auth()->user();
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
+        $folders = FolderName::all();
+
+        $logoutLogs = LogoutLog::with('user')->select('user_login_id', 'logout_time', 'logout_message')->orderBy('logout_time', 'desc')->get();
+        $loginLogs = LoginLog::with('user')->select('user_login_id', 'login_time', 'login_message')->orderBy('login_time', 'desc')->get(); 
+
+        $allLogs = $loginLogs->map(function ($log) {
+            return [
+                'email' => $log->user->email,
+                'message' => $log->login_message,
+                'time' => $log->login_time,
+                'type' => 'Login'
+            ];
+        })->merge($logoutLogs->map(function ($log) {
+            return [
+                'email' => $log->user->email,
+                'message' => $log->logout_message,
+                'time' => $log->logout_time,
+                'type' => 'Logout'
+            ];
+        }));
+
+        $sortedLogs = $allLogs->sortByDesc('time');
+
+        \Log::info('All Logs:', $sortedLogs->toArray());
+
+        return view('admin.maintenance.audit-trail', [
+            'folders' => $folders,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'user' => $user,
+            'logs' => $sortedLogs,
+        ]);
     }
 
-    $user = auth()->user();
-    $firstName = $user->first_name;
-    $surname = $user->surname;
-
-    $notifications = Notification::where('user_login_id', $user->user_login_id)
-        ->orderBy('created_at', 'desc')
-        ->get();
-    $notificationCount = $notifications->where('is_read', 0)->count();
-    $folders = FolderName::all();
-
-    // Fetch logout and login logs
-    $logoutLogs = LogoutLog::with('user')->select('user_login_id', 'logout_time', 'logout_message')->orderBy('logout_time', 'desc')->get();
-    $loginLogs = LoginLog::with('user')->select('user_login_id', 'login_time', 'login_message')->orderBy('login_time', 'desc')->get(); 
-
-    // Merge both logs into a single collection
-    $allLogs = $loginLogs->map(function ($log) {
-        return [
-            'email' => $log->user->email,
-            'message' => $log->login_message,
-            'time' => $log->login_time,
-            'type' => 'Login'
-        ];
-    })->merge($logoutLogs->map(function ($log) {
-        return [
-            'email' => $log->user->email,
-            'message' => $log->logout_message,
-            'time' => $log->logout_time,
-            'type' => 'Logout'
-        ];
-    }));
-
-    // Sort the combined logs by time
-    $sortedLogs = $allLogs->sortByDesc('time');
-
-    \Log::info('All Logs:', $sortedLogs->toArray());
-
-    return view('admin.maintenance.audit-trail', [
-        'folders' => $folders,
-        'notifications' => $notifications,
-        'notificationCount' => $notificationCount,
-        'firstName' => $firstName,
-        'surname' => $surname,
-        'user' => $user,
-        'logs' => $sortedLogs, // Pass the combined logs to the view
-    ]);
-}
-
-
+    //show request upload access page
+    public function showRequestUploadAccess()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
     
+        $user = auth()->user();
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
+    
+        $uploadRequests = RequestUploadAccess::with('user')
+        ->orderBy('created_at', 'desc') 
+        ->get();
+    
+        RequestUploadAccess::where('status', 'unread')->update(['status' => 'read']);
+        $requests = RequestUploadAccess::all();
+        return view('admin.request-upload-access', [
+            'uploadRequests' => $uploadRequests, 
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'user' => $user,
+            'requests' => $requests
+        ]);
+    }
+
+    public function checkNewRequests()
+    {
+        $newRequestsCount = \App\Models\RequestUploadAccess::where('status', 'unread')->count();
+        return response()->json(['new_requests_count' => $newRequestsCount]);
+    }
+    
+    public function markRequestsAsRead()
+    {
+        \App\Models\RequestUploadAccess::where('status', 'unread')->update(['status' => 'read']);
+        return response()->json(['success' => true]);
+    }
+
+    public function realTimeUploadAccess()
+    {
+        // Fetch all requests
+        $allRequests = RequestUploadAccess::with('user')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($request) {
+                return [
+                    'created_at_date' => $request->created_at->format('F j, Y'),
+                    'created_at_time' => $request->created_at->format('g:i A'),
+                    'user_name' => $request->user->first_name . ' ' . $request->user->surname,
+                    'reason' => $request->reason,
+                ];
+            });
+
+        return response()->json([
+
+            'uploadRequests' => $allRequests 
+        ]);
+    }
 }

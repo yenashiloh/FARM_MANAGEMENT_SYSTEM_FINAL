@@ -43,18 +43,32 @@ class MaintenanceController extends Controller
     public function storeFolder(Request $request)
     {
         $request->validate([
-            'folder_name' => 'required|string|max:255',
+            'folder_name' => [
+                'required',
+                'string',
+                'max:255',
+                // Custom validation to check unique folder name within the same main folder
+                function ($attribute, $value, $fail) use ($request) {
+                    if (FolderName::where('folder_name', $value)
+                        ->where('main_folder_name', $request->main_folder_name)
+                        ->exists()) {
+                        $fail("The folder name '{$value}' already exists in {$request->main_folder_name}.");
+                    }
+                },
+            ],
             'main_folder_name' => 'required|string',
         ]);
-    
+
         FolderName::create([
-            'user_login_id' => Auth::id(), 
+            'user_login_id' => Auth::id(),
             'folder_name' => $request->folder_name,
             'main_folder_name' => $request->main_folder_name,
         ]);
-    
+
         return redirect()->route('admin.maintenance.create-folder')->with('success', 'Folder added successfully!');
     }
+
+    
     
     //update folder
     public function updateFolder(Request $request, $folder_name_id)

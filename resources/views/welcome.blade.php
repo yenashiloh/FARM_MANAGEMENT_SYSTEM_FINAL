@@ -163,9 +163,10 @@
               <div class="icon">
                 <i class="bi bi-folder"></i>
               </div>
-              <a href="#" class="stretched-link">
+              <div class="stretched-link">
                 <h3>Centralized Document Management</h3>
-              </a>
+            </div>
+            
               <p>Easily store, access, and manage all academic requirements in one place.</p>
             </div>
           </div><!-- End Service Item -->
@@ -175,9 +176,9 @@
               <div class="icon">
                 <i class="bi bi-activity"></i>
               </div>
-              <a href="#" class="stretched-link">
+              <div class="stretched-link">
                 <h3>Real-time Tracking</h3>
-              </a>
+            </div>            
               <p>Monitor the progress of academic submissions and approvals with instant updates</p>
             </div>
           </div><!-- End Service Item -->
@@ -187,9 +188,9 @@
               <div class="icon">
                 <i class="bi bi-bell"></i>
               </div>
-              <a href="#" class="stretched-link">
+              <div class="stretched-link">
                 <h3>Automated Notifications</h3>
-              </a>
+            </div>
               <p>Receive alerts for upcoming deadlines and required actions, keeping you ahead of schedule</p>
             </div>
           </div><!-- End Service Item -->
@@ -199,11 +200,11 @@
               <div class="icon">
                 <i class="bi bi-person-badge"></i>
               </div>
-              <a href="#" class="stretched-link">
+              <div class="stretched-link">
                 <h3>User-friendly Interface</h3>
-              </a>
+            </div>
               <p>Intuitive design tailored for faculty needs, ensuring a smooth experience.</p>
-              <a href="#" class="stretched-link"></a>
+
             </div>
           </div><!-- End Service Item -->
 
@@ -212,11 +213,10 @@
               <div class="icon">
                 <i class="bi bi-shield-lock"></i>
               </div>
-              <a href="#" class="stretched-link">
+              <div class="stretched-link">
                 <h3>Secure and Reliable</h3>
-              </a>
+            </div>
               <p>Built with the latest security protocols to keep your data safe and accessible only to you</p>
-              <a href="#" class="stretched-link"></a>
             </div>
           </div><!-- End Service Item -->
 
@@ -225,11 +225,10 @@
               <div class="icon">
                 <i class="bi bi-megaphone"></i>
               </div>
-              <a href="#" class="stretched-link">
+              <div class="stretched-link">
                 <h3>Announcement</h3>
-              </a>
+            </div>
               <p>Admins will post updates and important information here to keep users informed.</p>
-              <a href="#" class="stretched-link"></a>
             </div>
           </div><!-- End Service Item -->
 
@@ -254,7 +253,8 @@
         <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="100">
           <div class="service-item position-relative">
             <div class="icon"><i class="bi bi-folder"></i></div>
-            <h4><a href="" class="stretched-link">Upload Requirements</a></h4>
+            <h4><a href="#!" class="stretched-link" style="cursor: default;">Upload Requirements</a></h4>
+
             <p>Easily submit documents or academic requirements directly through the platform</p>
           </div>
         </div><!-- End Service Item -->
@@ -262,7 +262,7 @@
         <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="200">
           <div class="service-item position-relative">
             <div class="icon"><i class="bi bi-speedometer2"></i></div>
-            <h4><a href="" class="stretched-link">Track Progress</a></h4>
+            <h4><a href="#!" class="stretched-link" style="cursor: default;">Track Progress</a></h4>
             <p>Monitor the status of each submission in real-time, with progress bars and checklists.</p>
           </div>
         </div><!-- End Service Item -->
@@ -270,7 +270,7 @@
         <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="300">
           <div class="service-item position-relative">
             <div class="icon"><i class="bi bi-chat-square-text"></i></div>
-            <h4><a href="" class="stretched-link">Receive Feedback</a></h4>
+            <h4><a href="#!" class="stretched-link" style="cursor: default;">Receive Feedback</a></h4>
             <p>Get notifications and updates from department heads instantly</p>
           </div>
         </div><!-- End Service Item -->
@@ -278,7 +278,7 @@
         <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="400">
           <div class="service-item position-relative">
             <div class="icon"><i class="bi bi-check-circle"></i></div>
-            <h4><a href="" class="stretched-link">Complete Tasks</a></h4>
+            <h4><a href="#!" class="stretched-link" style="cursor: default;">Complete Tasks</a></h4>
             <p>Finalize and close out pending requirements with a few clicks</p>
           </div>
         </div><!-- End Service Item -->

@@ -50,9 +50,10 @@
         strong {
             color: rgb(27, 27, 27);
         }
+
         .table-responsive {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch; 
+            -webkit-overflow-scrolling: touch;
         }
     </style>
 </head>
@@ -111,12 +112,12 @@
                                             class="form-control" disabled style="width: 250px;">
                                     </div>
                                 </div>
-                                @if($uploadedFiles->contains('status', 'Approved'))
-                                <form id="archive-all-form" action="{{ route('files.archiveAll') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-danger btn-sm mb-3 fs-6">Archive</button>
-                                </form>
-                            @endif
+                                @if ($uploadedFiles->contains('status', 'Approved'))
+                                    <form id="archive-all-form" action="{{ route('files.archiveAll') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-danger btn-sm mb-3 fs-6">Archive</button>
+                                    </form>
+                                @endif
                                 @if (session('success'))
                                     <div class="alert alert-success text-center">
                                         {{ session('success') }}
@@ -158,19 +159,23 @@
                                                     <td>{{ \Carbon\Carbon::parse($file->created_at)->locale('en_PH')->format('F j, Y, g:i A') }}
                                                     </td>
                                                     <td>{{ $file->courseSchedule->program }}</td>
-                                                    <td>{{ $file->subject }} - {{ $file->courseSchedule->course_code }}</td>
+                                                    <td>{{ $file->subject }} -
+                                                        {{ $file->courseSchedule->course_code }}</td>
                                                     <td>{{ $file->courseSchedule->year_section }}</td>
                                                     <td>
-                                                        <a href="{{ Storage::url('/' . $file->files) }}" target="_blank"
+                                                        <a href="{{ Storage::url('/' . $file->files) }}"
+                                                            target="_blank"
                                                             style="color: rgb(65, 65, 231); text-decoration: underline;">
                                                             {{ $file->original_file_name }}
                                                         </a>
                                                     </td>
                                                     <td>
                                                         @if ($file->status === 'To Review')
-                                                            <span class="badge badge-primary">{{ $file->status }}</span>
+                                                            <span
+                                                                class="badge badge-primary">{{ $file->status }}</span>
                                                         @elseif($file->status === 'Approved')
-                                                            <span class="badge badge-success">{{ $file->status }}</span>
+                                                            <span
+                                                                class="badge badge-success">{{ $file->status }}</span>
                                                         @elseif($file->status === 'Declined')
                                                             <span class="badge badge-danger">{{ $file->status }}</span>
                                                             @if ($file->declined_reason)
@@ -200,7 +205,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                
+
                             </div>
 
                         </div>
@@ -288,7 +293,7 @@
                                                         <span style="font-size: 12px;">Current File: <span
                                                                 id="currentFileName"></span></span>
                                                         <br>
-                                                         <small class="text-danger" id="fileError"></small>
+                                                        <small class="text-danger" id="fileError"></small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -418,52 +423,52 @@
 
                 selectAllCheckbox.addEventListener('change', function() {
                     fileCheckboxes.forEach(checkbox => {
-                        if (checkbox.offsetParent !== null) { 
+                        if (checkbox.offsetParent !== null) {
                             checkbox.checked = this.checked;
                         }
                     });
                 });
 
-             document.getElementById('archive-all-form').addEventListener('submit', function(e) {
-                e.preventDefault(); 
-            
-                let selectedIds = [];
-                const fileCheckboxes = document.querySelectorAll('.file-checkbox');
-                fileCheckboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        selectedIds.push(checkbox.value);
-                    }
-                });
-            
-                if (selectedIds.length > 0) {
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "You are about to archive the selected files.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, archive them!'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            let input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = 'file_ids';
-                            input.value = JSON.stringify(selectedIds);
-                            this.appendChild(input);
-            
-                            this.submit();
+                document.getElementById('archive-all-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    let selectedIds = [];
+                    const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+                    fileCheckboxes.forEach(checkbox => {
+                        if (checkbox.checked) {
+                            selectedIds.push(checkbox.value);
                         }
                     });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'No files selected',
-                        text: 'Please select at least one file to archive.'
-                    });
-                }
+
+                    if (selectedIds.length > 0) {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "You are about to archive the selected files.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, archive them!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                let input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'file_ids';
+                                input.value = JSON.stringify(selectedIds);
+                                this.appendChild(input);
+
+                                this.submit();
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No files selected',
+                            text: 'Please select at least one file to archive.'
+                        });
+                    }
+                });
             });
-        });
         </script>
 </body>
 

@@ -37,15 +37,16 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Account</a></li>
+                                                style="cursor: default; color: #3d405c;">Maintenance</a></li>
+                                        <li class="breadcrumb-item"><a
+                                                href="{{ route('admin.maintenance.upload-schedule') }}"
+                                                class="breadcrumb-link">Upload Schedule</a></li>
                                     </ol>
                                 </nav>
                             </div>
                         </div>
                     </div>
                 </div>
-
-
                 <!-- ============================================================== -->
                 <!-- end pageheader  -->
                 <!-- ============================================================== -->
@@ -58,28 +59,46 @@
                             <div class="card">
                                 <h5 class="card-header"> Upload Schedule</h5>
                                 <div class="card-body">
-                                    @if($errors->any())
-                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                        <ul>
-                                            @foreach($errors->all() as $error)
-                                                <li>{{ $error }}</li>
-                                            @endforeach
-                                        </ul>
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            <ul>
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                            <button type="button" class="close" data-dismiss="alert"
+                                                aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
                                     @endif
-                                    
-                                    @if(session('success'))
-                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        {{ session('success') }}
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
+
+                                    @if (session('success'))
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                            {{ session('success') }}
+                                            <button type="button" class="close" data-dismiss="alert"
+                                                aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
                                     @endif
-                                    <form action="{{ route('upload-schedule.store') }}" id="uploadScheduleForm" method="POST">
+
+                                    @if (session('success'))
+                                        <script>
+                                            document.addEventListener('DOMContentLoaded', function() {
+                                                localStorage.setItem('updateButtonDisabled', 'true');
+
+                                                const updateButton = document.getElementById('updateScheduleBtn');
+                                                if (updateButton) {
+                                                    updateButton.disabled = true;
+                                                    updateButton.classList.add('disabled');
+                                                }
+                                            });
+                                        </script>
+                                    @endif
+
+                                    <form action="{{ route('upload-schedule.store') }}" id="uploadScheduleForm"
+                                        method="POST">
                                         @csrf
                                         <div class="row">
                                             <div class="col-md-6">
@@ -113,35 +132,90 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-sm-6 mt-3">
-                                                <button type="submit" class="btn btn-space btn-primary">Update Schedule</button>
+                                                <button type="submit" id="updateScheduleBtn"
+                                                    class="btn btn-space btn-primary">Update Schedule</button>
                                             </div>
                                         </div>
                                     </form>
                                 </div>
                             </div>
                         </div>
-                        <!-- ============================================================== -->
-                        <!-- end main wrapper  -->
-                        <!-- ============================================================== -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ============================================================== -->
+        <!-- end main wrapper  -->
+        <!-- ============================================================== -->
 
-                        @include('partials.admin-footer')
-                        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
-                        <script>
-                            document.getElementById('uploadScheduleForm').addEventListener('submit', function(e) {
-                                var startTime = document.getElementById('inputStartTime');
-                                var stopTime = document.getElementById('inputStopTime');
-                                
-                                if (startTime.value === startTime.defaultValue) {
-                                    startTime.disabled = true;
-                                }
-                                if (stopTime.value === stopTime.defaultValue) {
-                                    stopTime.disabled = true;
-                                }
-                            });
-                            </script>
 
-                       
+        @include('partials.admin-footer')
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('uploadScheduleForm');
+                const updateButton = document.getElementById('updateScheduleBtn');
+
+                function checkScheduleStatus() {
+                    const endDate = document.getElementById('inputEndDate').value;
+                    const endTime = document.getElementById('inputStopTime').value;
+
+                    if (endDate && endTime) {
+                        const scheduleEnd = new Date(endDate + 'T' + endTime);
+                        const now = new Date();
+
+                        const isButtonDisabled = localStorage.getItem('updateButtonDisabled');
+
+                        if (isButtonDisabled === 'true') {
+                            if (now > scheduleEnd) {
+                                updateButton.disabled = false;
+                                updateButton.classList.remove('disabled');
+                                localStorage.removeItem('updateButtonDisabled');
+                            } else {
+                                updateButton.disabled = true;
+                                updateButton.classList.add('disabled');
+                            }
+                        }
+                    }
+                }
+
+                checkScheduleStatus();
+
+                setInterval(checkScheduleStatus, 60000);
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const startTime = document.getElementById('inputStartTime');
+                    const stopTime = document.getElementById('inputStopTime');
+                    const endDate = document.getElementById('inputEndDate').value;
+                    const endTime = document.getElementById('inputStopTime').value;
+
+                    localStorage.setItem('updateButtonDisabled', 'true');
+
+                    updateButton.disabled = true;
+                    updateButton.classList.add('disabled');
+
+                    if (startTime.value === startTime.defaultValue) {
+                        startTime.disabled = true;
+                    }
+                    if (stopTime.value === stopTime.defaultValue) {
+                        stopTime.disabled = true;
+                    }
+
+                    this.submit();
+                });
+
+                const isButtonDisabled = localStorage.getItem('updateButtonDisabled');
+                if (isButtonDisabled === 'true') {
+                    updateButton.disabled = true;
+                    updateButton.classList.add('disabled');
+                }
+            });
+        </script>
+
+
 </body>
 
 </html>
