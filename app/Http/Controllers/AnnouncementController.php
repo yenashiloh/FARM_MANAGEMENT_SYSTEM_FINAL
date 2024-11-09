@@ -37,7 +37,7 @@ class AnnouncementController extends Controller
         $folders = FolderName::all();
         $folder = FolderName::first();
     
-        $announcements = Announcement::orderBy('created_at', 'desc')->get();
+        $announcements = Announcement::orderBy('created_at', 'desc')->paginate(5);
     
         foreach ($announcements as $announcement) {
             $emails = explode(', ', $announcement->type_of_recepient);
@@ -71,6 +71,7 @@ class AnnouncementController extends Controller
             'notificationCount' => $notificationCount,
         ]);
     }
+    
     
     //show Add Announcement Page
     public function showAddAnnouncementPage()
@@ -161,7 +162,6 @@ class AnnouncementController extends Controller
                         $recipientIds = array_merge($recipientIds, $departmentFaculty->pluck('user_login_id')->toArray());
                     }
                 } else {
-                    // Handle individual faculty selection
                     $user = UserLogin::find($recipient);
                     if ($user) {
                         if (empty($recipientEmailsString)) {
@@ -177,7 +177,6 @@ class AnnouncementController extends Controller
             }
         }
 
-        // Create the announcement
         $announcement = new Announcement();
         $announcement->subject = $request->input('announcement_subject');
         $announcement->message = $request->input('announcement_message');
@@ -191,7 +190,6 @@ class AnnouncementController extends Controller
 
         $announcement->save();
 
-        // Only send emails if we have recipients
         if (!empty($facultyEmails)) {
             $this->sendAnnouncementEmails($announcement, array_unique($facultyEmails));
         }
@@ -201,26 +199,26 @@ class AnnouncementController extends Controller
     }
         
     
-        //send announcement
-        protected function sendAnnouncementEmails($announcement, $recipients)
-        {
-            foreach ($recipients as $email) {
-                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    \Log::warning("Invalid email address: {$email}");
-                    continue;
-                }
+    //send announcement
+    protected function sendAnnouncementEmails($announcement, $recipients)
+    {
+        foreach ($recipients as $email) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                \Log::warning("Invalid email address: {$email}");
+                continue;
+            }
 
-                try {
-                    Mail::send('admin.emails.announcement', ['announcement' => $announcement], function ($message) use ($announcement, $email) {
-                        $message->to($email)
-                            ->subject($announcement->subject);
-                        $message->from(config('mail.from.address'), config('mail.from.name'));
-                    });
-                } catch (\Exception $e) {
-                    \Log::error("Failed to send email to {$email}: " . $e->getMessage());
-                }
+        try {
+            Mail::send('admin.emails.announcement', ['announcement' => $announcement], function ($message) use ($announcement, $email) {
+                $message->to($email)
+                    ->subject($announcement->subject);
+                    $message->from(config('mail.from.address'), config('mail.from.name'));
+                });
+            } catch (\Exception $e) {
+                \Log::error("Failed to send email to {$email}: " . $e->getMessage());
             }
         }
+    }
       
     //edit Page
     public function showEditPage()
@@ -254,30 +252,33 @@ class AnnouncementController extends Controller
         $user = auth()->user();
         $firstName = $user->first_name;
         $surname = $user->surname;
-      
+    
         $folders = FolderName::all();
-
+        $departments = Department::whereNotNull('department_id')
+                                ->whereNotNull('name')
+                                ->get();
+    
         $notifications = Notification::where('user_login_id', $user->user_login_id)
-        ->orderBy('created_at', 'desc')
-        ->get();
-  
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
         $notificationCount = $notifications->where('is_read', 0)->count();
-
-      
+    
         $facultyEmails = UserLogin::where('role', 'faculty')->pluck('email')->toArray();
         $announcement = Announcement::findOrFail($id_announcement);
-      
+    
         return view('admin.announcement.edit-announcement', [
             'announcement' => $announcement,
             'folders' => $folders,
             'facultyEmails' => $facultyEmails,
+            'departments' => $departments, 
             'firstName' => $firstName,
             'surname' => $surname,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
         ]);
     }
-      
+
     //update the announcement
     public function updateAnnouncement(Request $request, $id_announcement)
     {
@@ -285,19 +286,57 @@ class AnnouncementController extends Controller
             'announcement_subject' => 'required',
             'announcement_message' => 'required',
         ]);
-  
+    
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-  
+    
         $announcement = Announcement::findOrFail($id_announcement);
         $announcement->subject = $request->input('announcement_subject');
         $announcement->message = $request->input('announcement_message');
+        
+        // Retrieve the selected recipient emails
+        $recipientEmails = $request->input('recipient_emails');
+        
+        // Handle the 'All Faculty' special case
+        if (in_array('all-faculty', $recipientEmails)) {
+            $announcement->type_of_recepient = 'All Faculty';
+            $announcement->save();
+            
+            $request->session()->flash('success', 'Announcement Updated Successfully!');
+            return redirect()->route('admin.announcement.admin-announcement');
+        }
+    
+        // Separate departments and regular emails
+        $departmentIds = [];
+        $regularEmails = [];
+        
+        foreach ($recipientEmails as $recipient) {
+            if (strpos($recipient, 'department-') === 0) {
+                $departmentIds[] = str_replace('department-', '', $recipient);
+            } else {
+                $regularEmails[] = $recipient;
+            }
+        }
+        
+        // Get department names
+        $departmentNames = Department::whereIn('department_id', $departmentIds)
+            ->pluck('name')
+            ->toArray();
+        
+        // Combine department names and regular emails
+        $finalRecipients = array_merge($departmentNames, $regularEmails);
+        
+        // Save as comma-separated string
+        $announcement->type_of_recepient = implode(', ', $finalRecipients);
         $announcement->save();
-  
+    
         $request->session()->flash('success', 'Announcement Updated Successfully!');
-        return redirect()->route('admin.announcement.admin-announcement'); 
-      }
+        return redirect()->route('admin.announcement.admin-announcement');
+    }
+    
+    
+    
   
     //delete the Announcement
     public function deleteAnnouncement($id_announcement)

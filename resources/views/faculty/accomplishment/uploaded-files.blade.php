@@ -85,9 +85,10 @@
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                               >Accomplishment</a></li>
-                                        <li class="breadcrumb-item"><a href="" class="breadcrumb-link"  style="cursor: default; color: #3d405c;">
+                                        <li class="breadcrumb-item"><a href="#!"
+                                                class="breadcrumb-link">Accomplishment</a></li>
+                                        <li class="breadcrumb-item"><a href="" class="breadcrumb-link"
+                                                style="cursor: default; color: #3d405c;">
                                                 {{ $folderName }} </a></li>
                                     </ol>
                                 </nav>
@@ -261,9 +262,7 @@
                                             <i class="fas fa-plus"></i> Upload Files
                                         </a>
                                     @else
-                                        <button class="btn btn-secondary mb-3" disabled id="uploadButton">
-                                            Successfully Uploaded
-                                        </button>
+                                        <p class="text-success mb-3" id="uploadMessage">Successfully Uploaded</p>
                                     @endif
                                 @else
                                     <p class="text-danger">
@@ -336,40 +335,71 @@
                                     </div>
                                 @endif
 
-                                <div class="d-flex align-items-center mb-3">
-                                    @if ($filesWithSubjects->contains('status', 'Approved'))
-                                        <form id="archive-all-form" action="{{ route('files.archiveAll') }}" method="POST" class="mr-3">
-                                            @csrf
-                                            <button type="submit" class="btn btn-danger btn-sm">Archive</button>
-                                        </form>
-                                    @endif
-                                
-                                    <div class="form-group mb-0 position-relative">
-                                        <select id="semester-filter" class="form-control pe-4" style=" width: auto; height: calc(1.5em + .75rem + 2px);">
-                                            <option value="">All Semesters</option>
-                                            @php
-                                                $semesters = $filesWithSubjects
-                                                    ->pluck('sem_academic_year')
-                                                    ->unique()
-                                                    ->sort();
-                                            @endphp
-                                            @foreach ($semesters as $sem)
-                                                <option value="{{ $sem }}">{{ $sem }}</option>
-                                            @endforeach
-                                        </select>
-                                        <i class="fas fa-chevron-down position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
-                                    </div>
+                                <div class="d-flex flex-column mb-3">
+                                    <!-- Filter by Semester Dropdown at the top -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <select id="semesterFilter" class="form-control">
+                                                <option value="">Select Semester</option>
+                                                @foreach($semesters as $semester)
+                                                    <option value="{{ $semester }}">{{ $semester }}</option>
+                                                @endforeach
+                                            </select>
+                                            <i class="fas fa-chevron-down position-absolute" style="right: 25px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
+                                        </div>
+                                        
                                     
+                                        <div class="col-md-3">
+                                            <select id="schoolYearFilter" class="form-control">
+                                                <option value="">Select School Year</option>
+                                                @foreach($schoolYears as $year)
+                                                    <option value="{{ $year }}">{{ $year }}</option>
+                                                @endforeach
+                                            </select>
+                                            <i class="fas fa-chevron-down position-absolute" style="right: 25px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Archive Buttons -->
+                                    <div class="d-flex align-items-center">
+                                        @if ($consolidatedFiles->contains('status', 'Approved'))
+                                            <form id="archive-all-form" action="{{ route('files.archiveAll') }}"
+                                                method="POST" class="mr-3">
+                                                @csrf
+                                                <button type="submit" class="btn btn-danger btn-sm">Archive</button>
+                                            </form>
+
+                                            <form id="archive-date-range-form"
+                                                action="{{ route('files.archiveByDateRange') }}" method="POST"
+                                                class="d-flex align-items-center mr-3">
+                                                @csrf
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">From:</span>
+                                                    </div>
+                                                    <input type="date" name="from_date" id="from_date"
+                                                        class="form-control form-control-sm mr-2" required>
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">To:</span>
+                                                    </div>
+                                                    <input type="date" name="to_date" id="to_date"
+                                                        class="form-control form-control-sm" required>
+                                                    <div class="input-group-append">
+                                                        <button type="submit" class="btn btn-danger btn-sm">Archive
+                                                            by Date</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
-                                
-                                
 
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-bordered first">
+                                    <table class="table table-striped table-bordered first"  id="courseTable">
                                         <thead>
                                             <tr>
                                                 <th>
-                                                    @if ($filesWithSubjects->contains('status', 'Approved'))
+                                                    @if ($consolidatedFiles->contains('status', 'Approved'))
                                                         <input type="checkbox" id="select-all">
                                                     @else
                                                         &nbsp;
@@ -381,62 +411,61 @@
                                                 <th>Program</th>
                                                 <th>Course & Course Code</th>
                                                 <th>Year & Section</th>
-                                                <th>File Name</th>
+                                                <th>File Names</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($filesWithSubjects as $file)
-                                                <tr class="file-row" data-semester="{{ $file->sem_academic_year }}">
+                                            @foreach ($consolidatedFiles as $file)
+                                                <tr class="file-row" data-semester="{{ $file['semester'] }}"
+                                                    data-school-year="{{ $file['school_year'] }}">
                                                     <td>
-                                                        @if ($file->status === 'Approved')
+                                                        @if ($file['status'] === 'Approved')
                                                             <input type="checkbox" class="file-checkbox"
-                                                                value="{{ $file->courses_files_id }}">
+                                                                value="{{ implode(',', $file['courses_files_ids']) }}">
                                                         @else
                                                             &nbsp;
                                                         @endif
                                                     </td>
                                                     <td>{{ $loop->iteration }}</td>
-                                                    <td>{{ $file->created_at }}</td>
-                                                    <td>{{ $file->sem_academic_year }}</td>
-                                                    <td>{{ $file->program }}</td>
-                                                    <td>{{ $file->subject_name }} ({{ $file->code }})</td>
-                                                    <td>{{ $file->year }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($file['files'][0]['created_at'])->format('F j, Y, g:iA') }}
+                                                    </td>
+                                                    <td>{{ $file['semester'] }} {{ $file['school_year'] }}</td>
+                                                    <td>{{ $file['program'] }}</td>
+                                                    <td>{{ $file['subject_name'] }} ({{ $file['course_code'] }})</td>
+                                                    <td>{{ $file['courseSchedule']['year_section'] }}</td>
                                                     <td>
-                                                        <a href="{{ Storage::url($file->files) }}" target="_blank"
-                                                            style="color: rgb(65, 65, 231); text-decoration: underline;">
-                                                            {{ $file->original_file_name }}
-                                                        </a>
+                                                        @foreach ($file['files'] as $fileInfo)
+                                                            <div class="mb-1">
+                                                                <a href="{{ Storage::url($fileInfo['path']) }}"
+                                                                    target="_blank"
+                                                                    style="color: rgb(65, 65, 231); text-decoration: underline;">
+                                                                    {{ $fileInfo['name'] }}
+                                                                </a>
+                                                                @if ($fileInfo['declined_reason'])
+                                                                    <div class="small text-danger">Reason:
+                                                                        {{ $fileInfo['declined_reason'] }}</div>
+                                                                @endif
+                                                            </div>
+                                                        @endforeach
                                                     </td>
                                                     <td>
-                                                        @if ($file->status === 'To Review')
-                                                            <span
-                                                                class="badge badge-primary">{{ $file->status }}</span>
-                                                        @elseif($file->status === 'Approved')
-                                                            <span
-                                                                class="badge badge-success">{{ $file->status }}</span>
-                                                        @elseif($file->status === 'Declined')
-                                                            <span
-                                                                class="badge badge-danger">{{ $file->status }}</span>
-                                                            @if ($file->declined_reason)
-                                                                <div class="mt-2">Declined Reason:
-                                                                    {{ $file->declined_reason }}</div>
-                                                            @endif
-                                                        @else
-                                                            <span
-                                                                class="badge bg-secondary">{{ $file->status }}</span>
-                                                        @endif
+                                                        <span
+                                                            class="badge badge-{{ $fileInfo['status'] === 'Approved' ? 'success' : ($fileInfo['status'] === 'To Review' ? 'primary' : 'danger') }} ml-2">
+                                                            {{ $fileInfo['status'] }}
+                                                        </span>
                                                     </td>
                                                     <td>
-                                                        @if ($file->status === 'Declined' || $file->status === 'To Review')
-                                                            <button class="btn btn-warning btn-sm edit-file-btn"
-                                                                data-file-id="{{ $file->courses_files_id }}"
-                                                                data-semester="{{ $file->sem_academic_year }}"
-                                                                data-program="{{ $file->program }}"
-                                                                data-course-subject-code="{{ $file->subject_name }} - {{ $file->code }}"
-                                                                data-year-section="{{ $file->year }}"
-                                                                data-original-file-name="{{ $file->original_file_name }}">
+                                                        @if ($file['status'] !== 'Approved')
+                                                            <button class="btn btn-warning btn-sm edit-files-btn"
+                                                                data-file-id="{{ $file['courses_files_id'] }}"
+                                                                data-files="{{ json_encode($file['files']) }}"
+                                                                data-semester="{{ $file['semester'] }}"
+                                                                data-school-year="{{ $file['school_year'] }}"
+                                                                data-program="{{ $file['program'] }}"
+                                                                data-course-subject-code="{{ $file['subject_name'] }} - {{ $file['courseSchedule']['course_code'] }}"
+                                                                data-year-section="{{ $file['courseSchedule']['year_section'] }}">
                                                                 Edit
                                                             </button>
                                                         @endif
@@ -446,7 +475,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -462,15 +490,16 @@
                             <h3 class="modal-title" id="editFileModalLabel">Edit File</h3>
                         </div>
                         <div class="modal-body">
-                            <p><strong>Reminder:</strong> Files with an <strong>Approved</strong> status
-                                cannot be edited. You can only make changes to files with a status of
-                                <strong>Declined</strong> or <strong>To Review</strong>.
+                            <p><strong>Reminder:</strong> Files with an <strong>Approved</strong> status cannot be
+                                edited. You can only make changes to files with a status of <strong>Declined</strong> or
+                                <strong>To Review</strong>.
                             </p>
                             <form id="editFileForm" enctype="multipart/form-data">
                                 @csrf
                                 @method('PUT')
                                 <input type="hidden" id="editFileId" name="id">
                                 <div class="container">
+                                    <!-- Form Fields -->
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
@@ -498,8 +527,7 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="courseSubjectCode">Course & Course
-                                                    Code:</label>
+                                                <label for="courseSubjectCode">Course & Course Code:</label>
                                             </div>
                                         </div>
                                         <div class="col-md-8">
@@ -521,19 +549,26 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <!-- Current Files Section -->
                                     <div class="row mb-3">
                                         <div class="col-md-4">
-                                            <label for="files">Upload New File:</label>
+                                            <label>Current Files:</label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div id="currentFiles">
+                                                <!-- Current files will be dynamically added here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Upload New Files Section -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="files">Upload New Files:</label>
                                         </div>
                                         <div class="col-md-8">
                                             <input type="file" class="form-control-file" id="files"
-                                                name="files" accept=".pdf">
-                                            <div class="mt-2 mt-0">
-                                                <span style="font-size: 12px;">Current File: <span
-                                                        id="currentFileName"></span></span>
-                                                <br>
-                                                <small class="text-danger" id="fileError"></small>
-                                            </div>
+                                                name="files[]" accept=".pdf" multiple>
+                                            <small class="text-danger" id="fileError"></small>
                                         </div>
                                     </div>
                                 </div>
@@ -541,8 +576,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" id="saveChanges">Save
-                                changes</button>
+                            <button type="button" class="btn btn-primary" id="saveChanges">Save changes</button>
                         </div>
                     </div>
                 </div>
@@ -565,52 +599,66 @@
                                     <strong>PDF</strong> file is accepted.
                                 </h5>
                             </div>
-                            <div class="mb-3">
-                                <div class="">
-                                    <h5 class="mb-3">Current Semester: {{ $semester }}</h5>
-                                </div>
-                            </div>
                             <form id="uploadForm" action="{{ route('files.store') }}" method="POST"
                                 enctype="multipart/form-data">
                                 @csrf
                                 <input type="hidden" name="folder_name_id" value="{{ $folderNameId }}">
+
+                                <!-- Dropdown for Semester and School Year -->
+                                <div class="row">
+
+                                    <div class="mb-3 col-md-6">
+                                        <label for="semester" class="form-label"><strong>Semester</strong></label>
+                                        <select name="semester" id="semester" class="form-control"
+                                            style="min-width: 190px; width: 100%; height: calc(1.5em + .75rem + 2px); padding-right: 30px;"
+                                            required>
+                                            <option value="" disabled selected>Select Semester</option>
+                                            <option value="First Sem">First Sem</option>
+                                            <option value="Second Sem">Second Sem</option>
+                                            <option value="Summer">Summer</option>
+                                        </select>
+                                        <i class="fas fa-chevron-down position-absolute" style="right: 25px; top: 70%; transform: translateY(-50%); pointer-events: none;"></i>
+                                    </div>
+                                    
+                                    <div class="mb-3 col-md-6">
+                                        <label for="school_year" class="form-label"><strong>School Year</strong></label>
+                                        <select name="school_year" id="school_year" class="form-control"
+                                            style="min-width: 190px; width: 100%; height: calc(1.5em + .75rem + 2px); padding-right: 30px;"
+                                            required>
+                                            <option value="" disabled selected>Select School Year</option>
+                                            <option value="{{ $currentYear . '-' . ($currentYear + 1) }}">
+                                                {{ $currentYear . '-' . ($currentYear + 1) }}</option>
+                                            <option value="{{ $currentYear + 1 . '-' . ($currentYear + 2) }}">
+                                                {{ $currentYear + 1 . '-' . ($currentYear + 2) }}</option>
+                                        </select>
+                                        <i class="fas fa-chevron-down position-absolute" style="right: 25px; top: 70%; transform: translateY(-50%); pointer-events: none;"></i>
+                                    </div>
+                                </div>
+
+
                                 @foreach ($courseSchedules as $index => $schedule)
-                                    <input type="hidden" name="course_schedule_ids[]"
-                                        value="{{ $schedule->course_schedule_id }}">
                                     <div class="card mb-3">
                                         <div class="card-body">
                                             <div class="form-group">
                                                 <label for="file{{ $index + 1 }}"
                                                     style="display: inline-block; margin-bottom: 0;">
-                                                    <span>
-                                                        <strong>Subject:</strong>
-                                                        {{ $schedule->course_subjects }} <span
-                                                            style="color: red;">*</span><br>
-                                                        <strong>Subject Code:</strong>
-                                                        {{ $schedule->course_code }}<br>
-                                                        <strong>Schedule:</strong> {{ $schedule->schedule }}
-                                                    </span>
+                                                    <strong>Subject:</strong> {{ $schedule->course_subjects }}<br>
+                                                    <strong>Subject Code:</strong> {{ $schedule->course_code }}<br>
+                                                    <strong>Schedule:</strong> {{ $schedule->schedule }}
                                                 </label>
                                                 <p>
-                                                    <span><strong>Year & Section:</strong>
-                                                        {{ $schedule->year_section }}</span><br>
-                                                    <span><strong>Program:</strong>
-                                                        {{ $schedule->program }}</span>
+                                                    <strong>Year & Section:</strong> {{ $schedule->year_section }}<br>
+                                                    <strong>Program:</strong> {{ $schedule->program }}
                                                 </p>
-                                                <div class="file-input-container">
-                                                    <input type="file"
-                                                        id="fileInput{{ $schedule->course_schedule_id }}"
-                                                        name="files[{{ $schedule->course_schedule_id }}][]" multiple
-                                                        accept=".pdf, .doc, .docx, .xls, .xlsx" required>
-                                                    <small class="text-danger"
-                                                        id="error{{ $schedule->course_schedule_id }}"></small>
-                                                </div>
-                                                <input type="hidden" name="course_schedule_ids[]"
-                                                    value="{{ $schedule->course_schedule_id }}">
+                                                <input type="file"
+                                                    id="fileInput{{ $schedule->course_schedule_id }}"
+                                                    name="files[{{ $schedule->course_schedule_id }}][]" multiple
+                                                    accept=".pdf, .doc, .docx, .xls, .xlsx" required>
                                             </div>
                                         </div>
                                     </div>
                                 @endforeach
+
                                 <div class="progress mt-3 d-none" id="uploadProgress">
                                     <div class="progress-bar" role="progressbar" style="width: 0%;"
                                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
@@ -738,6 +786,7 @@
             }
         });
 
+        //edit files
         $(document).ready(function() {
             $.ajaxSetup({
                 headers: {
@@ -745,29 +794,74 @@
                 }
             });
 
-            $('.edit-file-btn').on('click', function() {
+            let filesToDelete = [];
+
+            $('.edit-files-btn').on('click', function() {
                 var fileId = $(this).data('file-id');
                 var semester = $(this).data('semester');
                 var program = $(this).data('program');
                 var courseSubjectCode = $(this).data('course-subject-code');
                 var yearSection = $(this).data('year-section');
-                var originalFileName = $(this).data('original-file-name');
+                var files = $(this).data('files');
+
+                // Reset the filesToDelete array
+                filesToDelete = [];
 
                 $('#editFileId').val(fileId);
                 $('#semester').val(semester);
                 $('#program').val(program);
                 $('#courseSubjectCode').val(courseSubjectCode);
                 $('#yearSection').val(yearSection);
-                $('#currentFileName').text(originalFileName);
 
-                $('#editFileModal').modal('show');
+                // Clear and populate current files
+                $('#currentFiles').empty();
+
+                // Check if files exists and is valid
+                if (files && Array.isArray(files)) {
+                    files.forEach(function(file) {
+                        $('#currentFiles').append(`
+                    <div class="file-item mb-2">
+                        <span class="me-2">${file.name}</span>
+                        <button type="button" class="btn btn-danger btn-sm delete-file" data-file="${file.path}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `);
+                    });
+                }
+
+                var myModal = new bootstrap.Modal(document.getElementById('editFileModal'));
+                myModal.show();
+            });
+
+            // Handle delete button clicks
+            $(document).on('click', '.delete-file', function(e) {
+                e.preventDefault();
+                const fileToDelete = $(this).data('file');
+                if (!filesToDelete.includes(fileToDelete)) {
+                    filesToDelete.push(fileToDelete);
+                }
+                $(this).closest('.file-item').remove();
             });
 
             $('#saveChanges').on('click', function() {
                 var formData = new FormData($('#editFileForm')[0]);
                 var fileId = $('#editFileId').val();
 
+                // Ensure filesToDelete is correctly appended as an array
+                formData.delete('removed_files[]'); // Remove any existing removed_files entry
+                filesToDelete.forEach(file => {
+                    formData.append('removed_files[]', file);
+                });
                 formData.append('_method', 'PUT');
+
+                // Get all selected files
+                const fileInput = document.getElementById('files');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        formData.append('files[]', fileInput.files[i]);
+                    }
+                }
 
                 $.ajax({
                     url: '/update-file/' + fileId,
@@ -777,21 +871,21 @@
                     contentType: false,
                     success: function(response) {
                         if (response.success) {
-                            window.location
-                                .reload();
+                            window.location.reload();
                         } else {
                             alert('Error updating file');
                         }
                     },
                     error: function(xhr, status, error) {
                         console.error(xhr.responseText);
-                        alert('' + (xhr.responseJSON ? xhr.responseJSON
-                            .message : error));
+                        alert(xhr.responseJSON ? xhr.responseJSON.message : error);
                     }
                 });
             });
         });
 
+
+        //archive
         $(document).ready(function() {
             $('.archive-file-btn').on('click', function() {
                 var fileId = $(this).data('file-id');
@@ -813,6 +907,7 @@
             });
         });
         document.addEventListener('DOMContentLoaded', function() {
+            // Existing code for select all checkbox
             const selectAllCheckbox = document.getElementById('select-all');
             const fileCheckboxes = document.querySelectorAll('.file-checkbox');
 
@@ -824,6 +919,47 @@
                 });
             });
 
+            // Date range archive form submission
+            document.getElementById('archive-date-range-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const fromDate = document.getElementById('from_date').value;
+                const toDate = document.getElementById('to_date').value;
+
+                if (!fromDate || !toDate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Date Range Required',
+                        text: 'Please select both start and end dates.'
+                    });
+                    return;
+                }
+
+                if (fromDate > toDate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Date Range',
+                        text: 'Start date must be before or equal to end date.'
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to archive all approved files from ${fromDate} to ${toDate}`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, archive them!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.submit();
+                    }
+                });
+            });
+
+            // Existing archive all form submission
             document.getElementById('archive-all-form').addEventListener('submit', function(e) {
                 e.preventDefault();
 
@@ -851,7 +987,6 @@
                             input.name = 'file_ids';
                             input.value = JSON.stringify(selectedIds);
                             this.appendChild(input);
-
                             this.submit();
                         }
                     });
@@ -866,23 +1001,37 @@
         });
 
         //filter semester 
-        document.addEventListener('DOMContentLoaded', function() {
-            const semesterFilter = document.getElementById('semester-filter');
-            const fileRows = document.querySelectorAll('.file-row');
+       
+    // JavaScript (using jQuery)
+$(document).ready(function() {
+    // Get the table rows and filter dropdowns
+    var $tableRows = $('#courseTable tbody tr');
+    var $semesterFilter = $('#semesterFilter');
+    var $schoolYearFilter = $('#schoolYearFilter');
 
-            semesterFilter.addEventListener('change', function() {
-                const selectedSemester = this.value;
+    // Add event listeners to the filter dropdowns
+    $semesterFilter.on('change', filterTable);
+    $schoolYearFilter.on('change', filterTable);
 
-                fileRows.forEach(row => {
-                    const rowSemester = row.getAttribute('data-semester');
-                    if (!selectedSemester || selectedSemester === rowSemester) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
+    function filterTable() {
+        var selectedSemester = $semesterFilter.val();
+        var selectedSchoolYear = $schoolYearFilter.val();
+
+        // Filter the table rows based on the selected values
+        $tableRows.each(function() {
+            var $row = $(this);
+            var rowSemester = $row.data('semester');
+            var rowSchoolYear = $row.data('school-year');
+
+            if ((selectedSemester === '' || rowSemester === selectedSemester) &&
+                (selectedSchoolYear === '' || rowSchoolYear === selectedSchoolYear)) {
+                $row.show();
+            } else {
+                $row.hide();
+            }
         });
+    }
+});
     </script>
 </body>
 

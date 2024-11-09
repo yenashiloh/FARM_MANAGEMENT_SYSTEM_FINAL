@@ -16,6 +16,7 @@ use App\Models\CourseSchedule;
 use App\Models\RequestUploadAccess;
 use App\Models\Department;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Paginator;
 
 class FacultyController extends Controller
 {
@@ -92,38 +93,82 @@ class FacultyController extends Controller
             $statusMessage = "No upload schedule set.";
         }
 
-        // get course schedules and files with proper relationships
         $courseSchedules = CourseSchedule::where('user_login_id', $user->user_login_id)->get();
-        $semester = $courseSchedules->pluck('sem_academic_year')->unique()->first() ?? 'N/A';
+       
+        //filters
+        $semesters = CoursesFile::distinct()->pluck('semester')->sort();
+        $schoolYears = CoursesFile::distinct()->pluck('school_year');
+        
 
-        $files = CoursesFile::with('courseSchedule')
+        $files = CoursesFile::with('courseSchedule') 
         ->where('folder_name_id', $folder_name_id)
         ->where('user_login_id', auth()->id())
-        ->where('is_archived', 0) 
+        ->where('is_archived', 0)
         ->orderBy('created_at', 'desc')
         ->get();
+    
 
-        $filesWithSubjects = $files->map(function ($file, $index) {
-        $courseSchedule = $file->courseSchedule;
+        $groupedFiles = $files->groupBy(function ($file) {
+            $courseSchedule = $file->courseSchedule;
+            return implode('|', [
+                $courseSchedule ? $courseSchedule->sem_academic_year : 'N/A',
+                $courseSchedule ? $courseSchedule->program : 'N/A',
+                $courseSchedule ? $courseSchedule->course_subjects : 'N/A',
+                $courseSchedule ? $courseSchedule->course_code : 'N/A',
+                $courseSchedule ? $courseSchedule->year_section : 'N/A',
+            ]);
+        });
 
-        $fileObject = new \stdClass();
-        $fileObject->index = $index + 1;
-        $fileObject->courses_files_id = $file->courses_files_id;
-        $fileObject->sem_academic_year = $courseSchedule ? $courseSchedule->sem_academic_year : 'N/A';
-        $fileObject->created_at = $file->created_at;
-        $fileObject->program = $courseSchedule ? $courseSchedule->program : 'N/A';
-        $fileObject->subject_name = $courseSchedule ? $courseSchedule->course_subjects : 'N/A';
-        $fileObject->code = $courseSchedule ? $courseSchedule->course_code : 'N/A';
-        $fileObject->year = $courseSchedule ? $courseSchedule->year_section : 'N/A';
-        $fileObject->schedule = $courseSchedule ? $courseSchedule->schedule : 'N/A';
-        $fileObject->files = $file->files;
-        $fileObject->original_file_name = $file->original_file_name;
-        $fileObject->status = $file->status;
-        $fileObject->declined_reason = $file->declined_reason;
-
-        return $fileObject;
-    });
-
+        $consolidatedFiles = $groupedFiles->map(function ($groupFiles, $key) {
+            $firstFile = $groupFiles->first();
+    
+            $fileObject = new \stdClass();
+            $fileObject->courses_files_id = $firstFile->courses_files_id;
+            $fileObject->courses_files_ids = $groupFiles->pluck('courses_files_id')->toArray();
+    
+            $fileObject->semester = $firstFile->semester ?? 'N/A';
+            $fileObject->school_year = $firstFile->school_year ?? 'N/A';
+    
+            $fileObject->courseSchedule = $firstFile->courseSchedule;
+            if ($fileObject->courseSchedule) {
+                $fileObject->program = $fileObject->courseSchedule->program;
+                $fileObject->subject_name = $fileObject->courseSchedule->course_subjects;
+                $fileObject->year = $fileObject->courseSchedule->year_section;
+                $fileObject->course_code = $fileObject->courseSchedule->course_code;
+                $fileObject->schedule = $fileObject->courseSchedule->schedule;
+            } else {
+                $fileObject->program = 'N/A';
+                $fileObject->subject_name = 'N/A';
+                $fileObject->year = 'N/A';
+                $fileObject->course_code = 'N/A';
+                $fileObject->schedule = 'N/A';
+            }
+    
+            $fileObject->files = $groupFiles->map(function ($file) {
+                return [
+                    'id' => $file->courses_files_id,
+                    'path' => $file->files,
+                    'name' => $file->original_file_name,
+                    'status' => $file->status,
+                    'declined_reason' => $file->declined_reason,
+                    'created_at' => $file->created_at,
+                ];
+            })->toArray();
+    
+            $statuses = collect($fileObject->files)->pluck('status')->unique();
+            if ($statuses->contains('To Review')) {
+                $fileObject->status = 'To Review';
+            } elseif ($statuses->contains('Declined')) {
+                $fileObject->status = 'Declined';
+            } elseif ($statuses->every(fn($status) => $status === 'Approved')) {
+                $fileObject->status = 'Approved';
+            } else {
+                $fileObject->status = 'Mixed';
+            }
+    
+            return json_decode(json_encode($fileObject), true);
+        })->values();
+        
         // progress tracking
         $mainFolders = ['Classroom Management', 'Test Administration', 'Syllabus Preparation'];
         $folderProgress = [];
@@ -206,16 +251,15 @@ class FacultyController extends Controller
         $folders = FolderName::all();
         $firstName = $user->first_name;
         $surname = $user->surname;
-        $hasUploaded = $filesWithSubjects->isNotEmpty();
+        $hasUploaded = $consolidatedFiles->isNotEmpty(); 
 
-        //filter select 
-        
+        //school year
+        $currentYear = date('Y');
 
         return view('faculty.accomplishment.uploaded-files', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
-            'semester' => $semester,
-            'filesWithSubjects' => $filesWithSubjects,
+            'semesters' => $semesters,
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
             'folders' => $folders,
@@ -233,6 +277,9 @@ class FacultyController extends Controller
             'folderStatus' => $folderStatus,
             'folderNameId' => $folder->folder_name_id,
             'departmentProgress' => $departmentProgress,
+            'consolidatedFiles' => $consolidatedFiles,
+            'currentYear' => $currentYear,
+            'schoolYears' => $schoolYears, 
         ]);
     }
     
@@ -307,33 +354,32 @@ class FacultyController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
+    
         $userId = auth()->id();
         $user = auth()->user(); 
-
+    
         $userEmail = $user->email;
         $firstName = $user->first_name;
         $surname = $user->surname;
-        $userDepartmentId = $user->department_id; // Get the department ID of the logged-in user
-
+        $userDepartmentId = $user->department_id;
+    
         $folders = FolderName::all();
-
+    
         $notifications = \App\Models\Notification::where('user_login_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
         $notificationCount = $notifications->count();
-
-        // Retrieve announcements where type_of_recepient matches user's email or is 'All Faculty'
+    
         $announcements = \App\Models\Announcement::where(function ($query) use ($userEmail, $userDepartmentId) {
-            $query->where('type_of_recepient', 'All Faculty')
-                ->orWhere('type_of_recepient', $userEmail)
-                ->orWhere('department_id', $userDepartmentId); // Filter by department ID
-        })
-        ->where('published', 1)
-        ->orderBy('created_at', 'desc')
-        ->get();
+                $query->where('type_of_recepient', 'All Faculty')
+                    ->orWhere('type_of_recepient', $userEmail)
+                    ->orWhere('department_id', $userDepartmentId); 
+            })
+            ->where('published', 1)
+            ->orderBy('created_at', 'desc')
+            ->paginate(5); 
+    
 
-        // Prepare emails for display
         foreach ($announcements as $announcement) {
             $emails = explode(',', $announcement->type_of_recepient);
             if (count($emails) > 3) {
@@ -344,9 +390,9 @@ class FacultyController extends Controller
                 $announcement->moreEmailsCount = 0;
             }
         }
-
+    
         $folder = $folders->first();
-
+    
         return view('faculty.announcement', [
             'folders' => $folders,
             'folder' => $folder,
@@ -393,14 +439,13 @@ class FacultyController extends Controller
         return back()->with('success', 'File archived successfully!');
     }
 
-    
+    //request access the upload files
     public function requestAccess(Request $request)
     {
         $request->validate([
             'reason' => 'required|string|max:255',
         ]);
 
-        // Save the request to the database
         RequestUploadAccess::create([
             'user_login_id' => Auth::id(),
             'reason' => $request->reason,
@@ -419,7 +464,7 @@ class FacultyController extends Controller
         \App\Models\RequestUploadAccess::create([
             'user_login_id' => $request->user_login_id,
             'reason' => $request->reason,
-            'status' => 'unread', // Set default status to 'unread'
+            'status' => 'unread', 
         ]);
     
         return redirect()->back()->with('success', 'Your request has been submitted successfully.');

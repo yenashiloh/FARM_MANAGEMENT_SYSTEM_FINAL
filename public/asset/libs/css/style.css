@@ -6892,3 +6892,28 @@ Media Query
 .dashboard-wrapper.visible {
     opacity: 1;
 }
+
+.sidebar-scroll {
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    padding-right: 0;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}

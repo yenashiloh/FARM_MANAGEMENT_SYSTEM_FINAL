@@ -38,10 +38,10 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Menu</a></li>
+                                               >Menu</a></li>
                                         <li class="breadcrumb-item"><a
                                                 href="{{ route('admin.maintenance.audit-trail') }}"
-                                                class="breadcrumb-link">Audit Trail</a></li>
+                                                class="breadcrumb-link"  style="cursor: default; color: #3d405c;">Audit Trail</a></li>
                                     </ol>
                                 </nav>
                             </div>

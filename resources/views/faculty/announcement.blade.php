@@ -40,9 +40,9 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Menu</a></li>
+                                                >Menu</a></li>
                                         <li class="breadcrumb-item"><a href="{{ route('faculty.announcement') }}"
-                                                class="breadcrumb-link">Announcement</a></li>
+                                                class="breadcrumb-link" style=" color: #3d405c;">Announcement</a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -103,6 +103,73 @@
                                             </div>
                                         </div>
                                     @endforeach
+                                </div>
+
+                                  <!-- Pagination -->
+                                  <div class="row ">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center my-4">
+                                            <div class="pagination-info">
+                                                Showing {{ $announcements->firstItem() ?? 0 }} to
+                                                {{ $announcements->lastItem() ?? 0 }} of {{ $announcements->total() }}
+                                                announcements
+                                            </div>
+
+                                            @if ($announcements->hasPages())
+                                                <nav aria-label="Announcements pagination">
+                                                    <ul class="pagination mb-0">
+                                                        {{-- Previous Page --}}
+                                                        @if ($announcements->onFirstPage())
+                                                            <li class="page-item disabled">
+                                                                <span class="page-link">
+                                                                    <i class="fas fa-chevron-left small"></i>
+                                                                </span>
+                                                            </li>
+                                                        @else
+                                                            <li class="page-item">
+                                                                <a class="page-link"
+                                                                    href="{{ $announcements->previousPageUrl() }}"
+                                                                    rel="prev">
+                                                                    <i class="fas fa-chevron-left small"></i>
+                                                                </a>
+                                                            </li>
+                                                        @endif
+
+                                                        {{-- Numbered Pages --}}
+                                                        @foreach ($announcements->getUrlRange(1, $announcements->lastPage()) as $page => $url)
+                                                            @if ($page == $announcements->currentPage())
+                                                                <li class="page-item active">
+                                                                    <span class="page-link">{{ $page }}</span>
+                                                                </li>
+                                                            @else
+                                                                <li class="page-item">
+                                                                    <a class="page-link"
+                                                                        href="{{ $url }}">{{ $page }}</a>
+                                                                </li>
+                                                            @endif
+                                                        @endforeach
+
+                                                        {{-- Next Page --}}
+                                                        @if ($announcements->hasMorePages())
+                                                            <li class="page-item">
+                                                                <a class="page-link"
+                                                                    href="{{ $announcements->nextPageUrl() }}"
+                                                                    rel="next">
+                                                                    <i class="fas fa-chevron-right small"></i>
+                                                                </a>
+                                                            </li>
+                                                        @else
+                                                            <li class="page-item disabled">
+                                                                <span class="page-link">
+                                                                    <i class="fas fa-chevron-right small"></i>
+                                                                </span>
+                                                            </li>
+                                                        @endif
+                                                    </ul>
+                                                </nav>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
                         </div>

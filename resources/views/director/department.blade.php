@@ -1,5 +1,5 @@
 @include('partials.tables-header')
-<title>Faculty</title>
+<title>{{ $folderName }} </title>
 </head>
 <style>
     .form-group {
@@ -27,6 +27,15 @@
         appearance: none;
     }
 
+    .fas.fa-chevron-down {
+        position: absolute;
+        top: 50%;
+        right: 25px;
+        transform: translateY(-50%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
     @media (max-width: 576px) {
         .form-group {
             flex-direction: column;
@@ -44,7 +53,7 @@
 </style>
 
 <body>
-    @include('partials.admin-sidebar')
+    @include('partials.director-sidebar')
     <div id="loading-spinner" class="loading-spinner">
         <div class="spinner"></div>
     </div>
@@ -57,24 +66,16 @@
                 <div class="row">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="page-header">
-                            <h2 class="pageheader-title">Faculty Members </h2>
+                            <h2 class="pageheader-title">{{ $folderName }} </h2>
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
-                                       
+                                        <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
+                                            >Menu</a></li>
                                         <li class="breadcrumb-item">
-                                            <a href="{{ route('admin.accomplishment.department', ['folder_name_id' => $folder_name_id]) }}"
-                                                class="breadcrumb-link">
-                                                Department
-                                            </a>
+                                            <a href="{{ route('director.department', ['folder_name_id' => $folder_name_id]) }}"
+                                                class="breadcrumb-link" style=" color: #3d405c;">Department</a>
                                         </li>
-                                        <li class="breadcrumb-item"><a
-                                                href="{{ route('viewAccomplishmentDepartment', [
-                                                    'department' => urlencode($department),
-                                                    'folder_name_id' => $folder->folder_name_id,
-                                                ]) }}"
-                                                class="breadcrumb-link" style=" color: #3d405c;">Faculty</a></li>
-
                                     </ol>
                                 </nav>
                             </div>
@@ -91,21 +92,36 @@
                                         <thead>
                                             <tr>
                                                 <th>No.</th>
-                                                <th>Faculty Name</th>
-                                                <th>Actions</th>
+                                                <th>Department</th>
+                                                <th>Progress</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($facultyUsers as $faculty)
+                                            @foreach ($departments as $department)
                                                 <tr>
                                                     <td>{{ $loop->iteration }}</td>
-                                                    <td>{{ $faculty->first_name }} {{ $faculty->surname }}</td>
+                                                    <td>{{ $department->name }}</td>
                                                     <td>
-                                                        <a href="{{ route('admin.accomplishment.view-accomplishment', [
-                                                            'user_login_id' => $faculty->user_login_id,
-                                                            'folder_name_id' => $folder->folder_name_id
-                                                        ]) }}" class="btn btn-info text-white">
-                                                            View Files
+                                                        @php
+                                                            $progress = $departmentProgress[$department->name] ?? 0;
+                                                        @endphp
+                                                        <div class="progress ">
+                                                            <div class="progress-bar" role="progressbar"
+                                                                style="width: {{ $progress }}%;"
+                                                                aria-valuenow="{{ $progress }}" aria-valuemin="0"
+                                                                aria-valuemax="100">
+                                                                {{ number_format($progress, 2) }}%
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ route('view.accomplishment.department', [
+                                                            'department' => urlencode($department->name),
+                                                            'folder_name_id' => $folder->folder_name_id,
+                                                        ]) }}"
+                                                            class="btn btn-info text-white">
+                                                            View
                                                         </a>
                                                     </td>
                                                 </tr>
@@ -117,9 +133,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-
-                @include('partials.tables-footer')
+    @include('partials.tables-footer')
 </body>
 
 </html>

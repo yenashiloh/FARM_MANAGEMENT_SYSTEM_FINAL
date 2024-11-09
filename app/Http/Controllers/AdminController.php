@@ -95,7 +95,7 @@ class AdminController extends Controller
     }
     
     //view accomplishment    
-    public function viewAccomplishmentFaculty($user_login_id, $folder_name_id, $semester = null)
+    public function viewAccomplishmentFaculty($user_login_id, $folder_name_id)
     {
         if (!auth()->check()) {
             return redirect()->route('login');
@@ -113,30 +113,14 @@ class AdminController extends Controller
             ->get();
         $notificationCount = $notifications->where('is_read', 0)->count();
     
-        $filesQuery = CoursesFile::where('courses_files.folder_name_id', $folder_name_id)
+        $files = CoursesFile::where('courses_files.folder_name_id', $folder_name_id)
             ->where('courses_files.user_login_id', $user_login_id)
-            ->with(['userLogin', 'courseSchedule']);
-    
-        $allSemesters = CoursesFile::where('courses_files.folder_name_id', $folder_name_id)
-            ->where('courses_files.user_login_id', $user_login_id)
-            ->join('course_schedules', 'courses_files.course_schedule_id', '=', 'course_schedules.course_schedule_id')
-            ->select('course_schedules.sem_academic_year')
-            ->distinct()
-            ->pluck('course_schedules.sem_academic_year');
-    
-        if (!$semester) {
-            $semester = $allSemesters->first();
-        }
-    
-        $files = $filesQuery
-            ->whereHas('courseSchedule', function ($query) use ($semester) {
-                $query->where('sem_academic_year', $semester);
-            })
+            ->with(['userLogin', 'courseSchedule'])
+            ->orderBy('created_at', 'desc')
             ->get();
     
-        $groupedFiles = $files->groupBy(function ($file) {
-            return $file->courseSchedule->sem_academic_year;
-        });
+        $semesters = CoursesFile::distinct()->pluck('semester')->sort();
+        $schoolYears = CoursesFile::distinct()->pluck('school_year');
     
         $folders = FolderName::all();
         $viewedUser = UserLogin::find($user_login_id);
@@ -146,22 +130,18 @@ class AdminController extends Controller
     
         $currentFolder = $folders->firstWhere('main_folder_name', $folder->main_folder_name);
     
-        // Get academic years with files for the given user and folder
-        $academicYearsWithFiles = CourseSchedule::select('course_schedules.sem_academic_year')
-            ->join('courses_files', 'course_schedules.course_schedule_id', '=', 'courses_files.course_schedule_id')
-            ->where('course_schedules.user_login_id', $user_login_id)
-            ->where('courses_files.folder_name_id', $folder_name_id)
-            ->distinct()
-            ->orderBy('course_schedules.sem_academic_year', 'desc')
-            ->pluck('sem_academic_year');
-    
-        // Set the academicYear variable to the current semester or any logic you require
-        $academicYear = $semester; // You can adjust this logic if needed
+        $groupedFiles = $files->groupBy(function ($file) {
+            return $file->courseSchedule->course_code . '|' . 
+                   $file->courseSchedule->year_section . '|' . 
+                   $file->courseSchedule->program . '|' . 
+                   $file->semester . '|' . 
+                   $file->school_year . '|' . 
+                   $file->status;
+        });
     
         return view('admin.accomplishment.view-accomplishment', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
-            'groupedFiles' => $groupedFiles,
             'files' => $files,
             'folders' => $folders,
             'firstName' => $user->first_name,
@@ -169,17 +149,18 @@ class AdminController extends Controller
             'notifications' => $notifications,
             'notificationCount' => $notificationCount,
             'viewedUser' => $viewedUser,
-            'currentSemester' => $semester,
-            'allSemesters' => $allSemesters,
             'department' => $departmentName,
             'faculty' => $faculty,
             'currentFolder' => $currentFolder,
             'user_login_id' => $user_login_id,
             'folder_name_id' => $folder_name_id,
-            'academicYear' => $academicYear, // Pass the academic year to the view
+            'groupedFiles' => $groupedFiles,
+            'semesters' => $semesters,
+            'schoolYears' => $schoolYears, 
         ]);
     }
     
+
     //show admin account
     public function adminAccountPage()
     {
@@ -312,6 +293,8 @@ class AdminController extends Controller
         ->orderBy('created_at', 'desc') 
         ->get();
     
+        $folders = FolderName::all();
+
         RequestUploadAccess::where('status', 'unread')->update(['status' => 'read']);
         $requests = RequestUploadAccess::all();
         return view('admin.request-upload-access', [
@@ -321,10 +304,11 @@ class AdminController extends Controller
             'firstName' => $firstName,
             'surname' => $surname,
             'user' => $user,
-            'requests' => $requests
+            'requests' => $requests,
+            'folders' => $folders,
         ]);
     }
-
+    
     public function checkNewRequests()
     {
         $newRequestsCount = \App\Models\RequestUploadAccess::where('status', 'unread')->count();
@@ -339,7 +323,6 @@ class AdminController extends Controller
 
     public function realTimeUploadAccess()
     {
-        // Fetch all requests
         $allRequests = RequestUploadAccess::with('user')
             ->orderBy('created_at', 'desc')
             ->get()

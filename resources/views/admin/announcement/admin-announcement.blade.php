@@ -44,7 +44,7 @@
                                         </li>
                                         <li class="breadcrumb-item">
                                             <a href="{{ route('admin.announcement.admin-announcement') }}"
-                                                class="breadcrumb-link">Announcement</a>
+                                                class="breadcrumb-link" style="color: #3d405c;">Announcement</a>
                                         </li>
                                     </ol>
                                 </nav>
@@ -99,13 +99,17 @@
                                                     {{ \Carbon\Carbon::parse($announcement->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:i a') }}
                                                 </small>
                                                 <div class="mt-2">
-                                                    To: @foreach ($announcement->displayEmails as $email)
-                                                        {{ $email }}@if (!$loop->last)
-                                                            ,
+                                                    <span class="text-muted">To:</span>
+                                                    @foreach ($announcement->displayEmails as $email)
+                                                        <span
+                                                            class="badge bg-light text-dark">{{ $email }}</span>
+                                                        @if (!$loop->last)
+                                                            <span class="mx-1">,</span>
                                                         @endif
                                                     @endforeach
                                                     @if ($announcement->moreEmailsCount > 0)
-                                                        and {{ $announcement->moreEmailsCount }} more
+                                                        <span class="text-muted">and
+                                                            {{ $announcement->moreEmailsCount }} more</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -116,24 +120,37 @@
                                                     <span class="badge badge-warning mr-3">Unpublished</span>
                                                 @endif
                                                 <div class="dropdown">
-                                                    <i class="fas fa-ellipsis-h"
+                                                    <i class="fas fa-ellipsis-h" role="button"
                                                         id="dropdownMenuButton{{ $announcement->id_announcement }}"
-                                                        data-bs-toggle="dropdown" aria-expanded="false"></i>
-                                                    <ul class="dropdown-menu"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        style="cursor: pointer;"></i>
+                                                    <ul class="dropdown-menu dropdown-menu-end"
                                                         aria-labelledby="dropdownMenuButton{{ $announcement->id_announcement }}">
-                                                        <li><a class="dropdown-item"
-                                                                href="{{ route('admin.announcement.edit-announcement', $announcement->id_announcement) }}">Edit</a>
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('admin.announcement.edit-announcement', $announcement->id_announcement) }}">
+                                                                <i class="fas fa-edit me-2"></i> Edit
+                                                            </a>
                                                         </li>
-                                                        <li><button type="button" class="dropdown-item delete-btn"
-                                                                data-id="{{ $announcement->id_announcement }}">Delete</button>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item delete-btn"
+                                                                data-id="{{ $announcement->id_announcement }}">
+                                                                <i class="fas fa-trash-alt me-2"></i> Delete
+                                                            </button>
                                                         </li>
                                                         @if ($announcement->published)
-                                                            <li><a class="dropdown-item"
-                                                                    href="{{ route('admin.announcement.unpublish-announcement', $announcement->id_announcement) }}">Unpublish</a>
+                                                            <li>
+                                                                <a class="dropdown-item"
+                                                                    href="{{ route('admin.announcement.unpublish-announcement', $announcement->id_announcement) }}">
+                                                                    <i class="fas fa-times-circle me-2"></i> Unpublish
+                                                                </a>
                                                             </li>
                                                         @else
-                                                            <li><a class="dropdown-item"
-                                                                    href="{{ route('admin.announcement.publish-announcement', $announcement->id_announcement) }}">Publish</a>
+                                                            <li>
+                                                                <a class="dropdown-item"
+                                                                    href="{{ route('admin.announcement.publish-announcement', $announcement->id_announcement) }}">
+                                                                    <i class="fas fa-check-circle me-2"></i> Publish
+                                                                </a>
                                                             </li>
                                                         @endif
                                                     </ul>
@@ -141,131 +158,193 @@
                                             </div>
                                         </div>
                                         <div class="card-body">
-                                            <p class="card-text">{!! $announcement->message !!}</p>
+                                            <div class="card-text">{!! $announcement->message !!}</div>
                                         </div>
                                     </div>
                                 @endforeach
+
+                                <!-- Pagination -->
+                                <div class="d-flex justify-content-between align-items-center my-4">
+                                    <div class="pagination-info">
+                                        Showing {{ $announcements->firstItem() ?? 0 }} to
+                                        {{ $announcements->lastItem() ?? 0 }} of {{ $announcements->total() }} results
+                                    </div>
+
+                                    @if ($announcements->hasPages())
+                                        <nav aria-label="Announcements pagination">
+                                            <ul class="pagination mb-0">
+                                                {{-- Previous Page Link --}}
+                                                @if ($announcements->onFirstPage())
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link">
+                                                            <i class="fas fa-chevron-left"></i>
+                                                        </span>
+                                                    </li>
+                                                @else
+                                                    <li class="page-item">
+                                                        <a class="page-link"
+                                                            href="{{ $announcements->previousPageUrl() }}"
+                                                            rel="prev">
+                                                            <i class="fas fa-chevron-left"></i>
+                                                        </a>
+                                                    </li>
+                                                @endif
+
+                                                {{-- Pagination Elements --}}
+                                                @foreach ($announcements->getUrlRange(1, $announcements->lastPage()) as $page => $url)
+                                                    @if ($page == $announcements->currentPage())
+                                                        <li class="page-item active">
+                                                            <span class="page-link">{{ $page }}</span>
+                                                        </li>
+                                                    @else
+                                                        <li class="page-item">
+                                                            <a class="page-link"
+                                                                href="{{ $url }}">{{ $page }}</a>
+                                                        </li>
+                                                    @endif
+                                                @endforeach
+
+                                                {{-- Next Page Link --}}
+                                                @if ($announcements->hasMorePages())
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="{{ $announcements->nextPageUrl() }}"
+                                                            rel="next">
+                                                            <i class="fas fa-chevron-right"></i>
+                                                        </a>
+                                                    </li>
+                                                @else
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link">
+                                                            <i class="fas fa-chevron-right"></i>
+                                                        </span>
+                                                    </li>
+                                                @endif
+                                            </ul>
+                                        </nav>
+                                    @endif
+                                </div>
                             @endif
                         </div>
-                        <!-- ============================================================== -->
-                        <!-- end wrapper  -->
-                        <!-- ============================================================== -->
                     </div>
+                    <!-- ============================================================== -->
+                    <!-- end wrapper  -->
+                    <!-- ============================================================== -->
                 </div>
             </div>
         </div>
+    </div>
 
 
-        <!-- ============================================================== -->
-        <!-- end main wrapper  -->
-        <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- end main wrapper  -->
+    <!-- ============================================================== -->
 
-        @include('partials.admin-footer')
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @include('partials.admin-footer')
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-        <script>
-            //dropdown toggle
-            function toggleDropdown(id) {
-                var dropdownMenu = document.getElementById('dropdownMenu' + id);
-                var rect = dropdownMenu.getBoundingClientRect();
+    <script>
+        //dropdown toggle
+        function toggleDropdown(id) {
+            var dropdownMenu = document.getElementById('dropdownMenu' + id);
+            var rect = dropdownMenu.getBoundingClientRect();
 
-                if (rect.right > window.innerWidth) {
-                    dropdownMenu.style.left = 'auto';
-                    dropdownMenu.style.right = '0';
-                } else {
-                    dropdownMenu.style.left = 'auto';
-                    dropdownMenu.style.right = 'initial';
-                }
-
-                dropdownMenu.classList.toggle('show');
+            if (rect.right > window.innerWidth) {
+                dropdownMenu.style.left = 'auto';
+                dropdownMenu.style.right = '0';
+            } else {
+                dropdownMenu.style.left = 'auto';
+                dropdownMenu.style.right = 'initial';
             }
 
-            //delete Sweet Alert
-            document.addEventListener('DOMContentLoaded', function() {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            dropdownMenu.classList.toggle('show');
+        }
 
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const id = this.getAttribute('data-id');
-                        const url = `/admin/announcement/delete/${id}`;
+        //delete Sweet Alert
+        document.addEventListener('DOMContentLoaded', function() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                        Swal.fire({
-                            title: 'Are you sure?',
-                            text: "You won't be able to revert this!",
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Yes, delete it!'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                fetch(url, {
-                                        method: 'DELETE',
-                                        headers: {
-                                            'X-CSRF-TOKEN': csrfToken,
-                                            'Content-Type': 'application/json',
-                                        },
-                                    })
-                                    .then(response => {
-                                        if (response.ok) {
-                                            Swal.fire(
-                                                'Deleted!',
-                                                'Your announcement has been deleted.',
-                                                'success'
-                                            ).then(() => {
-                                                location.reload();
-                                            });
-                                        } else {
-                                            throw new Error(
-                                                'Error deleting the announcement');
-                                        }
-                                    })
-                                    .catch(error => {
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = this.getAttribute('data-id');
+                    const url = `/admin/announcement/delete/${id}`;
+
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(url, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-CSRF-TOKEN': csrfToken,
+                                        'Content-Type': 'application/json',
+                                    },
+                                })
+                                .then(response => {
+                                    if (response.ok) {
                                         Swal.fire(
-                                            'Error!',
-                                            'There was an error deleting the announcement.',
-                                            'error'
-                                        );
-                                    });
-                            }
-                        });
-                    });
-                });
-            });
-
-            //success message
-            document.addEventListener('DOMContentLoaded', function() {
-                if (document.getElementById('success-message')) {
-                    setTimeout(function() {
-                        $('#success-message').alert('close');
-                    }, 8000);
-                }
-            });
-
-            //search announcement
-            $(document).ready(function() {
-                $('#search, #search-mobile').on('keyup', function() {
-                    let query = $(this).val();
-
-                    $.ajax({
-                        url: '{{ route('admin.announcement.search') }}', 
-                        method: 'GET',
-                        data: {
-                            search: query
-                        },
-                        success: function(data) {
-                            $('#announcements-list').html(data); 
-                        },
-                        error: function(xhr) {
-                            console.error(xhr.responseText);
+                                            'Deleted!',
+                                            'Your announcement has been deleted.',
+                                            'success'
+                                        ).then(() => {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        throw new Error(
+                                            'Error deleting the announcement');
+                                    }
+                                })
+                                .catch(error => {
+                                    Swal.fire(
+                                        'Error!',
+                                        'There was an error deleting the announcement.',
+                                        'error'
+                                    );
+                                });
                         }
                     });
                 });
             });
-        </script>
+        });
+
+        //success message
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('success-message')) {
+                setTimeout(function() {
+                    $('#success-message').alert('close');
+                }, 8000);
+            }
+        });
+
+        //search announcement
+        $(document).ready(function() {
+            $('#search, #search-mobile').on('keyup', function() {
+                let query = $(this).val();
+
+                $.ajax({
+                    url: '{{ route('admin.announcement.search') }}',
+                    method: 'GET',
+                    data: {
+                        search: query
+                    },
+                    success: function(data) {
+                        $('#announcements-list').html(data);
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -9,6 +9,10 @@ use App\Models\CourseSchedule;
 use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Notification;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
+
 
 class CoursesFileController extends Controller
 {
@@ -20,16 +24,20 @@ class CoursesFileController extends Controller
             'files.*' => 'required|array',
             'files.*.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480',
             'folder_name_id' => 'required|exists:folder_name,folder_name_id',
+            'semester' => 'required|string',
+            'school_year' => 'required|string',
         ]);
     
         try {
             $userLoginId = auth()->user()->user_login_id;
             $folder_name_id = $request->input('folder_name_id');
+            $semester = $request->input('semester');
+            $schoolYear = $request->input('school_year'); 
     
             foreach ($request->file('files') as $courseScheduleId => $courseFiles) {
                 $courseSchedule = CourseSchedule::find($courseScheduleId);
                 if (!$courseSchedule) {
-                    continue; 
+                    continue;
                 }
     
                 foreach ($courseFiles as $file) {
@@ -42,7 +50,8 @@ class CoursesFileController extends Controller
                         'user_login_id' => $userLoginId,
                         'folder_name_id' => $folder_name_id,
                         'course_schedule_id' => $courseSchedule->course_schedule_id,
-                        'semester' => $courseSchedule->sem_academic_year,
+                        'semester' => $semester, 
+                        'school_year' => $schoolYear, 
                         'subject' => $courseSchedule->course_subjects,
                         'file_size' => $fileSize,
                     ]);
@@ -56,16 +65,18 @@ class CoursesFileController extends Controller
         }
     }
     
+    
     //update file
     public function updateFile(Request $request, $id)
     {
         $request->validate([
-            'files' => 'nullable|file|mimes:pdf',
+            'files.*' => 'nullable|file|mimes:pdf',
+            'removed_files' => 'nullable|array',
+            'removed_files.*' => 'required|string'
         ]);
     
         try {
             $file = CoursesFile::findOrFail($id);
-    
             $userLoginId = auth()->user()->user_login_id;
             $folder_name_id = $file->folder_name_id;
             $originalStatus = $file->status;
@@ -74,51 +85,81 @@ class CoursesFileController extends Controller
             $senderName = $currentUser->first_name . ' ' . $currentUser->surname;
             $senderUserLoginId = $currentUser->user_login_id;
     
-            if ($request->hasFile('files')) {
-                if (Storage::disk('public')->exists($file->files)) {
-                    Storage::disk('public')->delete($file->files);
-                }
+            // Get existing files
+            $existingFiles = explode(',', $file->files);
+            $existingFileNames = explode(',', $file->original_file_name);
     
-                $path = $request->file('files')->store('courses_files', 'public');
-    
-                $file->update([
-                    'files' => $path,
-                    'original_file_name' => $request->file('files')->getClientOriginalName(),
-                    'user_login_id' => $userLoginId,
-                    'file_size' => $request->file('files')->getSize(),
-                    'status' => ($originalStatus === 'Declined') ? 'To Review' : $originalStatus,
-                ]);
-    
-                if ($originalStatus === 'Declined') {
-                    $folderName = FolderName::find($folder_name_id)->folder_name;
-                    $subject = $file->subject;
-    
-                    $adminUsers = UserLogin::where('role', 'admin')->get();
-                    foreach ($adminUsers as $admin) {
-                        Notification::create([
-                            'courses_files_id' => $file->courses_files_id,
-                            'user_login_id' => $admin->user_login_id,
-                            'folder_name_id' => $folder_name_id,
-                            'sender' => $senderName, 
-                            'sender_user_login_id' => $senderUserLoginId, 
-                            'notification_message' => "has re-uploaded the previously declined course {$subject} in {$folderName}.",
-                            'is_read' => false,
-                        ]);
+            // Handle file removals
+            if ($request->has('removed_files')) {
+                $removedFiles = $request->input('removed_files'); // No need for json_decode
+                foreach ($removedFiles as $removedFile) {
+                    $index = array_search($removedFile, $existingFiles);
+                    if ($index !== false) {
+                        // Remove from storage
+                        if (Storage::disk('public')->exists($removedFile)) {
+                            Storage::disk('public')->delete($removedFile);
+                        }
+                        // Remove from arrays
+                        unset($existingFiles[$index]);
+                        unset($existingFileNames[$index]);
                     }
                 }
-    
-                session()->flash('success', 'File updated successfully!');
-    
-                return response()->json(['success' => true]);
             }
     
-            return response()->json(['success' => false, 'message' => 'No file has been selected. Please select a file'], 400);
+            // Handle new file uploads
+            if ($request->hasFile('files')) {
+                $newFiles = $request->file('files');
+                foreach ($newFiles as $uploadedFile) {
+                    $path = $uploadedFile->store('courses_files', 'public');
+                    $existingFiles[] = $path;
+                    $existingFileNames[] = $uploadedFile->getClientOriginalName();
+                }
+            }
+    
+            // Calculate total size of remaining and new files
+            $totalSize = 0;
+            foreach ($existingFiles as $existingFile) {
+                if (Storage::disk('public')->exists($existingFile)) {
+                    $totalSize += Storage::disk('public')->size($existingFile);
+                }
+            }
+    
+            // Update the database
+            $file->update([
+                'files' => implode(',', array_values($existingFiles)),
+                'original_file_name' => implode(',', array_values($existingFileNames)),
+                'user_login_id' => $userLoginId,
+                'file_size' => $totalSize,
+                'status' => ($originalStatus === 'Declined') ? 'To Review' : $originalStatus,
+            ]);
+    
+            // Create notifications if status was Declined
+            if ($originalStatus === 'Declined') {
+                $folderName = FolderName::find($folder_name_id)->folder_name;
+                $subject = $file->subject;
+    
+                $adminUsers = UserLogin::where('role', 'admin')->get();
+                foreach ($adminUsers as $admin) {
+                    Notification::create([
+                        'courses_files_id' => $file->courses_files_id,
+                        'user_login_id' => $admin->user_login_id,
+                        'folder_name_id' => $folder_name_id,
+                        'sender' => $senderName,
+                        'sender_user_login_id' => $senderUserLoginId,
+                        'notification_message' => "has re-uploaded the previously declined course {$subject} in {$folderName}.",
+                        'is_read' => false,
+                    ]);
+                }
+            }
+    
+            return response()->json(['success' => true]);
     
         } catch (\Exception $e) {
             logger()->error('File update failed: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'File update failed. Please try again.'], 500);
         }
     }
+    
     
     //show view archive page
    public function showArchive()
@@ -184,6 +225,49 @@ class CoursesFileController extends Controller
 
         return redirect()->back()->with('error', 'File not found.');
     }
+
+    public function archiveByDateRange(Request $request)
+    {
+        $request->validate([
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+        ]);
+    
+        $fromDate = Carbon::parse($request->from_date)->startOfDay();
+        $toDate = Carbon::parse($request->to_date)->endOfDay();
+    
+        try {
+            DB::beginTransaction();
+    
+            $files = CoursesFile::whereBetween('created_at', [$fromDate, $toDate])
+                ->where('status', 'Approved')
+                ->where('is_archived', false)  
+                ->get();
+    
+            if ($files->isEmpty()) {
+                return redirect()->back()
+                    ->with('error', 'No approved files found within the specified date range.');
+            }
+    
+            $count = 0;
+            foreach ($files as $file) {
+                $file->is_archived = 1;  
+                $file->save();
+                $count++;
+            }
+    
+            DB::commit();
+    
+            return redirect()->back()
+                ->with('success', $count . ' files have been archived successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Archive error: ' . $e->getMessage());  
+            return redirect()->back()
+                ->with('error', 'An error occurred while archiving the files.');
+        }
+    }
+    
 
     public function unarchive($courses_files_id)
     {

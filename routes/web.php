@@ -52,12 +52,16 @@ Route::middleware(['auth', 'role:faculty,faculty-coordinator', 'prevent-back-his
     Route::post('/files/unarchive/{courses_files_id}', [CoursesFileController::class, 'unarchive'])->name('files.unarchive');
 
     Route::post('/files/archiveAll', [CoursesFileController::class, 'archiveAll'])->name('files.archiveAll');
+    Route::post('/files/archive-by-date-range', [CoursesFileController::class, 'archiveByDateRange'])->name('files.archiveByDateRange');
     Route::post('/files/bulk-unarchive', [CoursesFileController::class, 'bulkUnarchive'])->name('files.bulkUnarchive');
     Route::post('/log-logout', [AuditController::class, 'logLogout'])->name('log-logout');
 
     Route::post('/request-upload-access', [FacultyController::class, 'requestUploadAccess'])->name('request.upload.access');
 
     Route::get('/faculty/announcement/search', [AnnouncementController::class, 'searchFacultyAnnouncements'])->name('faculty.announcement.search');
+
+    Route::post('/remove-file', [CoursesFileController::class, 'removeFile'])->name('remove.file');
+    Route::delete('/courses-files/{id}', [CoursesFileController::class, 'destroyFiles'])->name('courses-files.destroy');
 
 });
 
@@ -67,6 +71,9 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     //Accomplishment
     Route::get('/admin-accomplishment', [AdminController::class, 'accomplishmentPage'])->name('admin.admin-accomplishment');
     Route::get('/accomplishment/admin-uploaded-files/{folder_name_id}', [AdminController::class, 'showAdminUploadedFiles'])->name('admin.accomplishment.admin-uploaded-files');
+    
+    Route::get('/accomplishment/department/{folder_name_id}', [AccomplishmentController::class, 'showDepartmentPage'])->name('admin.accomplishment.department');
+    Route::get('accomplishment/faculty/{department}/{folder_name_id?}', [AccomplishmentController::class, 'showAccomplishmentDepartment'])->name('viewAccomplishmentDepartment');
 
     //File Crud
     Route::get('/file/approve/{courses_files_id}', [FileController::class, 'approve'])->name('approveFile');
@@ -87,7 +94,7 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     //Admin Dashboard
     Route::get('/admin-dashboard', [DashboardController::class, 'adminDashboardPage'])->name('admin.admin-dashboard');
 
-     //Announcement
+    //Announcement
     Route::get('/announcement/admin-announcement', [AnnouncementController::class, 'showAnnouncementPage'])->name('admin.announcement.admin-announcement');
     Route::get('/announcement/add-announcement', [AnnouncementController::class, 'showAddAnnouncementPage'])->name('admin.announcement.add-announcement');
     Route::post('/announcement/add-announcement', [AnnouncementController::class, 'saveAnnouncement'])->name('admin.announcement.save-announcement');
@@ -136,8 +143,8 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
 
     //Accomplishment
     Route::get('/all-accomplishment', [AccomplishmentController::class, 'showAccomplishmentPage'])->name('admin.accomplishment.accomplishment');
-    Route::get('accomplishment/faculty/{department}', [AccomplishmentController::class, 'showAccomplishmentDepartment'])->name('viewAccomplishmentDepartment');
-    Route::get('/accomplishment/main-requirements/faculty-accomplishments/{user_login_id}', [AccomplishmentController::class, 'viewFacultyAccomplishments'])->name('faculty.accomplishments');
+  
+    Route::get('/accomplishment/faculty-accomplishments/{user_login_id}', [AccomplishmentController::class, 'viewFacultyAccomplishments'])->name('faculty.accomplishments');
     Route::get('/accomplishment/view-folder-names/{user_login_id}/{main_folder_name}', [AccomplishmentController::class, 'viewFolderNames'])->name('admin.accomplishment.viewFolderNames');
     Route::get('/accomplishment/view-academic-year/{user_login_id}/{folder_name_id}', [AccomplishmentController::class, 'viewAcademicYear'])->name('admin.accomplishment.viewAcademicYear');
     Route::get('/view-accomplishment/{user_login_id}/{folder_name_id}/{semester?}', [AdminController::class, 'viewAccomplishmentFaculty'])->name('admin.accomplishment.view-accomplishment');
@@ -153,8 +160,9 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/accomplishment/director-uploaded-files/{folder_name_id}', [DirectorController::class, 'showDirectorUploadedFiles'])->name('director.accomplishment.director-uploaded-files');
     // Route::get('/accomplishment/view-faculty-accomplishment/{user_login_id}/{folder_name_id}', [DirectorController::class, 'viewFacultyAccomplishment'])->name('director.accomplishment.view-accomplishment');
 
-    Route::get('/accomplishment/view-accomplishment/{user_login_id}/{folder_name_id}/{semester?}', [DirectorController::class, 'viewFacultyAccomplishment'])
-    ->name('director.accomplishment.view-accomplishment');
+    Route::get('/director/accomplishment/view-accomplishment/{user_login_id}/{folder_name_id}/{semester?}', [DirectorController::class, 'viewFacultyAccomplishment'])
+    ->name('director.accomplishment.view-faculty-accomplishment');
+
     Route::get('/generate-all-reports-director/{semester}', [DirectorController::class, 'generateAllReportsDirector'])->name('generate.all.reports.director');
 
     Route::get('/director-dashboard', [DirectorController::class, 'directorDashboardPage'])->name('director.director-dashboard');
@@ -165,6 +173,10 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::post('/logout-director', [DirectorController::class, 'directorLogout'])->name('logout-director');
 
     Route::get('/director/accomplishment/{folder_name_id}', [DirectorController::class, 'showDirectorUploadedFiles'])->name('director.accomplishment.show');
+
+    Route::get('/director/department/{folder_name_id}', [DirectorController::class, 'showDirectorDepartmentPage'])->name('director.department');
+
+    Route::get('/director/accomplishment/faculty/{department}/{folder_name_id?}', [DirectorController::class, 'showDirectorAccomplishmentDepartment'])->name('view.accomplishment.department');
 });
 
 

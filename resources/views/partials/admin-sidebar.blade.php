@@ -127,6 +127,7 @@
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
             <div class="collapse navbar-collapse " id="navbarSupportedContent">
                 <ul class="navbar-nav ml-auto navbar-right-top">
                     <li class="nav-item dropdown notification">
@@ -183,7 +184,6 @@
                         </ul>
                     </li>
 
-
                     <li class="nav-item dropdown nav-user">
                         <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -223,7 +223,9 @@
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+                <div class="sidebar-scroll">
                 <div class="collapse navbar-collapse" id="navbarNav">
+                
                     <ul class="navbar-nav flex-column">
                         <li class="nav-divider">
                             MENU
@@ -287,7 +289,7 @@
                             Accomplishment
                         </li>
 
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a class="nav-link {{ str_contains(request()->path(), 'accomplishment') ? 'active' : '' }}"
                                 href="{{ route('admin.accomplishment.accomplishment') }}" aria-expanded="false"
                                 data-target="#submenu-4" aria-controls="submenu-4">
@@ -296,72 +298,69 @@
                                     All Accomplishment
                                 </span>
                             </a>
+                        </li> --}}
+                        
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Classroom Management')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
+                                href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-6"
+                                aria-controls="submenu-6">
+                                <i class="fas fa-book"></i> Classroom Management
+                            </a>
+                            <div id="submenu-6" class="collapse submenu">
+                                <ul class="nav flex-column">
+                                    @foreach ($folders->where('main_folder_name', 'Classroom Management')->sortBy('folder_name') as $folder)
+                                        <li class="nav-item">
+                                            <a class="nav-link {{ request()->routeIs('admin.accomplishment.department') && request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
+                                                href="{{ route('admin.accomplishment.department', ['folder_name_id' => $folder->folder_name_id]) }}">
+                                                {{ $folder->folder_name }}
+                                             </a>
+                                        
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </li>
-                        {{-- <li class="nav-item">
-                             <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Classroom Management')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
-                                 href="#" data-toggle="collapse" aria-expanded="false"
-                                 data-target="#submenu-6" aria-controls="submenu-6">
-                                 <i class="fas fa-book"></i> Classroom Management
-                             </a>
-                             <div id="submenu-6" class="collapse submenu">
-                                 <ul class="nav flex-column">
-                                     @foreach ($folders as $folder)
-                                         @if ($folder->main_folder_name == 'Classroom Management')
-                                             <li class="nav-item">
-                                                 <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                     href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
-                                                     {{ $folder->folder_name }}
-                                                 </a>
-                                             </li>
-                                         @endif
-                                     @endforeach
-                                 </ul>
-                             </div>
-                         </li>
 
-                         <li class="nav-item">
-                             <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Test Administration')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
-                                 href="#" data-toggle="collapse" aria-expanded="false"
-                                 data-target="#submenu-2" aria-controls="submenu-2">
-                                 <i class="fas fa-clipboard-list"></i> Test Administration
-                             </a>
-                             <div id="submenu-2" class="collapse submenu">
-                                 <ul class="nav flex-column">
-                                     @foreach ($folders as $folder)
-                                         @if ($folder->main_folder_name == 'Test Administration')
-                                             <li class="nav-item">
-                                                 <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                     href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
-                                                     {{ $folder->folder_name }}
-                                                 </a>
-                                             </li>
-                                         @endif
-                                     @endforeach
-                                 </ul>
-                             </div>
-                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Test Administration')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
+                                href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-2"
+                                aria-controls="submenu-2">
+                                <i class="fas fa-clipboard-list"></i> Test Administration
+                            </a>
+                            <div id="submenu-2" class="collapse submenu">
+                                <ul class="nav flex-column">
+                                    @foreach ($folders->where('main_folder_name', 'Test Administration')->sortBy('folder_name') as $folder)
+                                        <li class="nav-item">
+                                            <a class="nav-link {{ request()->routeIs('admin.accomplishment.department') && request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
+                                                href="{{ route('admin.accomplishment.department', ['folder_name_id' => $folder->folder_name_id]) }}">
+                                                {{ $folder->folder_name }}
+                                             </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </li>
 
-                         <li class="nav-item">
-                             <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Syllabus Preparation')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
-                                 href="#" data-toggle="collapse" aria-expanded="false"
-                                 data-target="#submenu-3" aria-controls="submenu-3">
-                                 <i class="fas fa-clipboard-list"></i>Syllabus Preparation
-                             </a>
-                             <div id="submenu-3" class="collapse submenu">
-                                 <ul class="nav flex-column">
-                                     @foreach ($folders as $folder)
-                                         @if ($folder->main_folder_name == 'Syllabus Preparation')
-                                             <li class="nav-item">
-                                                 <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                     href="{{ route('admin.accomplishment.admin-uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
-                                                     {{ $folder->folder_name }}
-                                                 </a>
-                                             </li>
-                                         @endif
-                                     @endforeach
-                                 </ul>
-                             </div>
-                         </li> --}}
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Syllabus Preparation')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
+                                href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-3"
+                                aria-controls="submenu-3">
+                                <i class="fas fa-file-alt"></i> Syllabus Preparation
+                            </a>
+                            <div id="submenu-3" class="collapse submenu">
+                                <ul class="nav flex-column">
+                                    @foreach ($folders->where('main_folder_name', 'Syllabus Preparation')->sortBy('folder_name') as $folder)
+                                        <li class="nav-item">
+                                            <a class="nav-link {{ request()->routeIs('admin.accomplishment.department') && request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
+                                                href="{{ route('admin.accomplishment.department', ['folder_name_id' => $folder->folder_name_id]) }}">
+                                                {{ $folder->folder_name }}
+                                             </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </li>
+
                     </ul>
                 </div>
                 </li>

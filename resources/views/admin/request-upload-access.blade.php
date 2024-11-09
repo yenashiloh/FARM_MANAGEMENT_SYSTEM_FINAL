@@ -38,9 +38,9 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Menu</a></li>
+                                                >Menu</a></li>
                                         <li class="breadcrumb-item"><a href="{{ route('admin.request-upload-access') }}"
-                                                class="breadcrumb-link">Request Upload Request</a></li>
+                                                class="breadcrumb-link"  style="cursor: default; color: #3d405c;">Request Upload Request</a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -124,10 +124,8 @@
                 url: "{{ route('real.time.access') }}", 
                 method: 'GET',
                 success: function(data) {
-                    // Clear existing data
                     table.clear();
     
-                    // Populate table with new data
                     $.each(data.uploadRequests, function(index, request) {
                         table.row.add([
                             request.created_at_date,
@@ -143,10 +141,8 @@
             });
         }
     
-        // Fetch requests every 5 seconds
         setInterval(fetchUploadRequests, 5000);
     
-        // Initial fetch
         fetchUploadRequests();
     });
         </script>

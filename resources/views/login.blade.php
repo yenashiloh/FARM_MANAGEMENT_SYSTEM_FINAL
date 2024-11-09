@@ -5,6 +5,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets/images/pup-logo.png') }}" type="image/x-icon">
     <title>Admin Login</title>
@@ -15,20 +16,9 @@
     <link rel="stylesheet" href="../../assets-admin/vendors/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../../assets-admin/css/style.css">
     <link rel="stylesheet" href="../../assets-admin/css/login.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
     <!-- End layout styles -->
-    <style>
-        .bg-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('assets/images/PUP_1.jpeg');
-            background-size: cover;
-            background-position: center;
-            z-index: 1;
-        }
-    </style>
 </head>
 
 <body>
@@ -59,20 +49,38 @@
                                         required>
                                     <div class="invalid-feedback" style="display: none;">Email is invalid</div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group position-relative">
                                     <label for="password">Password</label>
-                                    <input type="password" name="password" class="form-control form-control-lg"
-                                        placeholder="Password" required>
-                                    <div class="invalid-feedback" style="display: none;">Password must be at least 6
-                                        characters long.</div>
+                                    <div class="password-container" style="position: relative;">
+                                        <input 
+                                            type="password" 
+                                            name="password" 
+                                           id="passwordInput"
+                                            class="form-control form-control-lg" 
+                                            placeholder="Password" 
+                                            required
+                                        >
+                                        <button 
+                                            type="button" 
+                                            id="togglePassword" 
+                                            class="toggle-password"
+                                        >
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <div class="invalid-feedback" style="display: none;">Password must be at least 6
+                                            characters long.</div>
+                                    </div>
+                                   
                                 </div>
+                               
                                 <div class="mt-3 d-grid gap-2">
                                     <button type="submit"
-                                        class="btn btn-block btn-lg font-weight-medium auth-form-btn">Login</button>
+                                        class="btn btn-block btn-lg font-weight-medium auth-form-btn ">Login</button>
                                 </div>
                             </form>
                         </div>
                     </div>
+                    
                 </div>
             </div>
 
@@ -182,4 +190,60 @@
 
         toastClose.onclick = hideToast;
     });
+
+   // password
+    const passwordInput = document.querySelector('input[name="password"]');
+    passwordInput.addEventListener('input', function() {
+        const togglePassword = document.getElementById('togglePassword');
+        const invalidFeedback = this.nextElementSibling.nextElementSibling; 
+        
+        if (this.value.length < 6) {
+            this.classList.remove('input-success');
+            this.classList.add('input-error');
+            invalidFeedback.style.display = 'block';
+        } else {
+            this.classList.remove('input-error');
+            this.classList.add('input-success');
+            invalidFeedback.style.display = 'none';
+        }
+        
+        togglePassword.style.display = 'block';
+    });
+
+    const togglePassword = document.getElementById('togglePassword');
+    if (togglePassword && passwordInput) {
+        togglePassword.style.cssText = `
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            cursor: pointer;
+            pointer-events: auto;
+            user-select: none;
+            background: transparent;
+            border: none;
+            padding: 5px;
+            display: block !important;
+        `;
+        
+        togglePassword.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            const icon = this.querySelector('i');
+            if (icon) {
+                if (type === 'password') {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                } else {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            }
+        });
+    }
 </script>

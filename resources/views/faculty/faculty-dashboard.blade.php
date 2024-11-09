@@ -35,9 +35,9 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Menu</a></li>
+                                                >Menu</a></li>
                                         <li class="breadcrumb-item"><a href="{{ route('faculty.faculty-dashboard') }}"
-                                                class="breadcrumb-link">Dashboard</a></li>
+                                                class="breadcrumb-link" style=" color: #3d405c;">Dashboard</a></li>
                                     </ol>
                                 </nav>
                             </div>

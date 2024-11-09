@@ -18,102 +18,6 @@ use Illuminate\Support\Facades\Log;
 
 class FileController extends Controller
 {
-    
-    // public function getFacultyInfo()
-    // {
-    //     $semester = [
-    //         "id" => 1,
-    //         "semester" => "1st Semester 2024-2025",
-    //         "user_login_id" => 2
-    //     ];
-    
-    //     $programs = [
-    //         "Bachelor of Science in Applied Mathematics (BSAM)",
-    //         "Bachelor of Science in Information Technology (BSIT)",
-    //         "Bachelor of Science in Entrepreneurship (BSENTREP)"
-    //     ];
-    
-    //     $subjects = [
-    //         [
-    //             "id" => 1,
-    //             "code" => "MGT101",
-    //             "name" => "Principles of Management and Organization",
-    //             "semester" => $semester,
-    //             "year_programs" => [
-    //                 [
-    //                     "year" => "1st Year",
-    //                     "program" => "BSAM"
-    //                 ]
-    //             ]
-    //         ],
-    //         [
-    //             "id" => 2,
-    //             "code" => "IT202",
-    //             "name" => "Applications Development and Emerging Technologies",
-    //             "semester" => $semester,
-    //             "year_programs" => [
-    //                 [
-    //                     "year" => "2nd Year",
-    //                     "program" => "BSIT"
-    //                 ]
-    //             ]
-    //         ],
-    //         [
-    //             "id" => 3,
-    //             "code" => "ENT301",
-    //             "name" => "Technopreneurship",
-    //             "semester" => $semester,
-    //             "year_programs" => [
-    //                 [
-    //                     "year" => "3rd Year",
-    //                     "program" => "BSENTREP"
-    //                 ]
-    //             ]
-    //         ],
-    //         [
-    //             "id" => 4,
-    //             "code" => "SYS202",
-    //             "name" => "Systems Analysis and Design",
-    //             "semester" => $semester,
-    //             "year_programs" => [
-    //                 [
-    //                     "year" => "2nd Year",
-    //                     "program" => "BSIT"
-    //                 ]
-    //             ]
-    //         ],
-    //         [
-    //             "id" => 5,
-    //             "code" => "CS303",
-    //             "name" => "Computer Science",
-    //             "semester" => $semester,
-    //             "year_programs" => [
-    //                 [
-    //                     "year" => "4th Year",
-    //                     "program" => "BSIT"
-    //                 ],
-    //                 [
-    //                     "year" => "3rd Year",
-    //                     "program" => "BSAM"
-    //                 ]
-    //             ]
-    //         ]
-    //     ];
-    
-    //     $data = [
-    //         "faculty" => [
-    //             "faculty_id" => 2,
-    //             "first_name" => "Diana",
-    //             "middle_name" => "M.",
-    //             "last_name" => "Rose",
-    //             "programs" => $programs,
-    //             "subjects" => $subjects
-    //         ]
-    //     ];
-    
-    //     return json_encode($data);
-    // }
-
     //approve files
     public function approve($courses_files_id)
     {
@@ -124,29 +28,41 @@ class FileController extends Controller
         $user = auth()->user();
         
         if ($user->role !== 'admin') {
-            $loginUrl = url('login');
-            return redirect($loginUrl);
+            return redirect()->route('login');
         }
 
-        $file = CoursesFile::findOrFail($courses_files_id);
-        $file->status = 'Approved';
-        $file->save();
+        try {
+            $targetFile = CoursesFile::findOrFail($courses_files_id);
+            
+            $relatedFiles = CoursesFile::where('folder_name_id', $targetFile->folder_name_id)
+                ->where('user_login_id', $targetFile->user_login_id)
+                ->where('course_schedule_id', $targetFile->course_schedule_id)
+                ->where('semester', $targetFile->semester)
+                ->where('school_year', $targetFile->school_year)
+                ->get();
 
-        $folder = FolderName::find($file->folder_name_id);
-        $userDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
+            foreach ($relatedFiles as $file) {
+                $file->status = 'Approved';
+                $file->save();
+            }
 
-        $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
+            $folder = FolderName::find($targetFile->folder_name_id);
+            $userDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
+            $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
 
-        Notification::create([
-            'courses_files_id' => $file->courses_files_id,
-            'user_login_id' => $file->user_login_id,
-            'folder_name_id' => $file->folder_name_id,
-            'sender' => $senderName,
-       'notification_message' => 'approved the course ' . $file->subject . ' in ' . ($folder ? $folder->folder_name : 'Unknown Folder') . '.',
+            Notification::create([
+                'courses_files_id' => $targetFile->courses_files_id,
+                'user_login_id' => $targetFile->user_login_id,
+                'folder_name_id' => $targetFile->folder_name_id,
+                'sender' => $senderName,
+                'notification_message' => 'approved the course ' . $targetFile->subject . ' in ' . 
+                    ($folder ? $folder->folder_name : 'Unknown Folder') . '.',
+            ]);
 
-        ]);
-
-        return redirect()->back()->with('success', 'File approved successfully!');
+            return redirect()->back()->with('success', 'Approved successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An error occurred while approving the files.');
+        }
     }
 
     //decline files   
@@ -155,55 +71,72 @@ class FileController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
+    
         $user = auth()->user();
-
+    
         if ($user->role !== 'admin') {
-            $loginUrl = url('login');
-            return redirect($loginUrl);
+            return redirect()->route('login');
         }
-
+    
         try {
-            $file = CoursesFile::findOrFail($courses_files_id);
-
-            $file->status = 'Declined';
-            $file->declined_reason = $request->input('declineReason');
-            $file->save();
-
-            $folder = FolderName::find($file->folder_name_id);
+            $targetFile = CoursesFile::findOrFail($courses_files_id);
+            
+            $relatedFiles = CoursesFile::where('folder_name_id', $targetFile->folder_name_id)
+                ->where('user_login_id', $targetFile->user_login_id)
+                ->where('course_schedule_id', $targetFile->course_schedule_id)
+                ->where('semester', $targetFile->semester)
+                ->where('school_year', $targetFile->school_year)
+                ->get();
+    
+            foreach ($relatedFiles as $file) {
+                $file->status = 'Declined';
+                $file->declined_reason = $request->input('declineReason');
+                $file->save();
+            }
+    
+            $folder = FolderName::find($targetFile->folder_name_id);
             $userDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
-
             $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
-
+    
             Notification::create([
-                'courses_files_id' => $file->courses_files_id,
-                'user_login_id' => $file->user_login_id,
-                'folder_name_id' => $file->folder_name_id,
+                'courses_files_id' => $targetFile->courses_files_id,
+                'user_login_id' => $targetFile->user_login_id,
+                'folder_name_id' => $targetFile->folder_name_id,
                 'sender' => $senderName,
-              'notification_message' =>'declined the course ' . $file->subject . ' in ' . ($folder ? $folder->folder_name : 'Unknown Folder'),
-
+                'notification_message' => 'declined the course ' . $targetFile->subject . ' in ' . 
+                    ($folder ? $folder->folder_name : 'Unknown Folder'),
             ]);
-
+    
             return redirect()->route('admin.accomplishment.view-accomplishment', [
-                'user_login_id' => $file->user_login_id,
-                'folder_name_id' => $file->folder_name_id 
-            ])->with('success', 'File declined successfully!');
+                'user_login_id' => $targetFile->user_login_id,
+                'folder_name_id' => $targetFile->folder_name_id 
+            ])->with('success', 'Declined successfully!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'An error occurred while declining the file. Please try again.');
+            return redirect()->back()->with('error', 'An error occurred while declining the files.');
         }
     }
-
+    
     //delete files
     public function destroy($courses_files_id)
     {
         try {
-            $file = CoursesFile::findOrFail($courses_files_id);
-            Storage::delete('/' . $file->files);
-            $file->delete();
-
-            return response()->json(['success' => 'File deleted successfully.']);
+            $targetFile = CoursesFile::findOrFail($courses_files_id);
+            
+            $relatedFiles = CoursesFile::where('folder_name_id', $targetFile->folder_name_id)
+                ->where('user_login_id', $targetFile->user_login_id)
+                ->where('course_schedule_id', $targetFile->course_schedule_id)
+                ->where('semester', $targetFile->semester)
+                ->where('school_year', $targetFile->school_year)
+                ->get();
+    
+            foreach ($relatedFiles as $file) {
+                Storage::delete('/' . $file->files);
+                $file->delete();
+            }
+    
+            return response()->json(['success' => 'All related files deleted successfully.']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error deleting file.'], 500);
+            return response()->json(['error' => 'Error deleting files.'], 500);
         }
     }
 
@@ -242,6 +175,4 @@ class FileController extends Controller
 
         return response()->json(['success' => true]);
     }
-
-
 }

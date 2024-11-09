@@ -72,9 +72,9 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Menu</a></li>
+                                                >Menu</a></li>
                                         <li class="breadcrumb-item"><a href="{{ route('faculty.view-archive') }}"
-                                                class="breadcrumb-link">Archive</a></li>
+                                                class="breadcrumb-link" style=" color: #3d405c;">Archive</a></li>
                                     </ol>
                                 </nav>
                             </div>

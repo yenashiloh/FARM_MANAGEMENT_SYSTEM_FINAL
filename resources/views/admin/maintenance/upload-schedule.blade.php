@@ -37,10 +37,10 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Maintenance</a></li>
+                                               >Maintenance</a></li>
                                         <li class="breadcrumb-item"><a
                                                 href="{{ route('admin.maintenance.upload-schedule') }}"
-                                                class="breadcrumb-link">Upload Schedule</a></li>
+                                                class="breadcrumb-link" style="cursor: default; color: #3d405c;">Upload Schedule</a></li>
                                     </ol>
                                 </nav>
                             </div>

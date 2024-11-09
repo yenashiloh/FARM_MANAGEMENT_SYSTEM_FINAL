@@ -29,8 +29,7 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item">
-                                            <a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Maintenance</a>
+                                            <a href="#!" class="breadcrumb-link">Maintenance</a>
                                         </li>
                                         <li class="breadcrumb-item">
                                             <a href="{{ route('admin.announcement.admin-announcement') }}"
@@ -38,7 +37,7 @@
                                         </li>
                                         <li class="breadcrumb-item">
                                             <a href="{{ route('admin.announcement.add-announcement') }}"
-                                                class="breadcrumb-link">Edit</a>
+                                                class="breadcrumb-link" style="color: #3d405c;">Edit</a>
                                         </li>
                                     </ol>
                                 </nav>
@@ -51,26 +50,40 @@
                 <!-- ============================================================== -->
                 <div class="ecommerce-widget">
                     <div class="row">
-                        <div class="main-content container-fluid p-0">
+                        <div class="col-12">
                             <form method="POST"
                                 action="{{ route('admin.announcement.update-announcement', $announcement->id_announcement) }}">
                                 @csrf
                                 <div class="email-compose-fields">
                                     <div class="to">
                                           <h5 >This edit will only apply to the announcement on this website and not in the email received by the faculty.</h5>
-                                        <div class="form-group row pt-0">
+                                          <div class="form-group row pt-0">
                                             <label class="col-md-1 control-label">To:</label>
                                             <div class="col-md-11">
                                                 <select id="recipientEmails" class="js-example-basic-multiple form-control" name="recipient_emails[]" multiple="multiple" required>
                                                     <option value="all-faculty" {{ $announcement->type_of_recepient === 'All Faculty' ? 'selected' : '' }}>All Faculty</option>
+                                                    
+                                                    <!-- Add Departments -->
+                                                    <optgroup label="Departments">
+                                                        @foreach ($departments as $department)
+                                                            <option value="department-{{ $department->department_id }}" 
+                                                                {{ in_array($department->name, explode(', ', $announcement->type_of_recepient)) ? 'selected' : '' }}>
+                                                                {{ $department->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>                                                   
+                                                    
+                                                    <!-- Add Faculty Emails -->
+                                                    <optgroup label="Faculty Emails">
                                                     @foreach ($facultyEmails as $email)
-                                                        <option value="{{ $email }}" {{ in_array($email, explode(', ', $announcement->type_of_recepient)) ? 'selected' : '' }}>
+                                                        <option value="{{ $email }}" 
+                                                            {{ in_array($email, explode(', ', $announcement->type_of_recepient)) ? 'selected' : '' }}>
                                                             {{ $email }}
                                                         </option>
                                                     @endforeach
+                                                </optgroup>
                                                 </select>
                                             </div>
-
                                         </div>
                                     </div>
 
@@ -99,7 +112,7 @@
                                         <div class="col-md-12 pl-4">
                                             <div class="form-group">
                                                 <button class="btn btn-primary btn-space" type="submit"><i
-                                                        class="icon s7-mail"></i> Send</button>
+                                                        class="icon s7-mail"></i>Update</button>
                                                 <button class="btn btn-secondary btn-space" type="button"><i
                                                         class="icon s7-close"></i> Cancel</button>
                                             </div>

@@ -61,25 +61,10 @@
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Accomplishment</a></li>
-                                        <li class="breadcrumb-item"><a
-                                                href="{{ route('admin.accomplishment.accomplishment') }}"
-                                                class="breadcrumb-link">Department</a></li>
-                                        <li class="breadcrumb-item"><a
-                                                href="{{ route('viewAccomplishmentDepartment', ['department' => urlencode($department)]) }}"
-                                                class="breadcrumb-link">Faculty</a></li>
-                                        <li class="breadcrumb-item"><a
-                                                href="{{ route('faculty.accomplishments', ['user_login_id' => $faculty->user_login_id]) }}"
-                                                class="breadcrumb-link">Main Requirements</a></li>
-                                        <li class="breadcrumb-item"> <a
-                                                href="{{ route('admin.accomplishment.viewFolderNames', ['user_login_id' => $faculty->user_login_id, 'main_folder_name' => $currentFolder->main_folder_name]) }}"
-                                                class="breadcrumb-link">
-                                                Folders
-                                            </a></li>
-                                        <li class="breadcrumb-item"><a
+                                        
+                                        {{-- <li class="breadcrumb-item"><a
                                                 href="{{ route('admin.accomplishment.viewAcademicYear', ['user_login_id' => $faculty->user_login_id, 'folder_name_id' => $folder->folder_name_id]) }}"
-                                                class="breadcrumb-link">Academic Year</a></li>
+                                                class="breadcrumb-link">Academic Year</a></li> --}}
                                     </ol>
                                 </nav>
                             </div>
@@ -106,10 +91,11 @@
                                                     <td>{{ $index + 1 }}</td>
                                                     <td>{{ $academicYear }}</td>
                                                     <td>
-                                                        <a href="{{ route('admin.accomplishment.view-accomplishment', ['user_login_id' => $user_login_id, 'folder_name_id' => $folder_name_id, 'semester' => $academicYear]) }}"
+                                                        <a href="{{ route('admin.accomplishment.view-accomplishment', ['user_login_id' => $user_login_id, 'folder_name_id' => $folder_name_id]) }}"
                                                             class="btn btn-info text-white">
                                                             View Files
-                                                        </a>
+                                                         </a>
+                                                         
                                                     </td>
                                                 </tr>
                                             @empty

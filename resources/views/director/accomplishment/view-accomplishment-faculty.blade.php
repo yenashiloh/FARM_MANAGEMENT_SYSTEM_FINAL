@@ -44,7 +44,7 @@
 </style>
 
 <body>
-    @include('partials.admin-sidebar')
+    @include('partials.director-sidebar')
     <div id="loading-spinner" class="loading-spinner">
         <div class="spinner"></div>
     </div>
@@ -61,15 +61,16 @@
                             <div class="page-breadcrumb">
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
-                                       
+                                        <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
+                                            >Menu</a></li>
                                         <li class="breadcrumb-item">
-                                            <a href="{{ route('admin.accomplishment.department', ['folder_name_id' => $folder_name_id]) }}"
+                                            <a href="{{ route('director.department', ['folder_name_id' => $folder_name_id]) }}"
                                                 class="breadcrumb-link">
                                                 Department
                                             </a>
                                         </li>
                                         <li class="breadcrumb-item"><a
-                                                href="{{ route('viewAccomplishmentDepartment', [
+                                                href="{{ route('view.accomplishment.department', [
                                                     'department' => urlencode($department),
                                                     'folder_name_id' => $folder->folder_name_id,
                                                 ]) }}"
@@ -101,7 +102,7 @@
                                                     <td>{{ $loop->iteration }}</td>
                                                     <td>{{ $faculty->first_name }} {{ $faculty->surname }}</td>
                                                     <td>
-                                                        <a href="{{ route('admin.accomplishment.view-accomplishment', [
+                                                        <a href="{{ route('director.accomplishment.view-faculty-accomplishment', [
                                                             'user_login_id' => $faculty->user_login_id,
                                                             'folder_name_id' => $folder->folder_name_id
                                                         ]) }}" class="btn btn-info text-white">

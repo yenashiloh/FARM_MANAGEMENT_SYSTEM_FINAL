@@ -29,8 +29,7 @@
                                 <nav aria-label="breadcrumb">
                                     <ol class="breadcrumb">
                                         <li class="breadcrumb-item">
-                                            <a href="#!" class="breadcrumb-link"
-                                                style="cursor: default; color: #3d405c;">Maintenance</a>
+                                            <a href="#!" class="breadcrumb-link">Maintenance</a>
                                         </li>
                                         <li class="breadcrumb-item">
                                             <a href="{{ route('admin.announcement.admin-announcement') }}"
@@ -38,7 +37,7 @@
                                         </li>
                                         <li class="breadcrumb-item">
                                             <a href="{{ route('admin.announcement.add-announcement') }}"
-                                                class="breadcrumb-link">Add Announcement</a>
+                                                class="breadcrumb-link " style="color: #3d405c;">Add Announcement</a>
                                         </li>
                                     </ol>
                                 </nav>
@@ -51,7 +50,7 @@
                 <!-- ============================================================== -->
                 <div class="ecommerce-widget">
                     <div class="row">
-                        <div class="main-content container-fluid p-0">
+                        <div class="col-12">
                             <form method="POST" action="{{ route('admin.announcement.save-announcement') }}"
                                 id="announcementForm">
                                 @csrf
@@ -60,26 +59,27 @@
                                         <div class="form-group row pt-0">
                                             <label class="col-md-1 control-label">To:</label>
                                             <div class="col-md-11">
-                                                <select id="recipientEmails" class="js-example-basic-multiple" name="recipient_emails[]" multiple="multiple" required>
+                                                <select id="recipientEmails" class="js-example-basic-multiple"
+                                                    name="recipient_emails[]" multiple="multiple" required>
                                                     <option value="all-faculty">All Faculty</option>
-                                                    
+
                                                     <optgroup label="Departments">
                                                         @foreach ($departments as $department)
-                                                            <option value="department-{{ $department->department_id }}">{{ $department->name }}</option>
+                                                            <option value="department-{{ $department->department_id }}">
+                                                                {{ $department->name }}</option>
                                                         @endforeach
                                                     </optgroup>
-                                                    
+
                                                     <optgroup label="Faculty Emails">
                                                         @foreach ($facultyUsers as $user)
-                                                            <option value="{{ $user->user_login_id }}">{{ $user->email }}</option>
+                                                            <option value="{{ $user->user_login_id }}">
+                                                                {{ $user->email }}</option>
                                                         @endforeach
                                                     </optgroup>
                                                 </select>
                                             </div>
                                         </div>
                                     </div>
-                                    
-
 
                                     <div class="subject">
                                         <div class="form-group row pt-2">
@@ -117,7 +117,6 @@
 
                 <!-- Toast Container -->
                 <div class="toast-container position-fixed p-3 end-0 bottom-0">
-
                     <div class="toast-container position-fixed p-3 end-0 bottom-0">
                         <div class="toast align-items-center text-white bg-danger border-0" id="errorToast"
                             role="alert" aria-live="assertive" aria-atomic="true">
@@ -164,6 +163,113 @@
 
             });
         });
+       
+//         $(document).ready(function() {
+//     const selectElement = $('#recipientEmails');
+    
+//     selectElement.select2({
+//         closeOnSelect: false,
+//         tags: true,
+//         tokenSeparators: [',', ' '],
+//         templateResult: formatOption,
+//         templateSelection: formatOptionSelection,
+//         width: '100%'  
+//     });
+
+//     const originalOptions = {
+//         allFaculty: $('option[value="all-faculty"]').clone(),
+//         departments: $('optgroup[label="Departments"]').clone(),
+//         facultyEmails: $('optgroup[label="Faculty Emails"]').clone()
+//     };
+
+//     function formatOption(option) {
+//         if (!option.id) return option.text;
+//         return $('<span>' + option.text + '</span>');
+//     }
+
+//     function formatOptionSelection(option) {
+//         if (!option.id) return option.text;
+//         return $('<span class="select2-selection-option">' + option.text + '</span>');
+//     }
+
+//     selectElement.on('change', function(e) {
+//         const selectedValues = $(this).val() || [];
+        
+//         selectElement.find('option, optgroup').remove();
+        
+//         if (selectedValues.includes('all-faculty')) {
+//             selectElement.append(originalOptions.allFaculty.clone());
+//             selectElement.val(['all-faculty']);
+//         }
+//         else if (selectedValues.some(value => value.startsWith('department-'))) {
+//             selectElement.append(originalOptions.departments.clone());
+//             selectElement.val(selectedValues.filter(value => value.startsWith('department-'))); 
+//         }
+//         else if (selectedValues.some(value => !value.startsWith('department-') && value !== 'all-faculty')) {
+//             selectElement.append(originalOptions.facultyEmails.clone());
+//             selectElement.val(selectedValues.filter(value => !value.startsWith('department-') && value !== 'all-faculty'));
+//         }
+//         else {
+//             selectElement.append(originalOptions.allFaculty.clone())
+//                         .append(originalOptions.departments.clone())
+//                         .append(originalOptions.facultyEmails.clone());
+//         }
+
+//         selectElement.trigger('change.select2');
+//     });
+
+//     $(document).on('mousedown', '.select2-selection__choice__remove', function(e) {
+//         e.preventDefault();
+//         e.stopPropagation();
+        
+//         const optionValue = $(this).parent().attr('title');
+//         const currentSelections = selectElement.val() || [];
+        
+//         const newSelections = currentSelections.filter(value => {
+//             const optionText = selectElement.find('option[value="' + value + '"]').text();
+//             return optionText.trim() !== optionValue.trim();
+//         });
+        
+//         selectElement.val(newSelections).trigger('change');
+        
+//         setTimeout(() => {
+//             selectElement.select2('open');
+//         }, 0);
+
+//         return false;
+//     });
+
+//     selectElement.on('select2:unselect', function(e) {
+//         setTimeout(() => {
+//             selectElement.select2('open');
+//         }, 0);
+//     });
+
+//     $('<style>')
+//         .text(`
+//             .select2-selection__choice {
+//                 position: relative;
+//                 padding-right: 20px !important;
+//                 margin: 4px !important;
+//             }
+//             .select2-selection__choice__remove {
+//                 position: absolute !important;
+//                 right: 2px !important;
+//                 top: 50% !important;
+//                 transform: translateY(-50%) !important;
+//                 cursor: pointer !important;
+//                 padding: 0 4px !important;
+//             }
+//             .select2-container--default .select2-selection--multiple {
+//                 min-height: 38px;
+//             }
+//             .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+//                 padding: 0 8px;
+//             }
+//         `)
+//         .appendTo('head');
+// });
+
     </script>
 </body>
 
