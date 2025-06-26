@@ -27,6 +27,8 @@ class AuditController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             
+             $request->session()->forget('announcements_shown');
+            
             return response()->json(['status' => 'success', 'message' => 'Logged out successfully']);
         } catch (\Exception $e) {
             \Log::error('Logout error: ' . $e->getMessage());

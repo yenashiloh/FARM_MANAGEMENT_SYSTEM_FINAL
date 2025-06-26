@@ -51,7 +51,7 @@
                                         @foreach ($semesters as $semester)
                                             <a class="dropdown-item"
                                                 href="{{ route('generate.all.reports.director', ['semester' => $semester->semester]) }}">
-                                                {{ $semester->semester }}
+                                                {{ $semester->semester }} 2024-2025
                                             </a>
                                         @endforeach
                                     </div>

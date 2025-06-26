@@ -40,7 +40,7 @@
                                                >Maintenance</a></li>
                                         <li class="breadcrumb-item"><a
                                                 href="{{ route('admin.maintenance.upload-schedule') }}"
-                                                class="breadcrumb-link" style="cursor: default; color: #3d405c;">Upload Schedule</a></li>
+                                                class="breadcrumb-link" style="color: #3d405c;">Upload Schedule</a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -132,7 +132,7 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-sm-6 mt-3">
-                                                <button type="submit" id="updateScheduleBtn"
+                                                <button type="submit" 
                                                     class="btn btn-space btn-primary">Update Schedule</button>
                                             </div>
                                         </div>
@@ -152,68 +152,46 @@
         @include('partials.admin-footer')
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
-        <script>
+       <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('uploadScheduleForm');
                 const updateButton = document.getElementById('updateScheduleBtn');
-
+        
                 function checkScheduleStatus() {
                     const endDate = document.getElementById('inputEndDate').value;
                     const endTime = document.getElementById('inputStopTime').value;
-
+        
                     if (endDate && endTime) {
-                        const scheduleEnd = new Date(endDate + 'T' + endTime);
+                        const scheduleEnd = new Date(`${endDate}T${endTime}`);
                         const now = new Date();
-
-                        const isButtonDisabled = localStorage.getItem('updateButtonDisabled');
-
-                        if (isButtonDisabled === 'true') {
-                            if (now > scheduleEnd) {
-                                updateButton.disabled = false;
-                                updateButton.classList.remove('disabled');
-                                localStorage.removeItem('updateButtonDisabled');
-                            } else {
-                                updateButton.disabled = true;
-                                updateButton.classList.add('disabled');
-                            }
+        
+                        if (now >= scheduleEnd) {
+                            updateButton.classList.remove('disabled'); 
                         }
                     }
                 }
-
+        
                 checkScheduleStatus();
-
-                setInterval(checkScheduleStatus, 60000);
-
+                setInterval(checkScheduleStatus, 60000); 
+        
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-
+                    
                     const startTime = document.getElementById('inputStartTime');
                     const stopTime = document.getElementById('inputStopTime');
-                    const endDate = document.getElementById('inputEndDate').value;
-                    const endTime = document.getElementById('inputStopTime').value;
-
-                    localStorage.setItem('updateButtonDisabled', 'true');
-
-                    updateButton.disabled = true;
-                    updateButton.classList.add('disabled');
-
+        
                     if (startTime.value === startTime.defaultValue) {
                         startTime.disabled = true;
                     }
                     if (stopTime.value === stopTime.defaultValue) {
                         stopTime.disabled = true;
                     }
-
+        
                     this.submit();
                 });
-
-                const isButtonDisabled = localStorage.getItem('updateButtonDisabled');
-                if (isButtonDisabled === 'true') {
-                    updateButton.disabled = true;
-                    updateButton.classList.add('disabled');
-                }
             });
         </script>
+
 
 
 </body>

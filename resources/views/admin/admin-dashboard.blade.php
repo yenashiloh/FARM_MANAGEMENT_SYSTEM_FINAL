@@ -20,6 +20,37 @@
             max-height: 400px;
             display: block;
         }
+        .modal-content {
+            border-radius: 8px;
+        }
+        
+        .announcement-subject {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .announcement-message {
+            padding: 15px 0;
+        }
+        
+        .modal-footer .btn {
+            padding: 8px 20px;
+            border-radius: 4px;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .card-count:hover {
+            background-color: #F1F1F1; 
+            color: white;
+        }
     </style>
 </head>
 
@@ -48,7 +79,7 @@
                                             @foreach ($semesters as $semester)
                                                 <a class="dropdown-item"
                                                     href="{{ route('generate.all.reports', ['semester' => $semester->semester]) }}">
-                                                    {{ $semester->semester }}
+                                                    {{ $semester->semester }} 2024-2025
                                                 </a>
                                             @endforeach
                                         </div>
@@ -62,7 +93,7 @@
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
                                                >Menu</a></li>
                                         <li class="breadcrumb-item"><a href="{{ route('admin.admin-dashboard') }}"
-                                            style="cursor: default; color: #3d405c;" class="breadcrumb-link">Dashboard</a></li>
+                                            style="color: #3d405c;" class="breadcrumb-link">Dashboard</a></li>
                                     </ol>
                                 </nav>
                             </div>
@@ -72,103 +103,113 @@
                 <!-- end pageheader -->
 
                 <div class="row">
-                    <!-- Total of Faculty Users -->
-                    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-inline-block">
-                                    <h5 class="text-muted">Total of Faculty Users</h5>
-                                    <h2 class="mb-0"> {{ $facultyCount }}</h2>
-                                </div>
-                                <div class="float-right icon-circle-medium  icon-box-lg  bg-info-light mt-1">
-                                    <i class="fa fa-users fa-fw fa-sm text-info"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- ============================================================== -->
-                    <!-- end total views   -->
-                    <!-- ============================================================== -->
-                    <!-- ============================================================== -->
-                    <!-- total followers   -->
-                    <!-- ============================================================== -->
-                    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-inline-block">
-                                    <h5 class="text-muted">Total of Files Submitted</h5>
-                                    <h2 class="mb-0">{{ $filesCount }}</h2>
-                                </div>
-                                <div class="float-right icon-circle-medium  icon-box-lg  bg-secondary-light mt-1">
-                                    <i class="fa fa-file fa-fw fa-sm text-secondary"></i>
+                    <!-- Total Faculty Users -->
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        <a href="{{route ('admin.dashboard-totals.users')}}" class="text-decoration-none">
+                            <div class="card card-count" style="cursor: pointer; transition: background-color 0.3s;">
+                                <div class="card-body">
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Total Faculty Users</h5>
+                                        <h2 class="mb-0">{{ $facultyCount }}</h2>
+                                    </div>
+                                    <div class="float-right icon-circle-medium icon-box-lg bg-info-light mt-1">
+                                        <i class="fa fa-users fa-fw fa-sm text-info"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-inline-block">
-                                    <h5 class="text-muted">Total of Pending Review</h5>
-                                    <h2 class="mb-0">{{ $toReviewCount }}</h2>
-                                </div>
-                                <div class="float-right icon-circle-medium  icon-box-lg  bg-primary-light mt-1">
-                                    <i class="fa fa-tasks fa-fw fa-sm text-secondary"></i>
+                
+                    <!-- Total Files Submitted -->
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        <a href="{{route ('admin.dashboard-totals.files-submitted')}}" class="text-decoration-none">
+                            <div class="card card-count" style="cursor: pointer; transition: background-color 0.3s;">
+                                <div class="card-body">
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Total Files Submitted</h5>
+                                        <h2 class="mb-0">{{ $filesCount }}</h2>
+                                    </div>
+                                    <div class="float-right icon-circle-medium icon-box-lg bg-secondary-light mt-1">
+                                        <i class="fa fa-file fa-fw fa-sm text-secondary"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-inline-block">
-                                    <h5 class="text-muted">Completed Reviews</h5>
-                                    <h2 class="mb-0">{{ $completedReviewsCount }}</h2>
-                                </div>
-                                <div class="float-right icon-circle-medium  icon-box-lg  bg-success-light mt-1">
-                                    <i class="fa fa-check-circle fa-fw fa-sm text-secondary"></i>
+                
+                    <!-- Total Pending Review -->
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        <a href="{{route ('admin.dashboard-totals.pending-review')}}" class="text-decoration-none">
+                            <div class="card card-count" style="cursor: pointer; transition: background-color 0.3s;">
+                                <div class="card-body">
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Total Pending Review</h5>
+                                        <h2 class="mb-0">{{ $toReviewCount }}</h2>
+                                    </div>
+                                    <div class="float-right icon-circle-medium icon-box-lg bg-primary-light mt-1">
+                                        <i class="fa fa-tasks fa-fw fa-sm text-primary"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-
-                    <!-- Status Rates -->
-                    <div class="col-12">
-                        <div class="card">
-                            <h5 class="card-header">Status Rates</h5>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-center">
-                                    <canvas id="statusPieChart" class="small-chart"
-                                        style="width: 50%; height: 200px;"></canvas>
+                </div>
+                
+                <!-- Completed Reviews (New Row) -->
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        <a href="{{route ('admin.dashboard-totals.completed-reviews')}}" class="text-decoration-none">
+                            <div class="card card-count" style="cursor: pointer; transition: background-color 0.3s;">
+                                <div class="card-body">
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Completed Reviews</h5>
+                                        <h2 class="mb-0">{{ $completedReviewsCount }}</h2>
+                                    </div>
+                                    <div class="float-right icon-circle-medium icon-box-lg bg-success-light mt-1">
+                                        <i class="fa fa-check-circle fa-fw fa-sm text-success"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-
-                    <!-- Submitted Files per Requirement -->
-                    <div class="col-12">
-                        <div class="card">
-                            <h5 class="card-header">Submitted Files per Requirement</h5>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-center">
-                                    <canvas id="filesBarChart" style="width: 100%; height: 428px;"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Submitted Status per Requirement -->
-                    <div class="col-12">
-                        <div class="card">
-                            <h5 class="card-header">Status Status per Requirement</h5>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-center">
-                                    <canvas id="statusChart" width="400" height="200"></canvas>
-                                </div>
+          
+                
+                <!-- Status Rates -->
+                <div class="col-12">
+                    <div class="card">
+                        <h5 class="card-header">Status Rates</h5>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-center">
+                                <canvas id="statusPieChart" class="small-chart" style="width: 50%; height: 200px;"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Submitted Files per Requirement -->
+                <div class="col-12">
+                    <div class="card">
+                        <h5 class="card-header">Submitted Files per Requirement</h5>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-center">
+                                <canvas id="filesBarChart" style="width: 100%; height: 428px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submitted Status per Requirement -->
+                <div class="col-12">
+                    <div class="card">
+                        <h5 class="card-header">Status per Requirement</h5>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-center">
+                                <canvas id="statusChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

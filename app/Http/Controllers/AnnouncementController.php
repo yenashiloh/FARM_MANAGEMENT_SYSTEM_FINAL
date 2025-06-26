@@ -198,6 +198,7 @@ class AnnouncementController extends Controller
         return redirect()->route('admin.announcement.admin-announcement');
     }
         
+        
     
     //send announcement
     protected function sendAnnouncementEmails($announcement, $recipients)
@@ -397,17 +398,42 @@ class AnnouncementController extends Controller
     public function searchFacultyAnnouncements(Request $request)
     {
         $search = $request->get('search');
-        \Log::info('Search term: ' . $search); // Log the search term
-    
-        $announcements = Announcement::where('subject', 'LIKE', '%' . $search . '%')
-            ->orWhere('message', 'LIKE', '%' . $search . '%')
-            ->orWhere('type_of_recepient', 'LIKE', '%' . $search . '%')
-            ->orWhereDate('created_at', 'LIKE', '%' . $search . '%')
-            ->orderBy('created_at', 'desc')
-            ->get();
-    
-        \Log::info('Announcements found: ' . $announcements->count());
-      
+        $currentUser = auth()->user();
+        
+        // Start building the query
+        $query = Announcement::query();
+        
+        // Apply search filter if provided
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('subject', 'LIKE', '%' . $search . '%')
+                  ->orWhere('message', 'LIKE', '%' . $search . '%')
+                  ->orWhereDate('created_at', 'LIKE', '%' . $search . '%');
+            });
+        }
+        
+        // Now filter for announcements relevant to this faculty member
+        $query->where(function($q) use ($currentUser) {
+            // Include announcements sent to "All Faculty"
+            $q->where('type_of_recepient', 'All Faculty');
+            
+            // Include announcements sent directly to this user's email
+            $q->orWhere('type_of_recepient', 'LIKE', '%' . $currentUser->email . '%');
+            
+            // Include announcements sent to user's department
+            if ($currentUser->department_id) {
+                $department = Department::find($currentUser->department_id);
+                if ($department) {
+                    $q->orWhere('type_of_recepient', 'LIKE', '%' . $department->name . '%');
+                    $q->orWhere('type_of_recepient', 'LIKE', '%Department of ' . $department->name . '%');
+                }
+            }
+        });
+        
+        // Get the filtered announcements
+        $announcements = $query->orderBy('created_at', 'desc')->get();
+        
+        // Process for display
         foreach ($announcements as $announcement) {
             $emails = explode(', ', $announcement->type_of_recepient);
             if (count($emails) > 3) {
@@ -418,7 +444,7 @@ class AnnouncementController extends Controller
                 $announcement->moreEmailsCount = 0;
             }
         }
-
+    
         return view('faculty.announcement-list', compact('announcements'));
     }
 }

@@ -17,7 +17,7 @@ h3,
 h4,
 h5,
 h6 {
-    color: #3d405c;
+    color: #393a40;
     margin: 0px 0px 15px 0px;
     font-family: 'Circular Std Medium';
 }
@@ -844,7 +844,7 @@ Borders
 }
 
 .text-muted {
-    color: #7171a6 !important;
+    color: #393a40 !important;
 }
 
 .rating-color {
@@ -1576,13 +1576,14 @@ Left Navigation Sidebar
     padding-left: 12px;
     padding-right: 12px;
     /* margin-top: 5px; */
-    background: #24274a;
+    background: #810000;
 }
 
 .nav-left-sidebar .submenu .nav .nav-item .nav-link {
     font-size: 14px;
     padding: 6px 12px;
     transition: 0.3s;
+    color:#fff;
 }
 
 .nav-left-sidebar .navbar-nav .nav-link:focus,
@@ -1664,38 +1665,47 @@ Leftsidebar - dark
 ------------------------- */
 
 .sidebar-dark {
-    background-color: #0e0c28;
+    background-color: #ffffff;
     -webkit-box-shadow: 0px 0px 28px 0px rgba(82, 63, 105, 0.13);
     box-shadow: 0px 0px 28px 0px rgba(82, 63, 105, 0.13);
     -webkit-transition: all 0.3s ease;
 }
 
 .sidebar-dark .nav-divider {
-    color: #a4aadb;
+    color: #810000;
     font-size: 12px;
     letter-spacing: 1px;
 }
 
 .sidebar-dark.nav-left-sidebar .nav-link i {
-    color: #7a80b4;
+    color: #757d85;
+}
+
+.sidebar-dark.nav-left-sidebar .nav-link.active i {
+    color: #ffffff;
+}
+
+.sidebar-dark.nav-left-sidebar .nav-link:hover i,
+.sidebar-dark.nav-left-sidebar .nav-link:focus i {
+    color: #ffffff;
 }
 
 .sidebar-dark.nav-left-sidebar .navbar-nav .nav-item {}
 
 .sidebar-dark.nav-left-sidebar .navbar-nav .nav-link {
-    color: #7a80b4;
+    color: #757d85;
 }
 
 .sidebar-dark.nav-left-sidebar .navbar-nav .nav-link:focus,
 .sidebar-dark.nav-left-sidebar .navbar-nav .nav-link:hover {
     color: #fff;
-    background-color: #242849;
+    background-color: #D09D9D;
     border-radius: 2px;
 }
 
 .sidebar-dark.nav-left-sidebar .navbar-nav .nav-link:focus,
 .sidebar-dark.nav-left-sidebar .navbar-nav .nav-link.active {
-    background-color: #242849;
+    background-color: #810000;
     color: #fff;
     border-radius: 2px;
 }
@@ -1703,7 +1713,7 @@ Leftsidebar - dark
 .sidebar-dark.nav-left-sidebar .submenu .nav .nav-item .nav-link:hover {
     color: #fff;
     border-radius: 2px;
-    background-color: #242849;
+    background-color: #810000;
 }
 
 .sidebar-dark.nav-left-sidebar .navbar-nav .nav-item .badge{

@@ -140,44 +140,54 @@
                                 <li>
                                     <div class="notification-title">Notification</div>
                                     <div class="notification-list">
-                                        <div class="list-group" id="notification-items">
-                                            @foreach ($notifications as $notification)
-                                                @php
-                                                    $coursesFile = $notification->coursesFile;
-                                                    $facultyUserLoginId = $coursesFile->user_login_id;
-                                                    $semester = $coursesFile->semester;
-                                                @endphp
-                                                <a href="{{ route('faculty.accomplishment.view-uploaded-files', [
+                                    <div class="list-group" id="notification-items">
+                                        @foreach ($notifications as $notification)
+                                            @php
+                                                $hasCoursesFile = $notification->courses_files_id !== null;
+                                                $facultyUserLoginId = $hasCoursesFile ? $notification->coursesFile->user_login_id : $notification->user_login_id;
+                                                $semester = $hasCoursesFile ? $notification->coursesFile->semester : null;
+                                            @endphp
+                                            <a href="{{ $hasCoursesFile ? route(
+                                                $notification->folderName->main_folder_name === 'Classroom Management' 
+                                                    ? 'faculty.accomplishment.uploaded-files'
+                                                    : ($notification->folderName->main_folder_name === 'Test Administration'
+                                                        ? 'faculty.accomplishment.test-administration'
+                                                        : 'faculty.accomplishment.syllabus-preparation'), 
+                                                [
                                                     'user_login_id' => $facultyUserLoginId,
                                                     'folder_name_id' => $notification->folder_name_id,
                                                     'semester' => $semester,
-                                                ]) }}"
-                                                    class="list-group-item list-group-item-action {{ !$notification->is_read ? 'unread-notification' : '' }}"
-                                                    data-notification-id="{{ $notification->id }}"
-                                                    data-read-status="{{ $notification->is_read ? 'read' : 'unread' }}">
-                                                    <div class="notification-info">
-                                                        <div class="notification-list-user-img">
-                                                            <i class="fas fa-user-circle user-avatar-md"
-                                                                style="font-size:30px;"></i>
-                                                        </div>
-                                                        <div class="notification-list-user-block">
-                                                            <span
-                                                                class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
-                                                            <span>{{ $notification->notification_message }}</span>
-                                                            <div class="notification-date">
-                                                                {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
-                                                            </div>
+                                                ]
+                                            ) : '#' }}"
+                                                class="list-group-item list-group-item-action {{ !$notification->is_read ? 'unread-notification' : '' }}"
+                                                data-notification-id="{{ $notification->id }}"
+                                                data-read-status="{{ $notification->is_read ? 'read' : 'unread' }}">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img">
+                                                        <i class="fas fa-user-circle user-avatar-md" style="font-size:30px;"></i>
+                                                    </div>
+                                                    <div class="notification-list-user-block">
+                                                        <span class="notification-list-user-name mr-0">{{ $notification->sender }}</span>
+                                                        <span>{{ $notification->notification_message }}</span>
+                                                        <div class="notification-date">
+                                                            {{ \Carbon\Carbon::parse($notification->created_at)->setTimezone('Asia/Manila')->format('F j, Y, g:ia') }}
                                                         </div>
                                                     </div>
-                                                </a>
-                                            @endforeach
+                                                </div>
+
+                                            </a>
+                                            
+                                         @endforeach
                                         </div>
                                     </div>
+                                    <!--<div class="text-center py-2 border-top">-->
+                                    <!--    <a href="" class="text-decoration-none">-->
+                                    <!--        <span class="notification-list-user-name">See More</span>-->
+                                    <!--    </a>-->
+                                    <!--</div>-->
                                 </li>
                             </ul>
                         </li>
-
-
                         <li class="nav-item dropdown nav-user">
                             <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -222,13 +232,21 @@
                             <li class="nav-divider">
                                 MENU
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('faculty.faculty-dashboard') ? 'active' : '' }}"
-                                    href="{{ route('faculty.faculty-dashboard') }}" aria-expanded="false"
-                                    data-target="#submenu-1" aria-controls="submenu-1"><i
-                                        class="fas fa-tachometer-alt"></i>
-                                    Dashboard <span class="badge badge-success">6</span></a>
-                            </li>
+                           <li class="nav-item">
+                            <a class="nav-link 
+                                {{ 
+                                    request()->routeIs('faculty.faculty-dashboard') || 
+                                    request()->routeIs('faculty.accomplishment.approved-files') || 
+                                    request()->routeIs('faculty.accomplishment.declined-files') || 
+                                    request()->routeIs('faculty.accomplishment.pending-files') ? 'active' : '' 
+                                }}"
+                                href="{{ route('faculty.faculty-dashboard') }}" aria-expanded="false"
+                                data-target="#submenu-1" aria-controls="submenu-1">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Dashboard <span class="badge badge-success">6</span>
+                            </a>
+                        </li>
+
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('faculty.announcement') ? 'active' : '' }}"
                                     href="{{ route('faculty.announcement') }}" aria-expanded="false"
@@ -241,85 +259,39 @@
                                     data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-archive"></i>
                                     Archive</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('faculty.request-upload-access') ? 'active' : '' }}"
+                                    href="{{ route('faculty.request-upload-access') }}" aria-expanded="false" data-target="#submenu-1" aria-controls="submenu-1">
+                                    <i class="fas fa-folder-open"></i> Request Upload Access
+                                </a>
+                            </li>
 
                             <li class="nav-divider">
                                 Accomplishment
                             </li>
+                            
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('faculty.accomplishment.uploaded-files', 'faculty.accomplishment.view-uploaded-files') && request()->route('folder_name_id') && in_array(request()->route('folder_name_id'), $folders->where('main_folder_name', 'Classroom Management')->pluck('folder_name_id')->toArray()) ? 'active' : '' }}"
-                                    href="#" data-toggle="collapse" aria-expanded="false"
-                                    data-target="#submenu-6" aria-controls="submenu-6">
+                                <a class="nav-link {{ request()->routeIs('faculty.accomplishment.uploaded-files') ? 'active' : '' }}"
+                                    href="{{ route('faculty.accomplishment.uploaded-files') }}"
+                                    data-target="#submenu-1" aria-controls="submenu-1">
                                     <i class="fas fa-book"></i> Classroom Management
                                 </a>
-
-                                <div id="submenu-6" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        @foreach ($folders->where('main_folder_name', 'Classroom Management')->sortBy('folder_name') as $folder)
-                                            <li class="nav-item">
-                                                <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                    href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
-                                                    {{ $folder->folder_name }}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('faculty.accomplishment.uploaded-files', 'faculty.accomplishment.view-uploaded-files') &&
-                                request()->route('folder_name_id') &&
-                                in_array(
-                                    request()->route('folder_name_id'),
-                                    $folders->where('main_folder_name', 'Test Administration')->pluck('folder_name_id')->toArray(),
-                                )
-                                    ? 'active'
-                                    : '' }}"
-                                    href="#" data-toggle="collapse" aria-expanded="false"
-                                    data-target="#submenu-2" aria-controls="submenu-2">
+                                <a class="nav-link {{ request()->routeIs('faculty.accomplishment.test-administration') ? 'active' : '' }}"
+                                    href="{{ route('faculty.accomplishment.test-administration') }}"
+                                    data-target="#submenu-1" aria-controls="submenu-1">
                                     <i class="fas fa-clipboard-list"></i> Test Administration
                                 </a>
-
-                                <div id="submenu-2" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        @foreach ($folders->where('main_folder_name', 'Test Administration')->sortBy('folder_name') as $folder)
-                                            <li class="nav-item">
-                                                <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                    href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
-                                                    {{ $folder->folder_name }}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
                             </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('faculty.accomplishment.uploaded-files', 'faculty.accomplishment.view-uploaded-files') &&
-                                request()->route('folder_name_id') &&
-                                in_array(
-                                    request()->route('folder_name_id'),
-                                    $folders->where('main_folder_name', 'Syllabus Preparation')->pluck('folder_name_id')->toArray(),
-                                )
-                                    ? 'active'
-                                    : '' }}"
-                                    href="#" data-toggle="collapse" aria-expanded="false"
-                                    data-target="#submenu-3" aria-controls="submenu-3">
-                                    <i class="fas fa-file-alt"></i> Syllabus Preparation
+                            
+                             <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('faculty.accomplishment.syllabus-preparation') ? 'active' : '' }}"
+                                    href="{{ route('faculty.accomplishment.syllabus-preparation') }}"
+                                    data-target="#submenu-1" aria-controls="submenu-1">
+                                      <i class="fas fa-file-alt"></i> Syllabus Preparation
                                 </a>
-
-                                <div id="submenu-3" class="collapse submenu">
-                                    <ul class="nav flex-column">
-                                        @foreach ($folders->where('main_folder_name', 'Syllabus Preparation')->sortBy('folder_name') as $folder)
-                                            <li class="nav-item">
-                                                <a class="nav-link {{ request()->route('folder_name_id') == $folder->folder_name_id ? 'active' : '' }}"
-                                                    href="{{ route('faculty.accomplishment.uploaded-files', ['folder_name_id' => $folder->folder_name_id]) }}">
-                                                    {{ $folder->folder_name }}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
                             </li>
                         </ul>
                     </div>
@@ -333,6 +305,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+    //logout
     document.getElementById('logout-link').addEventListener('click', function(e) {
         e.preventDefault();
 
@@ -378,7 +351,7 @@
                         }
                         if (data) {
                             if (data.status === 'success') {
-                                window.location.href = '{{ route('login') }}';
+                                window.location.href = '{{ route('welcome') }}';
                             } else {
                                 throw new Error(data.message || 'Logout failed');
                             }
@@ -395,6 +368,7 @@
         });
     });
 
+    //notification
     $(document).ready(function() {
         $.ajaxSetup({
             headers: {

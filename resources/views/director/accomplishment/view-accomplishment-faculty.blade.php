@@ -105,7 +105,7 @@
                                                         <a href="{{ route('director.accomplishment.view-faculty-accomplishment', [
                                                             'user_login_id' => $faculty->user_login_id,
                                                             'folder_name_id' => $folder->folder_name_id
-                                                        ]) }}" class="btn btn-info text-white">
+                                                        ]) }}" class="btn btn-primary text-white">
                                                             View Files
                                                         </a>
                                                     </td>
