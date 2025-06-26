@@ -13,6 +13,36 @@
             font-size: 30px;
             color: #800000;
         }
+        .modal-content {
+            border-radius: 8px;
+        }
+        
+        .announcement-subject {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .announcement-message {
+            padding: 15px 0;
+        }
+        
+        .modal-footer .btn {
+            padding: 8px 20px;
+            border-radius: 4px;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .card-count:hover {
+            background-color: #F1F1F1; 
+        }
     </style>
 </head>
 
@@ -44,6 +74,25 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Announcement Modal -->
+                  <div class="modal fade" id="announcementModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">ANNOUNCEMENT</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <h5 class="modal-title announcement-subject"></h5>
+                                <div class="announcement-message"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
                 <!-- ============================================================== -->
                 <!-- end pageheader  -->
@@ -51,12 +100,29 @@
                 <div class="ecommerce-widget">
                     <div class="row">
                         <!-- Total Faculty Card -->
-                        <!-- Completed Reviews Card -->
+                        
                         <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
-                            <div class="card">
+                        <a href="{{ route ("faculty.accomplishment.pending-files")}}" class="text-decoration-none">
+                            <div class="card card-count" style="cursor: pointer; transition: background-color 0.3s;">
                                 <div class="card-body">
                                     <div class="d-inline-block">
-                                        <h5 class="text-muted">Total of Approved</h5>
+                                        <h5 class="text-muted">Total Pending Review</h5>
+                                        <h2 class="mb-0">{{ $toReviewCount }}</h2>
+                                    </div>
+                                    <div class="float-right icon-circle-medium icon-box-lg bg-success-light mt-1">
+                                      <i class="fa fa-tasks fa-fw fa-sm text-secondary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                        <!-- Total Approved Card -->
+                      <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                        <a href="{{ route ("faculty.accomplishment.approved-files")}}" class="text-decoration-none">
+                            <div class="card card-count" style="cursor: pointer; transition: background-color 0.3s;">
+                                <div class="card-body">
+                                    <div class="d-inline-block">
+                                        <h5 class="text-muted">Total Approved</h5>
                                         <h2 class="mb-0">{{ $approvedCount }}</h2>
                                     </div>
                                     <div class="float-right icon-circle-medium icon-box-lg bg-success-light mt-1">
@@ -64,23 +130,26 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
+                    </div>
 
-                        <!-- Total of Pending Reviews Card -->
-                        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
-                            <div class="card">
+                        <!-- Total Declined Card -->
+                       <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                        <a href="{{ route ("faculty.accomplishment.declined-files")}}" class="text-decoration-none">
+                            <div class="card card-count" style="cursor: pointer; transition: background-color 0.3s;">
                                 <div class="card-body">
                                     <div class="d-inline-block">
-                                        <h5 class="text-muted">Total of Pending Review</h5>
-                                        <h2 class="mb-0">{{ $toReviewCount }}</h2>
+                                        <h5 class="text-muted">Total Declined</h5>
+                                        <h2 class="mb-0">{{ $declinedCount }}</h2>
                                     </div>
-                                    <div class="float-right icon-circle-medium icon-box-lg bg-primary-light mt-1">
-                                        <i class="fa fa-tasks fa-fw fa-sm text-secondary"></i>
+                                    <div class="float-right icon-circle-medium icon-box-lg bg-danger-light mt-1">
+                                        <i class="fas fa-times-circle fa-fw fa-sm text-secondary"></i>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
+                        </a>
+                    </div>
+                    
                         <!-- Storage Card -->
                         <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
                             <div class="card">
@@ -121,16 +190,16 @@
                             </div>
                         </div>
 
-                        <div class="col-sm-12 col-12">
-                            <div class="card">
-                                <h5 class="card-header">Passed Files Percentage per Main Requirements</h5>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-center">
-                                        <canvas id="folderBarChart" style="width: 100%; "></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <!--<div class="col-sm-12 col-12">-->
+                        <!--    <div class="card">-->
+                        <!--        <h5 class="card-header">Passed Files Percentage per Main Requirements</h5>-->
+                        <!--        <div class="card-body">-->
+                        <!--            <div class="d-flex justify-content-center">-->
+                        <!--                <canvas id="folderBarChart" style="width: 100%; "></canvas>-->
+                        <!--            </div>-->
+                        <!--        </div>-->
+                        <!--    </div>-->
+                        <!--</div>-->
 
                     </div>
                 </div>
@@ -326,6 +395,32 @@
 
             document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(initializeAllCharts, 100);
+            });
+            
+   //announcement pop up
+            document.addEventListener('DOMContentLoaded', function() {
+                let announcements = @json($announcements);
+                let currentAnnouncementIndex = 0;
+
+                function showAnnouncement(index) {
+                    if (announcements.length === 0) return;
+
+                    let announcement = announcements[index];
+                    $('.announcement-subject').text(announcement.subject);
+                    $('.announcement-message').html(announcement.message);
+
+                    $('#announcementModal').modal('show');
+                }
+
+                // Show first announcement if exists
+                if (announcements.length > 0) {
+                    showAnnouncement(currentAnnouncementIndex);
+                }
+
+                // Reset index when modal is hidden
+                $('#announcementModal').on('hidden.bs.modal', function() {
+                    currentAnnouncementIndex = 0;
+                });
             });
         </script>
 </body>

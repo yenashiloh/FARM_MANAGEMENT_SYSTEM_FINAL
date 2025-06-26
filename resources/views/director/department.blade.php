@@ -102,25 +102,31 @@
                                                 <tr>
                                                     <td>{{ $loop->iteration }}</td>
                                                     <td>{{ $department->name }}</td>
-                                                    <td>
-                                                        @php
-                                                            $progress = $departmentProgress[$department->name] ?? 0;
+                                                 <td>
+                                                       @php
+                                                            $progressData = $departmentProgress[$department->name] ?? ['progress' => 0, 'approved' => 0, 'total' => 0, 'faculty_count' => 0];
+                                                            $progress = min(100, $progressData['progress']);
                                                         @endphp
-                                                        <div class="progress ">
+                                                        <div class="progress">
                                                             <div class="progress-bar" role="progressbar"
                                                                 style="width: {{ $progress }}%;"
-                                                                aria-valuenow="{{ $progress }}" aria-valuemin="0"
+                                                                aria-valuenow="{{ $progress }}" 
+                                                                aria-valuemin="0"
                                                                 aria-valuemax="100">
                                                                 {{ number_format($progress, 2) }}%
                                                             </div>
                                                         </div>
+                                                        <small class="text-muted">
+                                                            ({{ $progressData['approved'] }}/{{ $progressData['total'] }} requirements approved)
+                                                            <br>
+                                                        </small>
                                                     </td>
                                                     <td>
                                                         <a href="{{ route('view.accomplishment.department', [
                                                             'department' => urlencode($department->name),
                                                             'folder_name_id' => $folder->folder_name_id,
                                                         ]) }}"
-                                                            class="btn btn-info text-white">
+                                                            class="btn btn-primary text-white">
                                                             View
                                                         </a>
                                                     </td>

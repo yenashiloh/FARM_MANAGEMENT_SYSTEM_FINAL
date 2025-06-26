@@ -10,10 +10,10 @@ class CourseScheduleSeeder extends Seeder
 {
     public function run()
     {
-        $userIds = UserLogin::whereIn('user_login_id', [2, 4, 5, 6])->pluck('user_login_id')->toArray();
+        $userIds = UserLogin::whereIn('user_login_id', [2, 4, 5, 6, 3])->pluck('user_login_id')->toArray();
 
-        if (count($userIds) < 4) {
-            $this->command->error('User IDs 2, 4, 5, 6 are not present in the database.');
+        if (count($userIds) < 5) {
+            $this->command->error('User IDs 2, 3, 4, 5, 6 are not present in the database.');
             return;
         }
 
@@ -191,6 +191,39 @@ class CourseScheduleSeeder extends Seeder
             [
                 'course_schedule_id' => 17,
                 'user_login_id' => $userIds[3],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Bachelor of Science in Applied Mathematics (BSAM)',
+                'course_code' => 'MGT101',
+                'course_subjects' => 'Principles of Management and Organization',
+                'year_section' => '3-1',
+                'schedule' => 'Tues 13:00 - 15:00, Fri 13:00 - 15:00',
+            ],
+        ]);
+
+        DB::table('course_schedules')->insert([
+            [
+                'course_schedule_id' => 18,
+                'user_login_id' => $userIds[4],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Diploma in Information Communication Technology (DICT)',
+                'course_code' => 'DS202',
+                'course_subjects' => 'Database Systems',
+                'year_section' => '2-2',
+                'schedule' => 'Wed 14:00 - 16:00, Fri 10:00 - 12:00',
+            ],
+            [
+                'course_schedule_id' => 19,
+                'user_login_id' => $userIds[4],
+                'sem_academic_year' => 'First Sem 2024-2025',
+                'program' => 'Diploma in Information Communication Technology (DICT)',
+                'course_code' => 'OS102',
+                'course_subjects' => 'Operating Systems',
+                'year_section' => '2-1',
+                'schedule' => 'Mon 09:00 - 11:00, Thurs 09:00 - 11:00',
+            ],
+            [
+                'course_schedule_id' => 20,
+                'user_login_id' => $userIds[4],
                 'sem_academic_year' => 'First Sem 2024-2025',
                 'program' => 'Bachelor of Science in Applied Mathematics (BSAM)',
                 'course_code' => 'MGT101',

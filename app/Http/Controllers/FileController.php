@@ -9,6 +9,7 @@ use App\Models\FolderName;
 use App\Models\CoursesFile;
 use App\Models\Notification;
 use App\Models\UserDetails;
+use App\Models\Message;
 use App\Exports\CoursesFilesExport;
 use App\Exports\ExportNotPassed;
 use App\Exports\GenerateAllReports;
@@ -24,32 +25,23 @@ class FileController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-        
+    
         $user = auth()->user();
-        
+    
         if ($user->role !== 'admin') {
             return redirect()->route('login');
         }
-
+    
         try {
             $targetFile = CoursesFile::findOrFail($courses_files_id);
             
-            $relatedFiles = CoursesFile::where('folder_name_id', $targetFile->folder_name_id)
-                ->where('user_login_id', $targetFile->user_login_id)
-                ->where('course_schedule_id', $targetFile->course_schedule_id)
-                ->where('semester', $targetFile->semester)
-                ->where('school_year', $targetFile->school_year)
-                ->get();
-
-            foreach ($relatedFiles as $file) {
-                $file->status = 'Approved';
-                $file->save();
-            }
-
+            $targetFile->status = 'Approved';
+            $targetFile->save();
+    
             $folder = FolderName::find($targetFile->folder_name_id);
             $userDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
             $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
-
+    
             Notification::create([
                 'courses_files_id' => $targetFile->courses_files_id,
                 'user_login_id' => $targetFile->user_login_id,
@@ -58,10 +50,10 @@ class FileController extends Controller
                 'notification_message' => 'approved the course ' . $targetFile->subject . ' in ' . 
                     ($folder ? $folder->folder_name : 'Unknown Folder') . '.',
             ]);
-
-            return redirect()->back()->with('success', 'Approved successfully!');
+    
+            return redirect()->back()->with('success', 'File has been approved successfully!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'An error occurred while approving the files.');
+            return redirect()->back()->with('error', 'An error occurred while approving the file.');
         }
     }
 
@@ -80,23 +72,15 @@ class FileController extends Controller
     
         try {
             $targetFile = CoursesFile::findOrFail($courses_files_id);
-            
-            $relatedFiles = CoursesFile::where('folder_name_id', $targetFile->folder_name_id)
-                ->where('user_login_id', $targetFile->user_login_id)
-                ->where('course_schedule_id', $targetFile->course_schedule_id)
-                ->where('semester', $targetFile->semester)
-                ->where('school_year', $targetFile->school_year)
-                ->get();
     
-            foreach ($relatedFiles as $file) {
-                $file->status = 'Declined';
-                $file->declined_reason = $request->input('declineReason');
-                $file->save();
-            }
+            $targetFile->status = 'Declined';
+            $targetFile->declined_reason = $request->input('declineReason');
+            $targetFile->save();
     
             $folder = FolderName::find($targetFile->folder_name_id);
-            $userDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
-            $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
+    
+            $adminDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
+            $senderName = $adminDetails ? $adminDetails->first_name . ' ' . $adminDetails->surname : 'Unknown Sender';
     
             Notification::create([
                 'courses_files_id' => $targetFile->courses_files_id,
@@ -107,36 +91,117 @@ class FileController extends Controller
                     ($folder ? $folder->folder_name : 'Unknown Folder'),
             ]);
     
-            return redirect()->route('admin.accomplishment.view-accomplishment', [
-                'user_login_id' => $targetFile->user_login_id,
-                'folder_name_id' => $targetFile->folder_name_id 
-            ])->with('success', 'Declined successfully!');
+            Message::create([
+                'user_login_id' => $user->user_login_id,
+                'courses_files_id' => $targetFile->courses_files_id,
+                'folder_name_id' => $targetFile->folder_name_id,
+                'message_body' => $request->input('declineReason'),
+            ]);
+    
+            return redirect()->back()->with('success', 'Declined successfully and message sent!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'An error occurred while declining the files.');
+            return redirect()->back()->with('error', 'An error occurred while declining the file.');
         }
     }
+
+
+
+    //undo approval
+    public function undoApproval($courses_files_id)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
     
+        $user = auth()->user();
+    
+        if ($user->role !== 'admin') {
+            return redirect()->route('login');
+        }
+    
+        try {
+            $targetFile = CoursesFile::findOrFail($courses_files_id);
+    
+            if ($targetFile->status !== 'Approved') {
+                return redirect()->back()->with('error', 'This file cannot be undone as it is not approved.');
+            }
+    
+            if ($targetFile->is_archived == 1) {
+                return redirect()->back()->with('error', 'This file is archived and needs to be unarchived first. Kindly message the faculty to request unarchiving');
+            }
+    
+            $targetFile->status = 'To Review';
+            $targetFile->save();
+    
+            $folder = FolderName::find($targetFile->folder_name_id);
+            $userDetails = UserLogin::where('user_login_id', $user->user_login_id)->first();
+            $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
+    
+            // Send a notification
+            Notification::create([
+                'courses_files_id' => $targetFile->courses_files_id,
+                'user_login_id' => $targetFile->user_login_id,
+                'folder_name_id' => $targetFile->folder_name_id,
+                'sender' => $senderName,
+                'notification_message' => 'reverted the approval for the course ' . $targetFile->subject . ' in ' . 
+                    ($folder ? $folder->folder_name : 'Unknown Folder'),
+            ]);
+    
+            return redirect()->back()->with('success', 'File has been reverted to "To Review"!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An error occurred while undoing the approval.');
+        }
+    }
+
+    //undo declined
+    public function undoDeclined($courses_files_id)
+    {
+        try {
+            $file = CoursesFile::findOrFail($courses_files_id);
+    
+            if ($file->is_archived == 1) {
+                return redirect()->back()->with('error', 'This file is archived and needs to be unarchived first. Kindly message the faculty to request unarchiving.');
+            }
+    
+            if ($file->status !== 'Declined') {
+                return redirect()->back()->with('error', 'This file is not declined.');
+            }
+    
+            $file->status = 'To Review';
+            $file->save();
+    
+            $folder = FolderName::find($file->folder_name_id);
+            $userDetails = UserLogin::where('user_login_id', auth()->user()->user_login_id)->first();
+            $senderName = $userDetails ? $userDetails->first_name . ' ' . $userDetails->surname : 'Unknown Sender';
+    
+            Notification::create([
+                'courses_files_id' => $file->courses_files_id,
+                'user_login_id' => $file->user_login_id,
+                'folder_name_id' => $file->folder_name_id,
+                'sender' => $senderName,
+                'notification_message' => 'reverted the decline for the course ' . $file->subject . ' in ' . 
+                    ($folder ? $folder->folder_name : 'Unknown Folder'),
+            ]);
+    
+            return redirect()->back()->with('success', 'File has been reverted to "To Review"!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An error occurred while undoing the decline.');
+        }
+    }
+
     //delete files
     public function destroy($courses_files_id)
     {
         try {
             $targetFile = CoursesFile::findOrFail($courses_files_id);
-            
-            $relatedFiles = CoursesFile::where('folder_name_id', $targetFile->folder_name_id)
-                ->where('user_login_id', $targetFile->user_login_id)
-                ->where('course_schedule_id', $targetFile->course_schedule_id)
-                ->where('semester', $targetFile->semester)
-                ->where('school_year', $targetFile->school_year)
-                ->get();
     
-            foreach ($relatedFiles as $file) {
-                Storage::delete('/' . $file->files);
-                $file->delete();
-            }
+            Storage::delete('/' . $targetFile->files);
     
-            return response()->json(['success' => 'All related files deleted successfully.']);
+            $targetFile->delete();
+    
+            return response()->json(['success' => 'File deleted successfully.']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error deleting files.'], 500);
+            return response()->json(['error' => 'Error deleting the file.'], 500);
         }
     }
 

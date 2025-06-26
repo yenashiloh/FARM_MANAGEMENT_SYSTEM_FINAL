@@ -50,6 +50,9 @@
         strong {
             color: rgb(27, 27, 27);
         }
+         .table td {
+        color: #3c3d43;
+        }
     </style>
 </head>
 
@@ -65,7 +68,7 @@
                 <!-- pageheader  -->
                 <!-- ============================================================== -->
                 <div class="row">
-                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="page-header">
                             <h2 class="pageheader-title">Archive Files</h2>
                             <div class="page-breadcrumb">
@@ -85,8 +88,8 @@
                 <!-- ============================================================== -->
                 <!-- end pageheader  -->
                 <!-- ============================================================== -->
-                <div class="ecommerce-widget">
-                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                 <div class="row">
+                       <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="card">
                             <div class="card-header fw-bold">
                                 All Archive Files
@@ -100,22 +103,57 @@
 
                                 <form id="bulk-restore-form" action="{{ route('files.bulkUnarchive') }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="btn btn-warning btn-sm mb-3"
+                                    <button type="submit" class="btn btn-primary btn-sm mb-3"
                                         id="restore-selected">Restore</button>
 
+                                <div class="row">
+                                    <!-- Filter by Semester Dropdown -->
+                                    <div class="col-md-3 mb-3 position-relative">
+                                        <select id="semesterFilter" class="form-control">
+                                            <option value="">Select Semester</option>
+                                            <option value="First Semester">First Semester</option>
+                                            <option value="Second Semester">Second Semester</option>
+                                            <option value="Summer">Summer</option>
+                                            
+                                        </select>
+                                        <i class="fas fa-chevron-down position-absolute" style="right: 25px; top: 40%; transform: translateY(-50%); pointer-events: none;"></i>
+                                    </div>
+                                
+                                    <!-- Filter by School Year Dropdown -->
+                                    <div class="col-md-3 mb-3 position-relative">
+                                        <select id="schoolYearFilter" class="form-control">
+                                             <option value="">Select School Year</option>
+                                            @foreach($availableSchoolYears as $schoolYear)
+                                                <option value="{{ $schoolYear }}">{{ $schoolYear }}</option>
+                                            @endforeach
+                                         
+                                        </select>
+                                        <i class="fas fa-chevron-down position-absolute" style="right: 25px; top: 40%; transform: translateY(-50%); pointer-events: none;"></i>
+                                    </div>
+                                
+                                    <!-- Filter by Requirements Dropdown -->
+                                   <div class="col-md-3 mb-3 position-relative">
+                                    <select name="folder_name" class="form-control">
+                                        <option value="">Select Documents</option>
+                                        @foreach($folders->unique('folder_name') as $folder)
+                                            <option value="{{ $folder->folder_name_id }}">{{ $folder->folder_name }}</option>
+                                        @endforeach
+                                    </select>
+                                       <i class="fas fa-chevron-down position-absolute" style="right: 25px; top: 40%; transform: translateY(-50%); pointer-events: none;"></i>
+                                    </div>
+                                </div>
+                                
                                     <div class="table-responsive">
-                                        <table class="table table-striped table-bordered first">
+                                        <table class="table table-striped table-bordered first" id="courseTable">
                                             <thead>
                                                 <tr>
-                                                    <th><input type="checkbox" id="select-all"></th>
-                                                    <th>No.</th>
-                                                    <th>Date & Time</th>
-                                                    <th>Semester</th>
-                                                    <th>Program</th>
-                                                    <th>Course & Course Code</th>
-                                                    <th>Year & Section</th>
-                                                    <th>File Name</th>
-                                                    <th>Status</th>
+                                                <th><input type="checkbox" id="select-all"></th>
+                                                <th>Subject</th>
+                                                <th>Created Date</th>
+                                                <th>Documents</th>
+                                                <th>Academic Year</th>
+                                                <th>Files</th>
+                                                <th>Status</th>
 
                                                 </tr>
                                             </thead>
@@ -125,38 +163,34 @@
                                                         <td><input type="checkbox" name="file_ids[]"
                                                                 value="{{ $file->courses_files_id }}"
                                                                 class="file-checkbox"></td>
-                                                        <td>{{ $loop->iteration }}</td>
-                                                        <td>{{ \Carbon\Carbon::parse($file->created_at)->locale('en_PH')->format('F j, Y, g:i A') }}
+                                                        <td>{{ $file->subject }}</td>
+                                                         <td>{{ \Carbon\Carbon::parse($file->created_at)->locale('en_PH')->format('F j, Y, g:i A') }}
                                                         </td>
-                                                        <td>{{ $file->courseSchedule->sem_academic_year }}</td>
-                                                        <td>{{ $file->courseSchedule->program }}</td>
-                                                        <td>{{ $file->subject }} -
-                                                            {{ $file->courseSchedule->course_code }}</td>
-                                                        <td>{{ $file->courseSchedule->year_section }}</td>
+                                                        <td>{{ $file->folderName->folder_name }}</td>
+                                                       
+                                                        <td>{{ $file->semester }} {{ $file->school_year }}</td>
+                                           
                                                         <td>
-                                                            <a href="{{ Storage::url('/' . $file->files) }}"
-                                                                target="_blank"
-                                                                style="color: rgb(65, 65, 231); text-decoration: underline;">
-                                                                {{ $file->original_file_name }}
-                                                            </a>
+                                                           @foreach ($file['files'] as $fileInfo)
+                                                               <div class="mb-1">
+                                                                   <a href="{{ Storage::url($fileInfo['path']) }}" target="_blank" style="text-decoration: underline; color: #3c3d43;">
+                                                                       {{ Str::limit($fileInfo['name'], 8, '...') }}
+                                                                   </a>
+                                                               </div>
+                                                           @endforeach
                                                         </td>
                                                         <td>
                                                             @if ($file->status === 'To Review')
-                                                                <span
-                                                                    class="badge badge-primary">{{ $file->status }}</span>
+                                                                <span>{{ $file->status }}</span>
                                                             @elseif($file->status === 'Approved')
-                                                                <span
-                                                                    class="badge badge-success">{{ $file->status }}</span>
+                                                                <span>{{ $file->status }}</span>
                                                             @elseif($file->status === 'Declined')
-                                                                <span
-                                                                    class="badge badge-danger">{{ $file->status }}</span>
+                                                                <span>{{ $file->status }}</span>
                                                                 @if ($file->declined_reason)
-                                                                    <div class="mt-2">Declined Reason:
-                                                                        {{ $file->declined_reason }}</div>
+                                                                    <div class="mt-2">Declined Reason: {{ $file->declined_reason }}</div>
                                                                 @endif
                                                             @else
-                                                                <span
-                                                                    class="badge bg-secondary">{{ $file->status }}</span>
+                                                                <span>{{ $file->status }}</span>
                                                             @endif
                                                         </td>
                                                         {{-- <td>
@@ -173,8 +207,6 @@
                             </div>
                         </div>
                     </div>
-
-
                 </div>
             </div>
             <!-- ============================================================== -->
@@ -238,7 +270,50 @@
     
             updateRestoreButtonVisibility();
         });
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            const semesterFilter = document.getElementById('semesterFilter');
+            const schoolYearFilter = document.getElementById('schoolYearFilter');
+            const folderFilter = document.querySelector('select[name="folder_name"]');
+            
+            const dataTable = $('#courseTable').DataTable({
+                pageLength: 10,
+                lengthMenu: [[10, 15, 20, -1], [10, 15, 20, "All"]]
+            });
+            
+            // Custom filtering function
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    // Get filter values
+                    const selectedSemester = semesterFilter ? semesterFilter.value.trim() : '';
+                    const selectedSchoolYear = schoolYearFilter ? schoolYearFilter.value.trim() : '';
+                    const selectedFolder = folderFilter ? folderFilter.options[folderFilter.selectedIndex].text : '';
+                    
+                    // Skip filters if nothing selected
+                    const semesterMatch = !selectedSemester || selectedSemester === 'Select Semester' || 
+                                        data[4].includes(selectedSemester);
+                    
+                    const schoolYearMatch = !selectedSchoolYear || selectedSchoolYear === 'Select School Year' || 
+                                           data[4].includes(selectedSchoolYear);
+                    
+                    const folderMatch = !selectedFolder || selectedFolder === 'Select Documents' || 
+                                      data[3] === selectedFolder;
+                    
+                    // Return true if all applicable filters match
+                    return semesterMatch && schoolYearMatch && folderMatch;
+                }
+            );
+            
+            function filterTable() {
+                dataTable.draw();
+            }
+            
+            if (semesterFilter) semesterFilter.addEventListener('change', filterTable);
+            if (schoolYearFilter) schoolYearFilter.addEventListener('change', filterTable);
+            if (folderFilter) folderFilter.addEventListener('change', filterTable);
+        });
         </script>
+           <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
             <script src="../../../../asset/vendor/jquery/jquery-3.3.1.min.js"></script>
             <script src="../../../../asset/vendor/bootstrap/js/bootstrap.bundle.js"></script>
@@ -261,7 +336,7 @@
             <script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
             <script src="../../../../asset/vendor/datatables/js/loading.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+         
 </body>
 
 </html>

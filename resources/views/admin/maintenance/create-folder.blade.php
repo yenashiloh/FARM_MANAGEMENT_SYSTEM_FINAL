@@ -56,7 +56,7 @@
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="card">
                             <div class="card-body">
-                                <button type="button" class="btn btn-success mb-3" data-toggle="modal"
+                                <button type="button" class="btn btn-primary mb-3" data-toggle="modal"
                                     data-target="#addFolderModal">
                                     <i class="fas fa-plus"></i> Add Folder
                                 </button>
@@ -114,6 +114,8 @@
                                                             <option value="Syllabus Preparation ">Syllabus Preparation
                                                             </option>
                                                         </select>
+                                                        <i class="fas fa-chevron-down position-absolute"
+                                            style="right: 25px; top: 75%; transform: translateY(-50%); pointer-events: none;"></i>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
@@ -163,7 +165,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-
 
                                 <!-- Edit Folder Modal -->
                                 <div class="modal fade" id="editFolderModal" tabindex="-1" role="dialog"

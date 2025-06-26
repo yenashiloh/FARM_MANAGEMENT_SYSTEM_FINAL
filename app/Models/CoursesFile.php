@@ -48,5 +48,30 @@ class CoursesFile extends Model
         return $this->belongsTo(CourseSchedule::class, 'course_schedule_id');
     }
     
+     public function getFileInfoAttribute()
+    {
+        $filesData = is_string($this->files) ? json_decode($this->files, true) : $this->files;
+        $originalNames = is_string($this->original_file_name) ? 
+            json_decode($this->original_file_name, true) : 
+            $this->original_file_name;
+        
+        $fileInfo = [];
+        
+        if (is_array($filesData) && is_array($originalNames)) {
+            foreach ($filesData as $index => $path) {
+                $fileInfo[] = [
+                    'path' => $path,
+                    'name' => isset($originalNames[$index]) ? $originalNames[$index] : basename($path)
+                ];
+            }
+        } elseif (is_string($this->files) && is_string($this->original_file_name)) {
+            $fileInfo[] = [
+                'path' => $this->files,
+                'name' => $this->original_file_name
+            ];
+        }
+        
+        return $fileInfo;
+    }
 }
 

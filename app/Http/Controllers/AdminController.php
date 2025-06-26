@@ -13,8 +13,12 @@ use App\Models\LogoutLog;
 use App\Models\LoginLog;
 use App\Models\Department;
 use App\Models\CourseSchedule;
+use App\Models\Message;
 use App\Models\RequestUploadAccess;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -115,7 +119,7 @@ class AdminController extends Controller
     
         $files = CoursesFile::where('courses_files.folder_name_id', $folder_name_id)
             ->where('courses_files.user_login_id', $user_login_id)
-            ->with(['userLogin', 'courseSchedule'])
+            ->with(['userLogin', 'courseSchedule', 'folderName'])
             ->orderBy('created_at', 'desc')
             ->get();
     
@@ -130,19 +134,15 @@ class AdminController extends Controller
     
         $currentFolder = $folders->firstWhere('main_folder_name', $folder->main_folder_name);
     
-        $groupedFiles = $files->groupBy(function ($file) {
-            return $file->courseSchedule->course_code . '|' . 
-                   $file->courseSchedule->year_section . '|' . 
-                   $file->courseSchedule->program . '|' . 
-                   $file->semester . '|' . 
-                   $file->school_year . '|' . 
-                   $file->status;
-        });
+       $messages = Message::whereIn('courses_files_id', $files->pluck('courses_files_id'))
+        ->with('userLogin')
+        ->orderBy('created_at', 'asc')
+        ->get();
     
         return view('admin.accomplishment.view-accomplishment', [
             'folder' => $folder,
             'folderName' => $folder->folder_name,
-            'files' => $files,
+            'files' => $files, 
             'folders' => $folders,
             'firstName' => $user->first_name,
             'surname' => $user->surname,
@@ -154,13 +154,43 @@ class AdminController extends Controller
             'currentFolder' => $currentFolder,
             'user_login_id' => $user_login_id,
             'folder_name_id' => $folder_name_id,
-            'groupedFiles' => $groupedFiles,
             'semesters' => $semesters,
             'schoolYears' => $schoolYears, 
+            'messages' => $messages,
+        ]);
+    }
+
+    //send message 
+    public function sendMessageFaculty(Request $request)
+    {
+        $message = Message::create([
+            'user_login_id' => auth()->id(), 
+            'courses_files_id' => $request->courses_files_id,
+            'folder_name_id' => $request->folder_name_id,
+            'message_body' => $request->message_body,
+        ]);
+    
+        $message->load('userLogin');
+    
+        $facultyUserLoginId = CoursesFile::findOrFail($request->courses_files_id)->user_login_id;
+    
+        $adminDetails = UserLogin::find(auth()->id()); 
+        $senderName = $adminDetails ? $adminDetails->first_name . ' ' . $adminDetails->surname : 'Unknown Sender';
+    
+        Notification::create([
+            'courses_files_id' => $request->courses_files_id,
+            'user_login_id' => $facultyUserLoginId, 
+            'folder_name_id' => $request->folder_name_id,
+            'sender' => $senderName,
+            'notification_message' => 'sent a message regarding your documents.',
+        ]);
+    
+        return response()->json([
+            'success' => true,
+            'message' => $message
         ]);
     }
     
-
     //show admin account
     public function adminAccountPage()
     {
@@ -223,45 +253,58 @@ class AdminController extends Controller
         return response()->json(['success' => true]);
     }
 
+    //audit trail page
     public function showAuditTrail()
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
+        
         $user = auth()->user();
         $firstName = $user->first_name;
         $surname = $user->surname;
-
+        
         $notifications = Notification::where('user_login_id', $user->user_login_id)
             ->orderBy('created_at', 'desc')
             ->get();
         $notificationCount = $notifications->where('is_read', 0)->count();
         $folders = FolderName::all();
-
-        $logoutLogs = LogoutLog::with('user')->select('user_login_id', 'logout_time', 'logout_message')->orderBy('logout_time', 'desc')->get();
-        $loginLogs = LoginLog::with('user')->select('user_login_id', 'login_time', 'login_message')->orderBy('login_time', 'desc')->get(); 
-
-        $allLogs = $loginLogs->map(function ($log) {
-            return [
+        
+        // Get logs
+        $logoutLogs = LogoutLog::with('user')
+            ->select('user_login_id', 'logout_time', 'logout_message')
+            ->orderBy('logout_time', 'desc')
+            ->get();
+            
+        $loginLogs = LoginLog::with('user')
+            ->select('user_login_id', 'login_time', 'login_message')
+            ->orderBy('login_time', 'desc')
+            ->get();
+    
+        $allLogs = collect();
+        
+        foreach ($loginLogs as $log) {
+            $allLogs->push([
                 'email' => $log->user->email,
                 'message' => $log->login_message,
                 'time' => $log->login_time,
                 'type' => 'Login'
-            ];
-        })->merge($logoutLogs->map(function ($log) {
-            return [
+            ]);
+        }
+        
+        foreach ($logoutLogs as $log) {
+            $allLogs->push([
                 'email' => $log->user->email,
                 'message' => $log->logout_message,
                 'time' => $log->logout_time,
                 'type' => 'Logout'
-            ];
-        }));
-
-        $sortedLogs = $allLogs->sortByDesc('time');
-
+            ]);
+        }
+    
+        $sortedLogs = $allLogs->sortByDesc('time')->values();
+        
         \Log::info('All Logs:', $sortedLogs->toArray());
-
+        
         return view('admin.maintenance.audit-trail', [
             'folders' => $folders,
             'notifications' => $notifications,
@@ -321,23 +364,471 @@ class AdminController extends Controller
         return response()->json(['success' => true]);
     }
 
+    //realtime table of upload access
     public function realTimeUploadAccess()
     {
         $allRequests = RequestUploadAccess::with('user')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function($request) {
-                return [
-                    'created_at_date' => $request->created_at->format('F j, Y'),
-                    'created_at_time' => $request->created_at->format('g:i A'),
-                    'user_name' => $request->user->first_name . ' ' . $request->user->surname,
-                    'reason' => $request->reason,
-                ];
-            });
+             ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function($request) {
+            return [
+                'created_at_date' => $request->created_at->format('F j, Y'),
+                'created_at_time' => $request->created_at->format('g:i A'),
+                'user_name' => $request->user->first_name . ' ' . $request->user->surname,
+                'reason' => $request->reason,
+                'status_request' => $request->status_request,
+                'request_upload_id' => $request->request_upload_id
+            ];
+        });
+
 
         return response()->json([
 
             'uploadRequests' => $allRequests 
         ]);
     }
+    
+    //show submission tracker
+    public function showSubmissionTracker()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+    
+        $user = auth()->user();
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+    
+        $allUsers = DB::table('user_login')
+            ->select('user_login_id', 'first_name', 'surname', 'role', 'faculty_code')
+            ->whereIn('role', ['faculty', 'faculty-coordinator'])
+            ->get();
+    
+        $mainFolders = ['Classroom Management', 'Test Administration', 'Syllabus Preparation'];
+        $progressData = [];
+    
+        foreach ($allUsers as $user) {
+            $totalProgress = 0;
+    
+            foreach ($mainFolders as $mainFolder) {
+                $subFolders = FolderName::where('main_folder_name', $mainFolder)->get();
+                $mainFolderProgress = 0;
+    
+                foreach ($subFolders as $subFolder) {
+                    $approvedFiles = $subFolder->coursesFiles()
+                        ->where('user_login_id', $user->user_login_id)
+                        ->where('status', 'Approved') 
+                        ->count();
+    
+                    $totalFiles = $subFolder->coursesFiles()
+                        ->where('user_login_id', $user->user_login_id)
+                        ->count();
+    
+                    $subFolderProgress = ($totalFiles > 0) ? ($approvedFiles / $totalFiles) * 100 : 0;
+                    $mainFolderProgress += $subFolderProgress;
+                }
+    
+                $mainFolderProgress = ($subFolders->count() > 0) ?
+                    $mainFolderProgress / $subFolders->count() : 0;
+    
+                $totalProgress += $mainFolderProgress;
+            }
+    
+            $overallProgress = count($mainFolders) > 0 ? $totalProgress / count($mainFolders) : 0;
+            $progressData[$user->user_login_id] = $overallProgress;
+        }
+    
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
+        $folders = FolderName::all();
+    
+        return view('admin.submission-tracker', [
+            'folders' => $folders,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'user' => $user,
+            'allUsers' => $allUsers,
+            'progressData' => $progressData
+        ]);
+    }
+
+    //view folder page
+    public function viewFolder($user_login_id)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+    
+        $user = DB::table('user_login')->where('user_login_id', $user_login_id)->first();
+        $authUser = auth()->user();
+        $firstName = $authUser->first_name;
+        $surname = $authUser->surname;
+    
+        $mainFolders = ['Classroom Management', 'Test Administration', 'Syllabus Preparation'];
+        $folderProgress = [];
+    
+        foreach ($mainFolders as $mainFolder) {
+            $subFolders = FolderName::where('main_folder_name', $mainFolder)->get();
+            $mainFolderProgress = 0;
+    
+            foreach ($subFolders as $subFolder) {
+                $totalFiles = $subFolder->coursesFiles()
+                    ->where('user_login_id', $user_login_id)
+                    ->count();
+    
+                $approvedFiles = $subFolder->coursesFiles()
+                    ->where('user_login_id', $user_login_id)
+                    ->where('status', 'Approved')
+                    ->count();
+    
+                $subFolderProgress = ($totalFiles > 0) ? ($approvedFiles / $totalFiles) * 100 : 0;
+                $mainFolderProgress += $subFolderProgress;
+            }
+    
+            $folderProgress[$mainFolder] = ($subFolders->count() > 0) ? round($mainFolderProgress / $subFolders->count()) : 0;
+        }
+    
+        $folders = FolderName::all();
+        $notifications = Notification::where('user_login_id', $authUser->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
+    
+        return view('admin.view-folder', [
+            'user' => $user,
+            'folders' => $folders,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'folderProgress' => $folderProgress
+        ]);
+    }
+
+    
+    //view sub folder
+    public function viewSubfolder($user_login_id, $folder_name)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+        $user = DB::table('user_login')->where('user_login_id', $user_login_id)->first();
+        
+        $authUser = auth()->user();
+        $firstName = $authUser->first_name;
+        $surname = $authUser->surname;
+        
+        $subfolders = FolderName::where('main_folder_name', $folder_name)->get();
+        
+        $folders = FolderName::all(); 
+        
+        $subfolderProgress = [];
+        foreach ($subfolders as $subfolder) {
+            $totalFiles = $subfolder->coursesFiles()
+                ->where('user_login_id', $user_login_id)
+                ->count();
+                
+            $approvedFiles = $subfolder->coursesFiles()
+                ->where('user_login_id', $user_login_id)
+                ->where('status', 'Approved')
+                ->count();
+                
+            $progress = $totalFiles > 0 ? round(($approvedFiles / $totalFiles) * 100) : 0;
+            
+            $subfolderProgress[$subfolder->folder_name_id] = [
+                'name' => $subfolder->folder_name,
+                'progress' => $progress,
+                'files_count' => $totalFiles
+            ];
+        }
+        
+        $notifications = Notification::where('user_login_id', $authUser->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
+        
+        return view('admin.view-subfolder', [
+            'user' => $user,
+            'mainFolder' => $folder_name,
+            'subfolders' => $subfolderProgress,
+            'folders' => $folders, 
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname
+        ]);
+    }
+    
+    public function sendReminder($user_login_id)
+    {
+        $faculty = DB::table('user_login')->where('user_login_id', $user_login_id)->first();
+        $sender = auth()->user();
+    
+        $mainFolders = ['Classroom Management', 'Test Administration', 'Syllabus Preparation'];
+        $totalProgress = 0;
+    
+        foreach ($mainFolders as $mainFolder) {
+            $subFolders = FolderName::where('main_folder_name', $mainFolder)->get();
+            $mainFolderProgress = 0;
+    
+            foreach ($subFolders as $subFolder) {
+                $totalFiles = $subFolder->coursesFiles()
+                    ->where('user_login_id', $user_login_id)
+                    ->count();
+    
+                $subFolderProgress = ($totalFiles > 0) ? 100 : 0;
+                $mainFolderProgress += $subFolderProgress;
+            }
+    
+            $mainFolderProgress = ($subFolders->count() > 0) ?
+                $mainFolderProgress / $subFolders->count() : 0;
+                
+            $totalProgress += $mainFolderProgress;
+        }
+    
+        $progress = count($mainFolders) > 0 ? $totalProgress / count($mainFolders) : 0;
+    
+        Mail::send('emails.reminder', [
+            'faculty' => $faculty,
+            'sender' => $sender,
+            'progress' => $progress
+        ], function($message) use ($faculty) {
+            $message->to($faculty->email)
+                    ->subject('Reminder: Submit Required Documents');
+        });
+    
+        return redirect()->back()->with('success', 'Reminder email sent successfully.');
+    }
+    
+    //approved request 
+    public function approveUploadRequest($id)
+    {
+        $request = RequestUploadAccess::with('user')->where('request_upload_id', $id)->firstOrFail();
+        
+        Notification::create([
+            'courses_files_id' => null,
+            'user_login_id' => $request->user_login_id,
+            'folder_name_id' => null,
+            'sender' => 'PUPT Admin',
+            'notification_message' => 'Approved your request for uploading. The upload access is now open.',
+            'is_read' => 1
+        ]);
+    
+        // Update using the correct primary key
+        RequestUploadAccess::where('request_upload_id', $id)
+            ->update(['status_request' => 'Approved']);
+    
+        return redirect()->back()->with('success', 'Upload Request Approved Successfully!');
+    }
+    
+    public function showTotalUsers()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+    
+        $user = auth()->user();
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+    
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        $notificationCount = $notifications->where('is_read', 0)->count();
+    
+        $folders = FolderName::all();
+        
+        // Get all departments to use for name lookups
+        $departments = Department::pluck('name', 'department_id')->toArray();
+        
+        // Get users with role 'faculty' or 'faculty-coordinator'
+        $users = UserLogin::whereIn('role', ['faculty', 'faculty-coordinator'])->get();
+        
+        return view('admin.dashboard-totals.users', [
+            'folders' => $folders,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'user' => $user,
+            'users' => $users,
+            'departments' => $departments, 
+        ]);
+    }
+    
+    public function showTotalCompletedReviews()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+        $user = auth()->user();
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
+        $folders = FolderName::all();
+        
+        // Get current folder and user_login_id
+        $folder_name_id = request('folder_name_id');
+        $user_login_id = request('user_login_id', $user->user_login_id);
+        
+        // Get the current folder
+        $currentFolder = FolderName::find($folder_name_id);
+        
+        // Get faculty information if a specific faculty is selected
+        $faculty = null;
+        if ($user_login_id && $user_login_id != $user->user_login_id) {
+            $faculty = UserLogin::find($user_login_id);
+        }
+        
+        // Get completed reviews
+        $files = CoursesFile::where('status', 'Approved')
+            ->orWhere('status', 'Completed')
+            ->when($folder_name_id, function($query) use ($folder_name_id) {
+                return $query->where('folder_name_id', $folder_name_id);
+            })
+            ->when($user_login_id, function($query) use ($user_login_id) {
+                return $query->where('user_login_id', $user_login_id);
+            })
+            ->with(['userLogin', 'courseSchedule', 'folderName'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Just convert to array - let the view handle the file processing
+        $processedFiles = $files->toArray();
+    
+        return view('admin.dashboard-totals.completed-reviews', [
+            'folders' => $folders,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'user' => $user,
+            'faculty' => $faculty,
+            'currentFolder' => $currentFolder,
+            'user_login_id' => $user_login_id,
+            'folder_name_id' => $folder_name_id,
+            'files' => $files,
+            'processedFiles' => $processedFiles,
+        ]);
+    }
+    
+    //show total declined files 
+    public function showPendingReviewFiles()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+        $user = auth()->user();
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
+        $folders = FolderName::all();
+        
+        // Get current folder and user_login_id
+        $folder_name_id = request('folder_name_id');
+        $user_login_id = request('user_login_id', $user->user_login_id);
+        
+        // Get the current folder
+        $currentFolder = FolderName::find($folder_name_id);
+
+        // Get faculty information if a specific faculty is selected
+        $faculty = null;
+        if ($user_login_id && $user_login_id != $user->user_login_id) {
+            $faculty = UserLogin::find($user_login_id);
+        }
+        
+        // Get completed reviews
+        $files = CoursesFile::where('status', 'To Review')
+            ->orWhere('status', 'To Review')
+            ->when($folder_name_id, function($query) use ($folder_name_id) {
+                return $query->where('folder_name_id', $folder_name_id);
+            })
+            ->when($user_login_id, function($query) use ($user_login_id) {
+                return $query->where('user_login_id', $user_login_id);
+            })
+            ->with(['userLogin', 'courseSchedule', 'folderName'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $processedFiles = $files->toArray();
+    
+        return view('admin.dashboard-totals.pending-review', [
+            'folders' => $folders,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'user' => $user,
+            'faculty' => $faculty,
+            'currentFolder' => $currentFolder,
+            'user_login_id' => $user_login_id,
+            'folder_name_id' => $folder_name_id,
+               'files' => $files,
+    'processedFiles' => $files,
+        ]);
+    }
+    
+    //total files submitted
+    public function showTotalFilesSubmitted()
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+        $user = auth()->user();
+        $firstName = $user->first_name;
+        $surname = $user->surname;
+        $notifications = Notification::where('user_login_id', $user->user_login_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notificationCount = $notifications->where('is_read', 0)->count();
+        $folders = FolderName::all();
+        
+        // Get the current folder and user parameters
+        $folder_name_id = request()->input('folder_name_id');  
+        $user_login_id = request()->input('user_login_id');
+        
+        // Get the current folder
+        $currentFolder = FolderName::find($folder_name_id);
+        
+        // Get faculty details if different user is selected
+        $faculty = null;
+        if ($user_login_id && $user_login_id != $user->user_login_id) {
+            $faculty = UserLogin::find($user_login_id);
+        }
+        
+        // Retrieve ALL submitted files without any filtering
+        $files = CoursesFile::with(['userLogin', 'courseSchedule', 'folderName'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Debugging: Log query results
+        Log::info('Retrieved files: ' . $files->count());
+        
+        return view('admin.dashboard-totals.files-submitted', [
+            'folders' => $folders,
+            'notifications' => $notifications,
+            'notificationCount' => $notificationCount,
+            'firstName' => $firstName,
+            'surname' => $surname,
+            'user' => $user,
+            'faculty' => $faculty,
+            'currentFolder' => $currentFolder,
+            'user_login_id' => $user_login_id,
+            'folder_name_id' => $folder_name_id,
+            'files' => $files,
+            'processedFiles' => $files, 
+        ]);
+    }
+   
 }

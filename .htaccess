@@ -4,20 +4,16 @@ SetHandler application/x-lsphp82
 <IfModule mod_rewrite.c>
     Options +FollowSymLinks
     RewriteEngine On
-    RewriteRule ^storage/(.*)$ public/storage/$1 [L,NC]
-    # Allow access to the storage directory
-    RewriteCond %{REQUEST_URI} ^/storage/ [NC]
-    RewriteCond %{REQUEST_FILENAME} !-f 
-    RewriteRule ^storage/(.*)$ storage/$1 [L,NC]
 
-    # Ensure that requests that are not to existing files or directories are redirected to public
-    RewriteCond %{REQUEST_URI} !^/public/ 
+    # Redirect storage requests
+    RewriteRule ^storage/(.*)$ public/storage/$1 [L,NC]
+
+    # Handle requests to the public directory
+    RewriteCond %{REQUEST_URI} !^/public/
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
-
-    # Redirect all other requests to the public folder
     RewriteRule ^(.*)$ /public/$1 [L]
 
-    # Handle the index.php file
-    RewriteRule ^(/)?$ public/index.php [L] 
+    # Handle index.php
+    RewriteRule ^(/)?$ public/index.php [L]
 </IfModule>

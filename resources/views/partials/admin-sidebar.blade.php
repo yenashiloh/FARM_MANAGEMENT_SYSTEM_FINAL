@@ -115,7 +115,8 @@
     <!-- ============================================================== -->
     <div class="dashboard-header">
         <nav class="navbar navbar-expand-lg bg-white fixed-top">
-            <a class="navbar-brand" href="{{ route('admin.admin-dashboard') }}">
+            <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ route('admin.admin-dashboard') }}">
                 <img src="{{ asset('assets/images/pup-logo.png') }}" width="50" height="50" alt="Logo">
                 <div class="brand-info">
                     <div class="main-title">PUP-T FARM</div>
@@ -223,15 +224,14 @@
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="sidebar-scroll">
                 <div class="collapse navbar-collapse" id="navbarNav">
-                
+                <div class="sidebar-scroll">
                     <ul class="navbar-nav flex-column">
                         <li class="nav-divider">
                             MENU
                         </li>
                         <li class="nav-item ">
-                            <a class="nav-link {{ Request::routeIs('admin.admin-dashboard') ? 'active' : '' }}"
+                            <a class="nav-link {{ Request::routeIs('admin.admin-dashboard') || Request::routeIs('admin.dashboard-totals.completed-reviews') || Request::routeIs('admin.dashboard-totals.pending-review') || ('admin.dashboard-totals.files-submitted')? 'active' : '' }}"
                                 href="{{ route('admin.admin-dashboard') }}" aria-expanded="false"
                                 data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-tachometer-alt"></i>
                                 Dashboard </a>
@@ -255,6 +255,15 @@
                                 <span id="request-count">0</span>
                             </span>
                         </li>
+
+                       <li class="nav-item">
+                        <a class="nav-link {{ Request::routeIs('admin.submission-tracker') || Request::routeIs('admin.view-folder') || Request::routeIs('admin.view-subfolder') ? 'active' : '' }}"
+                           href="{{ route('admin.submission-tracker') }}" aria-expanded="false"
+                           data-target="#submenu-1" aria-controls="submenu-1">
+                           <i class="fas fa-tasks"></i>
+                           Submission Tracker
+                        </a>
+                    </li>
 
                         <li class="nav-divider">
                             Maintenance

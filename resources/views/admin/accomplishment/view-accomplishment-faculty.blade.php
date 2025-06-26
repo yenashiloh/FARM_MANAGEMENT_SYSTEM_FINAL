@@ -74,7 +74,6 @@
                                                     'folder_name_id' => $folder->folder_name_id,
                                                 ]) }}"
                                                 class="breadcrumb-link" style=" color: #3d405c;">Faculty</a></li>
-
                                     </ol>
                                 </nav>
                             </div>
@@ -104,8 +103,8 @@
                                                         <a href="{{ route('admin.accomplishment.view-accomplishment', [
                                                             'user_login_id' => $faculty->user_login_id,
                                                             'folder_name_id' => $folder->folder_name_id
-                                                        ]) }}" class="btn btn-info text-white">
-                                                            View Files
+                                                        ]) }}" class="btn btn-primary text-white">
+                                                            View Documents
                                                         </a>
                                                     </td>
                                                 </tr>
@@ -117,9 +116,8 @@
                         </div>
                     </div>
                 </div>
-
-
-                @include('partials.tables-footer')
+                
+    @include('partials.tables-footer')
 </body>
 
 </html>

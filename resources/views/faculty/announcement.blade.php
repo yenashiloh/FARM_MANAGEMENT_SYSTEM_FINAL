@@ -54,7 +54,6 @@
                 <!-- Page Header -->
                 <!-- ============================================================== -->
                 <div class="row">
-
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="d-flex justify-content-end align-items-center">
                             <div class="col-md-4 col-sm-6 d-none d-md-block">

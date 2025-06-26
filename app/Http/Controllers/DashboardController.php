@@ -10,6 +10,9 @@ use App\Models\CoursesFile;
 use App\Models\CourseSchedule;
 use App\Models\UserDetails;
 use App\Models\Notification;
+use App\Models\Announcement;
+use Illuminate\Support\Facades\Log;
+
 
 class DashboardController extends Controller
 {
@@ -101,11 +104,39 @@ class DashboardController extends Controller
         $userId = auth()->id();
         $user = auth()->user();
         
-
         if (!in_array($user->role, ['faculty', 'faculty-coordinator'])) {
             return redirect()->route('login');
         }
         
+       $announcements = [];
+        if (!session()->has('announcements_shown')) {
+            $announcements = Announcement::where('published', 1)
+                ->where(function($query) use ($user) {
+                    $query->where('type_of_recepient', $user->role)
+                          ->orWhere('type_of_recepient', 'All Faculty')
+                          ->orWhere('type_of_recepient', 'like', '%' . $user->email . '%')
+                          ->orWhere(function($q) use ($user) {
+                              $q->where('department_id', $user->department_id)
+                                ->whereNotNull('department_id');
+                          })
+                          ->orWhere(function($q) use ($user) {
+                              $q->where('user_login_id', $user->id)
+                                ->whereNotNull('user_login_id');
+                          });
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        
+            session(['announcements_shown' => true]);
+        }
+
+        // Get current academic year
+        $currentAcademicYear = date('Y') . '-' . (date('Y') + 1);
+        
+        // Get faculty course count for the current academic year
+        $facultyCourseCount = CourseSchedule::where('user_login_id', $userId)
+            ->where('sem_academic_year', $currentAcademicYear)
+            ->count();
     
         $firstName = $user->first_name;
         $surname = $user->surname;
@@ -114,29 +145,29 @@ class DashboardController extends Controller
         $folder = FolderName::first();
     
         // Get notifications
-        $notifications = \App\Models\Notification::where('user_login_id', $userId)
+        $notifications = Notification::where('user_login_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
         $notificationCount = $notifications->count();
     
         // Get file counts
-        $totalFilesSubmitted = \App\Models\CoursesFile::where('user_login_id', $userId)->count();
-        $toReviewCount = \App\Models\CoursesFile::where('user_login_id', $userId)
+        $totalFilesSubmitted = CoursesFile::where('user_login_id', $userId)->count();
+        $toReviewCount = CoursesFile::where('user_login_id', $userId)
             ->where('status', 'To Review')
             ->count();
-        $approvedCount = \App\Models\CoursesFile::where('user_login_id', $userId)
+        $approvedCount = CoursesFile::where('user_login_id', $userId)
             ->where('status', 'Approved')
             ->count();
-        $declinedCount = \App\Models\CoursesFile::where('user_login_id', $userId)
+        $declinedCount = CoursesFile::where('user_login_id', $userId)
             ->where('status', 'Declined')
             ->count();
-    
-        // Calculate storage
-        $totalStorageUsed = \App\Models\CoursesFile::where('user_login_id', $userId)
+        
+        // Calculate storage usage
+        $totalStorageUsed = CoursesFile::where('user_login_id', $userId)
             ->where('is_archived', false)
             ->sum('file_size');
         $formattedTotalStorageUsed = $this->formatBytes($totalStorageUsed);
-        $totalStorageLimit = 30 * 1024 * 1024 * 1024;
+        $totalStorageLimit = 15 * 1024 * 1024 * 1024; // 30GB in bytes
         $storageAvailable = $totalStorageLimit - $totalStorageUsed;
         $formattedStorageAvailable = $this->formatBytes($storageAvailable);
     
@@ -163,22 +194,7 @@ class DashboardController extends Controller
             ];
         });
     
-        // Get current academic year
-        $currentAcademicYear = CourseSchedule::where('user_login_id', $userId)
-            ->distinct()
-            ->pluck('sem_academic_year')
-            ->first();
-    
-        if (!$currentAcademicYear) {
-            return redirect()->back()->with('error', 'No courses found for the current user.');
-        }
-    
-        // Get faculty course count
-        $facultyCourseCount = CourseSchedule::where('user_login_id', $userId)
-            ->where('sem_academic_year', $currentAcademicYear)
-            ->count();
-    
-        // Generate folder chart data
+        // Process main folders data
         $mainFolders = ['Classroom Management', 'Test Administration', 'Syllabus Preparation'];
         $folderChartData = [];
     
@@ -213,14 +229,7 @@ class DashboardController extends Controller
             $folderChartData[] = $mainFolderData;
         }
     
-        \Log::info('Faculty Course Count:', [
-            'user_id' => $userId,
-            'academic_year' => $currentAcademicYear,
-            'course_count' => $facultyCourseCount
-        ]);
-        \Log::info('Folder Chart Data:', $folderChartData);
-    
-        return view('faculty.faculty-dashboard', [
+         return view('faculty.faculty-dashboard', [
             'folders' => $folders,
             'folder' => $folder,
             'notifications' => $notifications,
@@ -238,9 +247,11 @@ class DashboardController extends Controller
             'firstName' => $firstName,
             'surname' => $surname,
             'folderChartData' => $folderChartData,
-            'currentAcademicYear' => $currentAcademicYear
+            'currentAcademicYear' => $currentAcademicYear,
+              'announcements' => $announcements
         ]);
     }
+
 
     //format bytes
     private function formatBytes($bytes)
@@ -255,4 +266,7 @@ class DashboardController extends Controller
             return $bytes . ' bytes';
         }
     }
+    
+    
+
 }

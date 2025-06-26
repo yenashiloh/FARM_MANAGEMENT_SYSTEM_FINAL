@@ -40,26 +40,35 @@
                                         <li class="breadcrumb-item"><a href="#!" class="breadcrumb-link"
                                                 >Menu</a></li>
                                         <li class="breadcrumb-item"><a href="{{ route('admin.request-upload-access') }}"
-                                                class="breadcrumb-link"  style="cursor: default; color: #3d405c;">Request Upload Request</a></li>
+                                                class="breadcrumb-link"  style="color: #3d405c;">Request Upload Request</a></li>
                                     </ol>
                                 </nav>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                 @if(session('success'))
+                    <div class="alert alert-success" id="successMessage">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
                 <div class="row">
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                         <div class="card">
                             <div class="card-body">
                                 <h5>This section displays all requests submitted by faculty members seeking access to upload documents.</h5>
-                                <div class="table-responsive">
+                               <div class="table-responsive">
                                     <table id="uploadRequestsTable" class="table table-striped table-bordered first">
                                         <thead>
                                             <tr>
                                                 <th>Date</th>
                                                 <th>Time</th>
                                                 <th>Faculty Name</th>
-                                                <th>Reason</th>
+                                                <th>Message</th>
+                                                <th>Status</th>
+                                                <th>Action</th
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -69,16 +78,23 @@
                                                     <td>{{ $request->created_at->format('g:i A') }}</td>
                                                     <td>{{ $request->user->first_name }} {{ $request->user->surname }}</td>
                                                     <td>{{ $request->reason }}</td>
+                                                    <td>{{ $request->status_request }}</td>
+                                                    <td>
+                                                        <form action="{{ route('admin.approve-upload-request', $request->request_upload_id) }}" method="POST">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+                                                        </form>
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
                                     </table>
                                 </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
-
 
                 <!-- ============================================================== -->
                 <!-- end pageheader  -->
@@ -116,35 +132,66 @@
         <script src="../../../../asset/vendor/datatables/js/loading.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
-          $(document).ready(function() {
-        var table = $('#uploadRequestsTable').DataTable();
-    
-        function fetchUploadRequests() {
-            $.ajax({
-                url: "{{ route('real.time.access') }}", 
-                method: 'GET',
-                success: function(data) {
-                    table.clear();
-    
-                    $.each(data.uploadRequests, function(index, request) {
-                        table.row.add([
-                            request.created_at_date,
-                            request.created_at_time,
-                            request.user_name,
-                            request.reason
-                        ]).draw(false);
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching upload requests:', error);
-                }
+        //datable real-time
+        $(document).ready(function() {
+            var table = $('#uploadRequestsTable').DataTable({
+                columns: [
+                    { data: 'created_at_date' },
+                    { data: 'created_at_time' },
+                    { data: 'user_name' },
+                    { data: 'reason' },
+                    { data: 'status_request' },
+                    { 
+                    data: null,
+                    render: function(data, type, row) {
+                        if (row.status_request === 'Pending') {
+                            return `<form action="/approve-upload-request/${row.request_upload_id}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+                            </form>`;
+                        } else {
+                            return '';
+                        }
+                    }
+                    }
+                ]
             });
-        }
-    
-        setInterval(fetchUploadRequests, 5000);
-    
-        fetchUploadRequests();
-    });
+        
+            function fetchUploadRequests() {
+                $.ajax({
+                    url: "{{ route('real.time.access') }}", 
+                    method: 'GET',
+                    success: function(data) {
+                        table.clear();
+                        $.each(data.uploadRequests, function(index, request) {
+                            table.row.add({
+                                created_at_date: request.created_at_date,
+                                created_at_time: request.created_at_time,
+                                user_name: request.user_name,
+                                reason: request.reason,
+                                status_request: request.status_request, 
+                                request_upload_id: request.request_upload_id
+                            }).draw(false);
+                        });
+                    },
+                    error: function(xhr, status_request, error) {
+                        console.error('Error fetching upload requests:', error);
+                    }
+                });
+            }
+        
+            setInterval(fetchUploadRequests, 5000);
+            fetchUploadRequests();
+        });
+        
+        //success message 3 secs
+        $(document).ready(function() {
+            if ($('#successMessage').length > 0) {
+                setTimeout(function() {
+                    $('#successMessage').fadeOut();  
+                }, 5000); 
+            }
+        });
         </script>
 </body>
 </html>

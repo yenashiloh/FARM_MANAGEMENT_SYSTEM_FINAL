@@ -25,46 +25,78 @@ use App\Http\Middleware\DirectorAuthenticate;
 Route::get('/', [RoleController::class, 'showLandingPage'])->name('welcome');
 Route::get('login', [RoleController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [RoleController::class, 'login'])->name('login.post');
-Route::post('/login', [RoleController::class, 'login'])->name('login.post')->middleware(\App\Http\Middleware\PreventBackHistory::class);
+Route::get('/callback', [RoleController::class, 'handleProviderCallback'])->name('callback');
+Route::get('/oauth/redirect', [RoleController::class, 'redirectToProvider'])->name('oauth.redirect');
+Route::get('/login/hris', [RoleController::class, 'redirectToProvider'])->name('login.hris');
+Route::post('/login', [RoleController::class, 'login'])->name('login.post')->middleware(PreventBackHistory::class);
 
 Route::middleware(['auth', 'role:faculty,faculty-coordinator', 'prevent-back-history'])->group(function () {
-    
-    /****************************************FACULTY**************************************/
+
+    Route::get('/faculty-dashboard', [DashboardController::class, 'facultyDashboardPage'])
+                    ->name('faculty.faculty-dashboard');
     Route::post('/faculty-logout', [FacultyController::class, 'facultyLogout'])->name('faculty-logout'); 
-    Route::get('/accomplishment/upload-file/{folder_name_id}', [FacultyController::class, 'showUploadedFiles'])->name('faculty.accomplishment.uploaded-files');
+    
+    Route::get('/accomplishment/classroom-management', [FacultyController::class, 'showUploadedFiles'])->name('faculty.accomplishment.uploaded-files');
+    Route::get('/accomplishment/test-administration', [FacultyController::class, 'showTestAdministration'])->name('faculty.accomplishment.test-administration');
+    Route::get('/accomplishment/syllabus-preparation', [FacultyController::class, 'showSyllabusPreparation'])->name('faculty.accomplishment.syllabus-preparation');
+    
+    Route::get('/accomplishment/approved-files', [FacultyController::class, 'showApprovedFiles'])->name('faculty.accomplishment.approved-files');
+    Route::get('/accomplishment/declined-files', [FacultyController::class, 'showDeclinedFiles'])->name('faculty.accomplishment.declined-files');
+    Route::get('/accomplishment/pending-files', [FacultyController::class, 'showPendingFiles'])->name('faculty.accomplishment.pending-files');
+    
     Route::get('/faculty-info', [FacultyController::class, 'getFacultyInfo']);
     Route::post('/accomplishment/uploaded-files', [CoursesFileController::class, 'store'])->name('files.store');
+    Route::post('/accomplishment/uploaded-test-administration-files', [CoursesFileController::class, 'storeTestAdministration'])->name('files.store.test-administration');
+    Route::post('/accomplishment/uploaded-syllabus', [CoursesFileController::class, 'storeSyllabus'])->name('files.store.syllabus');
     Route::get('/files/semester/{semester}', [CoursesFileController::class, 'getFilesBySemester']);
-  
-    Route::put('/update-file/{id}', [CoursesFileController::class, 'updateFile'])->name('update.file');
+                
+    
+    Route::post('/update-files', [CoursesFileController::class, 'updateFiles'])->name('update-files');
 
-    Route::get('/faculty-dashboard', [DashboardController::class, 'facultyDashboardPage'])->name('faculty.faculty-dashboard');
     Route::get('/notifications/count', [NotificationController::class, 'getNotificationCount'])->name('notifications.count');
     Route::post('/notifications/mark-read', [NotificationController::class, 'markNotificationsAsRead'])->name('notifications.mark-read');
-    Route::get('/notifications/list', [NotificationController::class, 'getNotificationList'])->name('notifications.list');
-    Route::get('/notifications', [NotificationController::class, 'getNotifications'])->name('notifications.get');
-    Route::get('/announcement', [FacultyController::class, 'announcementPage'])->name('faculty.announcement'); 
-    Route::get('/view-uploaded-files/{user_login_id}/{folder_name_id}/{semester?}', [FacultyController::class, 'viewUploadedFiles'])->name('faculty.accomplishment.view-uploaded-files');
+                Route::get('/notifications/list', [NotificationController::class, 'getNotificationList'])->name('notifications.list');
+                Route::get('/notifications', [NotificationController::class, 'getNotifications'])->name('notifications.get');
+                Route::get('/announcement', [FacultyController::class, 'announcementPage'])->name('faculty.announcement'); 
+                Route::get('/view-uploaded-files/{user_login_id}/{folder_name_id}/{semester?}', [FacultyController::class, 'viewUploadedFiles'])->name('faculty.accomplishment.view-uploaded-files');
+                
+                Route::post('/archive-by-date', [CoursesFileController::class, 'archiveByDate'])->name('archive.by.date');
+                Route::post('/archive-by-test-administration', [CoursesFileController::class, 'archiveByTestAdministration'])->name('archive.by.test-administration');
+                Route::post('/archive-by-syllabus', [CoursesFileController::class, 'archiveBySyllabus'])->name('archive.by.syllabus');
+                Route::get('/view-archive', [CoursesFileController::class, 'showArchive'])->name('faculty.view-archive');
+                Route::post('/files/unarchive/{courses_files_id}', [CoursesFileController::class, 'unarchive'])->name('files.unarchive');
 
-    //Archive
-    Route::post('/files/archive/{id}', [CoursesFileController::class, 'archive'])->name('files.archive');
-    Route::get('/view-archive', [CoursesFileController::class, 'showArchive'])->name('faculty.view-archive');
-    Route::post('/files/unarchive/{courses_files_id}', [CoursesFileController::class, 'unarchive'])->name('files.unarchive');
+                Route::post('/files/archiveAll', [CoursesFileController::class, 'archiveAll'])->name('files.archiveAll');
+                Route::post('/files/archive-by-date-range', [CoursesFileController::class, 'archiveByDateRange'])->name('files.archiveByDateRange');
+                Route::post('/files/bulk-unarchive', [CoursesFileController::class, 'bulkUnarchive'])->name('files.bulkUnarchive');
+                Route::post('/log-logout', [AuditController::class, 'logLogout'])->name('log-logout');
 
-    Route::post('/files/archiveAll', [CoursesFileController::class, 'archiveAll'])->name('files.archiveAll');
-    Route::post('/files/archive-by-date-range', [CoursesFileController::class, 'archiveByDateRange'])->name('files.archiveByDateRange');
-    Route::post('/files/bulk-unarchive', [CoursesFileController::class, 'bulkUnarchive'])->name('files.bulkUnarchive');
-    Route::post('/log-logout', [AuditController::class, 'logLogout'])->name('log-logout');
+                Route::post('/request-upload-access', [FacultyController::class, 'requestUploadAccess'])->name('request.upload.access');
 
-    Route::post('/request-upload-access', [FacultyController::class, 'requestUploadAccess'])->name('request.upload.access');
+                Route::get('/faculty/announcement/search', [AnnouncementController::class, 'searchFacultyAnnouncements'])->name('faculty.announcement.search');
 
-    Route::get('/faculty/announcement/search', [AnnouncementController::class, 'searchFacultyAnnouncements'])->name('faculty.announcement.search');
-
-    Route::post('/remove-file', [CoursesFileController::class, 'removeFile'])->name('remove.file');
-    Route::delete('/courses-files/{id}', [CoursesFileController::class, 'destroyFiles'])->name('courses-files.destroy');
-
-});
-
+                Route::post('/remove-file', [CoursesFileController::class, 'removeFile'])->name('remove.file');
+                Route::delete('/courses-files/{id}', [CoursesFileController::class, 'destroyFiles'])->name('courses-files.destroy');
+                
+                Route::post('/add-new-file', [CoursesFileController::class, 'addNewFile']);
+                Route::delete('/courses-file/{fileId}', [CoursesFileController::class, 'destroyFacultyFile']);
+                
+                Route::get('/get-course-schedules', [FacultyController::class, 'getCourseSchedules'])->name('get.course.schedules');
+    
+    Route::get('/request-upload-access-faculty', [FacultyController::class, 'showRequestUploadFaculty'])->name('faculty.request-upload-access');
+    Route::post('/files/archive/{id}', [CoursesFileController::class, 'archiveOneFile'])->name('files.archive');
+    
+    Route::delete('/faculty/files/{fileId}/delete-single/{fileIndex}', [CoursesFileController::class, 'deleteSingleFile'])
+    ->name('faculty.files.delete-single');
+    
+    Route::post('/send-file-message', [FacultyController::class, 'sendMessageClassroomManagement'])->name('send.file.message');
+    
+    Route::get('/get-available-folders', [FacultyController::class, 'getAvailableFolders'])->name('get-available-folders');
+     
+    Route::get('/get-all-folders', 'FacultyController@getAllFolders');
+    Route::get('/get-uploaded-folders', 'FacultyController@getUploadedFolders');
+    });
+    
     /************************************ADMIN***************************************/
 Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], function () {
 
@@ -81,6 +113,10 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/export/{folder_name_id}', [FileController::class, 'export'])->name('report.export');
     Route::get('/report/export/not-passed/{folder_name_id}', [FileController::class, 'exportNotPassed'])->name('report.export.not_passed');
     Route::delete('/files/{courses_files_id}', [FileController::class, 'destroy'])->name('deleteFile');
+    Route::get('/undo-approval/{courses_files_id}', [FileController::class, 'undoApproval'])->name('undoApproval');
+    Route::get('/file/undo-declined/{courses_files_id}', [FileController::class, 'undoDeclined'])->name('undoDeclined');
+
+
 
     //Generate Report
     Route::get('/generate-all-reports/{semester}', [FileController::class, 'generateAllReports'])->name('generate.all.reports');
@@ -151,7 +187,23 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/admin/get-upload-requests', [AdminController::class, 'getUploadRequests'])->name('admin.get-upload-requests');
 
     Route::get('/admin/announcement/search', [AnnouncementController::class, 'searchAnnouncements'])->name('admin.announcement.search');
+    
+    Route::get('/submission-tracker', [AdminController::class, 'showSubmissionTracker'])->name('admin.submission-tracker');
+    Route::get('/submission-tracker/{user_login_id}', [AdminController::class, 'viewFolder'])->name('admin.view-folder');
+    Route::get('/submission-tracker/{user_login_id}/{folder_name}', [AdminController::class, 'viewSubfolder'])
+    ->name('admin.view-subfolder');
+    Route::get('/admin/send-reminder/{user_login_id}', [AdminController::class, 'sendReminder'])
+    ->name('admin.send-reminder');
 
+    Route::post('/approve-upload-request/{id}', [AdminController::class, 'approveUploadRequest'])->name('admin.approve-upload-request');
+    
+    Route::post('/send-file-message-admin', [AdminController::class, 'sendMessageFaculty'])->name('send.file.message.admin');
+    
+    //Totals page
+    Route::get('/dashboard/users', [AdminController::class, 'showTotalUsers'])->name('admin.dashboard-totals.users');
+    Route::get('/dashboard/completed-reviews', [AdminController::class, 'showTotalCompletedReviews'])->name('admin.dashboard-totals.completed-reviews');
+    Route::get('/dashboard/pending-review', [AdminController::class, 'showPendingReviewFiles'])->name('admin.dashboard-totals.pending-review');
+    Route::get('/dashboard/files-submitted', [AdminController::class, 'showTotalFilesSubmitted'])->name('admin.dashboard-totals.files-submitted');
     });
 
     /************************************DIRECTOR***************************************/
@@ -177,6 +229,16 @@ Route::group(['middleware' => ['auth', 'role:admin', 'prevent-back-history']], f
     Route::get('/director/department/{folder_name_id}', [DirectorController::class, 'showDirectorDepartmentPage'])->name('director.department');
 
     Route::get('/director/accomplishment/faculty/{department}/{folder_name_id?}', [DirectorController::class, 'showDirectorAccomplishmentDepartment'])->name('view.accomplishment.department');
+    
+    Route::get('/undo-approval-director/{courses_files_id}', [DirectorController::class, 'undoApprovalDirector'])->name('undoApprovalDirector');
+    Route::get('/file/undo-declined-director/{courses_files_id}', [DirectorController::class, 'undoDeclinedDirector'])->name('undoDeclinedDirector');
+    
+    Route::get('/file/approve-director/{courses_files_id}', [DirectorController::class, 'approveDirector'])->name('approveFileDirector');
+    Route::post('/file/decline-director/{courses_files_id}', [DirectorController::class, 'declineDirector'])->name('declineFileDirector');
+    
+    Route::post('/send-file-message-director', [DirectorController::class, 'sendMessageDirector'])->name('send.file.message.director');
+    
+    
 });
 
 

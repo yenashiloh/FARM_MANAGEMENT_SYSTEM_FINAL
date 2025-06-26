@@ -72,9 +72,15 @@
           <div class="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center" data-aos="zoom-out">
             <h1><span>Simplifying Faculty Workflows at PUP Taguig</span></h1>
             <p>Manage, Track, and Fulfill Academic Requirements with Ease</p>
-            <div class="d-flex">
-              <a href="{{route ('login')}}" class="btn-get-started">Login</a>
-            </div>
+               <div class="d-flex">
+            <!-- Faculty Login with OAuth -->
+             <a href="{{ $oauthUrl }}" class="btn-get-started">Faculty Login</a>
+        
+            <!-- Admin Login using Route -->
+            <a href="{{ route('login') }}" class="btn-get-started ms-3" style="background-color: #FFDF00; color: black; border: 1px solid #FFDF00;">Admin Login</a>
+        </div>
+
+
           </div>
         </div>
       </div>

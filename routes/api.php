@@ -5,6 +5,10 @@ use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\CoursesFileController;
+use App\Http\Controllers\RoleController;
+
+Route::get('/callback', [RoleController::class, 'handleProviderCallback'])->name('callback');
+Route::post('oauth/token', '\Laravel\Passport\Http\Controllers\AccessTokenController@issueToken');
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
